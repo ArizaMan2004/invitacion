@@ -9,6 +9,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // ==========================================
 // Funciones para Invitaciones
 // ==========================================
+
 export async function getInvitation(invitationId: string): Promise<InvitationData | null> {
   try {
     const { data, error } = await supabase
@@ -22,19 +23,34 @@ export async function getInvitation(invitationId: string): Promise<InvitationDat
     return {
       id: data.id,
       quinceaneraName: data.quinceañera_name,
+      parentNames: data.parent_names,
       heroImage: data.hero_image_url,
       eventDate: data.event_date,
       eventTime: data.event_time,
       venue: data.location_name,
       venueAddress: data.location_address,
-      mapIframeSrc: '', // No guardamos iframe en BD
+      mapIframeSrc: data.map_iframe_src || '', 
       locationLat: data.location_lat,
       locationLng: data.location_lng,
-      galleryImages: [],
+      galleryImages: [], 
       dressCode: data.dress_code,
       dedicationMessage: data.dedication_message,
-      themeColor: data.theme_color,
-      youtubeMusicLink: data.youtube_music_link, // Añadido para el módulo de música
+      youtubeMusicLink: data.youtube_music_link,
+      
+      // Sincronización de Colores
+      themeMode: data.theme_mode,
+      cardColor: data.card_color,
+      textColor: data.text_color,
+      accentColor: data.accent_color,
+      backgroundColor: data.background_color,
+      
+      // Campos requeridos por la interfaz
+      maxGalleryPhotos: 12,
+      discoMode: false,
+      primaryColor: data.theme_color || '',
+      secondaryColor: '',
+      twinName1: '',
+      twinName2: ''
     };
   } catch (error) {
     console.error('Error en getInvitation:', error);
@@ -47,31 +63,38 @@ export async function createInvitation(data: InvitationData): Promise<string | n
     const { data: response, error } = await supabase
       .from('invitations')
       .insert({
-        // Usamos valores por defecto (|| '') para evitar que la BD rechace el registro por campos nulos
-        quinceañera_name: data.quinceaneraName || 'Quinceañera',
+        quinceañera_name: data.quinceaneraName || 'Hermanos',
+        parent_names: data.parentNames || '',
         hero_image_url: data.heroImage || '',
         event_date: data.eventDate || '',
         event_time: data.eventTime || '',
         location_name: data.venue || '',
         location_address: data.venueAddress || '',
+        map_iframe_src: data.mapIframeSrc || '',
         location_lat: data.locationLat || 0,
         location_lng: data.locationLng || 0,
         dress_code: data.dressCode || '',
         dedication_message: data.dedicationMessage || '',
-        theme_color: data.themeColor || 'amber',
         youtube_music_link: data.youtubeMusicLink || '',
+        
+        // Valores iniciales
+        theme_mode: data.themeMode || 'dark',
+        card_color: data.cardColor || '#1d331d',
+        text_color: data.textColor || '#e8efe8',
+        accent_color: data.accentColor || '#6b8e23',
+        background_color: data.backgroundColor || '#121f12',
       })
       .select('id')
       .single();
 
     if (error) {
-      console.error('🚨 Error en BD al crear invitación:', error.message, error.details);
+      console.error('🚨 Error de Supabase al crear:', error.message, error.details);
       return null;
     }
 
     return response.id;
   } catch (err) {
-    console.error('🚨 Error inesperado creando invitación:', err);
+    console.error('🚨 Error inesperado en createInvitation:', err);
     return null;
   }
 }
@@ -81,17 +104,24 @@ export async function updateInvitation(invitationId: string, data: Partial<Invit
     const updateData: any = {};
 
     if (data.quinceaneraName !== undefined) updateData.quinceañera_name = data.quinceaneraName;
+    if (data.parentNames !== undefined) updateData.parent_names = data.parentNames;
     if (data.heroImage !== undefined) updateData.hero_image_url = data.heroImage;
     if (data.eventDate !== undefined) updateData.event_date = data.eventDate;
     if (data.eventTime !== undefined) updateData.event_time = data.eventTime;
     if (data.venue !== undefined) updateData.location_name = data.venue;
     if (data.venueAddress !== undefined) updateData.location_address = data.venueAddress;
+    if (data.mapIframeSrc !== undefined) updateData.map_iframe_src = data.mapIframeSrc;
     if (data.locationLat !== undefined) updateData.location_lat = data.locationLat;
     if (data.locationLng !== undefined) updateData.location_lng = data.locationLng;
     if (data.dressCode !== undefined) updateData.dress_code = data.dressCode;
     if (data.dedicationMessage !== undefined) updateData.dedication_message = data.dedicationMessage;
     if (data.youtubeMusicLink !== undefined) updateData.youtube_music_link = data.youtubeMusicLink;
-    if (data.parentNames !== undefined) updateData.parent_names = data.parentNames;
+    
+    if (data.themeMode !== undefined) updateData.theme_mode = data.themeMode;
+    if (data.cardColor !== undefined) updateData.card_color = data.cardColor;
+    if (data.textColor !== undefined) updateData.text_color = data.textColor;
+    if (data.accentColor !== undefined) updateData.accent_color = data.accentColor;
+    if (data.backgroundColor !== undefined) updateData.background_color = data.backgroundColor;
 
     updateData.updated_at = new Date().toISOString();
 
@@ -101,13 +131,13 @@ export async function updateInvitation(invitationId: string, data: Partial<Invit
       .eq('id', invitationId);
 
     if (error) {
-      console.error('Error actualizando invitación:', error);
+      console.error('🚨 Error de Supabase al actualizar:', error.message, error.details);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error inesperado actualizando invitación:', error);
+    console.error('🚨 Error inesperado en updateInvitation:', error);
     return false;
   }
 }
@@ -115,6 +145,7 @@ export async function updateInvitation(invitationId: string, data: Partial<Invit
 // ==========================================
 // Funciones para RSVP
 // ==========================================
+
 export async function createRSVPResponse(response: RSVPResponse): Promise<string | null> {
   const { data, error } = await supabase
     .from('rsvp_responses')
@@ -131,11 +162,7 @@ export async function createRSVPResponse(response: RSVPResponse): Promise<string
     .select('id')
     .single();
 
-  if (error) {
-    console.error('Error creando RSVP:', error);
-    return null;
-  }
-
+  if (error) return null;
   return data.id;
 }
 
@@ -165,13 +192,12 @@ export async function getRSVPResponses(invitationId: string): Promise<RSVPRespon
 // ==========================================
 // Funciones para Fotos de Invitados
 // ==========================================
+
 export async function uploadGuestPhoto(invitationId: string, file: File, guestName: string): Promise<string | null> {
   const fileExt = file.name.split('.').pop();
   const fileName = `${invitationId}/${Date.now()}.${fileExt}`;
 
-  const { error } = await supabase.storage
-    .from('guest-photos')
-    .upload(fileName, file);
+  const { error } = await supabase.storage.from('guest-photos').upload(fileName, file);
 
   if (error) {
     console.error('Error subiendo foto:', error);
@@ -188,11 +214,7 @@ export async function uploadGuestPhoto(invitationId: string, file: File, guestNa
       approved: false,
     });
 
-  if (insertError) {
-    console.error('Error registrando foto:', insertError);
-    return null;
-  }
-
+  if (insertError) return null;
   return fileName;
 }
 
@@ -226,7 +248,6 @@ export async function getPendingGuestPhotos(invitationId: string): Promise<Guest
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
-
   return data.map(p => ({
     id: p.id,
     invitationId: p.invitation_id,
@@ -243,13 +264,13 @@ export async function approveGuestPhoto(photoId: string): Promise<boolean> {
     .from('guest_photos')
     .update({ approved: true })
     .eq('id', photoId);
-
   return !error;
 }
 
 // ==========================================
 // Funciones para Mensajes
 // ==========================================
+
 export async function createGuestMessage(message: GuestMessage): Promise<string | null> {
   const { data, error } = await supabase
     .from('guest_messages')
@@ -267,7 +288,6 @@ export async function createGuestMessage(message: GuestMessage): Promise<string 
     console.error('Error creando mensaje:', error);
     return null;
   }
-
   return data.id;
 }
 
@@ -301,7 +321,6 @@ export async function getPendingGuestMessages(invitationId: string): Promise<Gue
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
-
   return data.map(m => ({
     id: m.id,
     invitationId: m.invitation_id,
@@ -318,28 +337,19 @@ export async function approveGuestMessage(messageId: string): Promise<boolean> {
     .from('guest_messages')
     .update({ approved: true })
     .eq('id', messageId);
-
   return !error;
 }
 
 // ==========================================
-// Autenticación Nativa de Supabase
+// Autenticación y Sesión
 // ==========================================
+
 export async function loginAdmin(email: string, password: string): Promise<string | null> {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('🚨 Error real de Supabase Auth:', error.message);
-      return null;
-    }
-
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return null;
     return data.user?.id || null;
-  } catch (error) {
-    console.error('🚨 Error inesperado en login:', error);
+  } catch {
     return null;
   }
 }
@@ -347,15 +357,9 @@ export async function loginAdmin(email: string, password: string): Promise<strin
 export async function getAdminSession() {
   try {
     const { data, error } = await supabase.auth.getSession();
-    
     if (error || !data.session) return null;
-    
-    return {
-      userId: data.session.user.id,
-      email: data.session.user.email,
-    };
-  } catch (error) {
-    console.error('Error obteniendo sesión:', error);
+    return { userId: data.session.user.id, email: data.session.user.email };
+  } catch {
     return null;
   }
 }
@@ -363,66 +367,39 @@ export async function getAdminSession() {
 export async function clearAdminSession() {
   try {
     await supabase.auth.signOut();
-    
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('invitationId'); 
-    }
+    if (typeof window !== 'undefined') localStorage.removeItem('invitationId');
   } catch (error) {
-    console.error('Error cerrando sesión:', error);
+    console.error('Error al cerrar sesión:', error);
   }
 }
 
 // ==========================================
-// Funciones para personalización del sobre
+// Sobres e Imágenes
 // ==========================================
-export async function updateEnvelopeImages(
-  invitationId: string,
-  backImageUrl?: string,
-  flapImageUrl?: string
-): Promise<boolean> {
+
+export async function updateEnvelopeImages(invitationId: string, backImageUrl?: string, flapImageUrl?: string): Promise<boolean> {
   try {
-    const updates: Record<string, string> = {};
+    const updates: any = {};
     if (backImageUrl) updates.envelope_back_image = backImageUrl;
     if (flapImageUrl) updates.envelope_flap_image = flapImageUrl;
 
-    if (Object.keys(updates).length === 0) return true;
-
-    const { error } = await supabase
-      .from('invitations')
-      .update(updates)
-      .eq('id', invitationId);
-
-    if (error) {
-      console.error('[v0] Error actualizando imágenes del sobre:', error);
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error('[v0] Error en updateEnvelopeImages:', error);
+    const { error } = await supabase.from('invitations').update(updates).eq('id', invitationId);
+    return !error;
+  } catch {
     return false;
   }
 }
 
-export async function getEnvelopeImages(invitationId: string): Promise<{ back?: string; flap?: string } | null> {
+export async function getEnvelopeImages(invitationId: string) {
   try {
     const { data, error } = await supabase
       .from('invitations')
       .select('envelope_back_image, envelope_flap_image')
       .eq('id', invitationId)
       .single();
-
-    if (error) {
-      console.error('[v0] Error obteniendo imágenes del sobre:', error);
-      return null;
-    }
-
-    return {
-      back: data?.envelope_back_image || undefined,
-      flap: data?.envelope_flap_image || undefined,
-    };
-  } catch (error) {
-    console.error('[v0] Error en getEnvelopeImages:', error);
+    if (error) return null;
+    return { back: data.envelope_back_image, flap: data.envelope_flap_image };
+  } catch {
     return null;
   }
 }

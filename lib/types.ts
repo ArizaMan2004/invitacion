@@ -8,7 +8,7 @@ export interface InvitationData {
   eventTime: string;
   venue: string;
   venueAddress?: string;
-  mapIframeSrc: string;
+  mapIframeSrc: string;      // <- Aquí está el causante de todo
   locationLat?: number;
   locationLng?: number;
   galleryImages: string[];
@@ -24,6 +24,13 @@ export interface InvitationData {
   backgroundColor: string;
   discoMode: boolean;
   guestName?: string;
+  
+  // --- NUEVAS VARIABLES DEL MOTOR DE TEMAS Y AUDIO ---
+  themeMode?: 'light' | 'dark';
+  cardColor?: string;
+  textColor?: string;
+  youtubeMusicLink?: string;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
