@@ -22,17 +22,17 @@ export default function Home() {
   useEffect(() => {
     const initializeInvitation = async () => {
       try {
-        // 1. Verificamos si vienes de un link específico (por si acaso)
+        // 1. Verificamos si vienes de un link específico
         const urlParams = new URLSearchParams(window.location.search);
         let targetId = urlParams.get('id');
         
-        // 2. BÚSQUEDA AUTOMÁTICA GLOABAL
-        // Si no hay ID en la URL, buscamos la invitación principal en la base de datos
+        // 2. BÚSQUEDA AUTOMÁTICA GLOBAL
+        // Si no hay ID en la URL, buscamos la invitación más reciente
         if (!targetId) {
           const { data, error } = await supabase
             .from('invitations')
             .select('id')
-            .order('created_at', { ascending: false }) // Trae la más reciente
+            .order('created_at', { ascending: false })
             .limit(1)
             .single();
             
@@ -44,10 +44,17 @@ export default function Home() {
         if (targetId) {
           setInvitationId(targetId);
           
-          // Cargar la data global desde Supabase
+          // Cargar la data desde Supabase
           const dbData = await getInvitation(targetId);
           if (dbData) {
-            setInvitationData({ ...DEFAULT_INVITATION_DATA, ...dbData });
+            setInvitationData({ 
+              ...DEFAULT_INVITATION_DATA, 
+              ...dbData,
+              // CORRECCIÓN: Si la DB no trae imágenes, mantenemos las de DEFAULT_INVITATION_DATA
+              galleryImages: (dbData.galleryImages && dbData.galleryImages.length > 0) 
+                ? dbData.galleryImages 
+                : DEFAULT_INVITATION_DATA.galleryImages
+            });
           }
 
           const envelopeImages = await getEnvelopeImages(targetId);
