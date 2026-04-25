@@ -37,14 +37,12 @@ export async function getInvitation(invitationId: string): Promise<InvitationDat
       dedicationMessage: data.dedication_message,
       youtubeMusicLink: data.youtube_music_link,
       
-      // Sincronización de Colores
       themeMode: data.theme_mode,
       cardColor: data.card_color,
       textColor: data.text_color,
       accentColor: data.accent_color,
       backgroundColor: data.background_color,
       
-      // Campos requeridos por la interfaz
       maxGalleryPhotos: 12,
       discoMode: false,
       primaryColor: data.theme_color || '',
@@ -67,7 +65,7 @@ export async function createInvitation(data: InvitationData): Promise<string | n
         parent_names: data.parentNames || '',
         hero_image_url: data.heroImage || '',
         event_date: data.eventDate || '',
-        event_time: data.eventTime || '',
+        event_time: data.event_time || '',
         location_name: data.venue || '',
         location_address: data.venueAddress || '',
         map_iframe_src: data.mapIframeSrc || '',
@@ -77,11 +75,10 @@ export async function createInvitation(data: InvitationData): Promise<string | n
         dedication_message: data.dedicationMessage || '',
         youtube_music_link: data.youtubeMusicLink || '',
         
-        // Valores iniciales
         theme_mode: data.themeMode || 'dark',
         card_color: data.cardColor || '#1d331d',
         text_color: data.textColor || '#e8efe8',
-        accent_color: data.accentColor || '#6b8e23',
+        accent_color: data.accent_color || '#6b8e23',
         background_color: data.backgroundColor || '#121f12',
       })
       .select('id')
@@ -162,7 +159,10 @@ export async function createRSVPResponse(response: RSVPResponse): Promise<string
     .select('id')
     .single();
 
-  if (error) return null;
+  if (error) {
+    console.error('🚨 Error de Supabase en createRSVPResponse:', error.message, error.details);
+    return null;
+  }
   return data.id;
 }
 
@@ -193,29 +193,81 @@ export async function getRSVPResponses(invitationId: string): Promise<RSVPRespon
 // Funciones para Fotos de Invitados
 // ==========================================
 
-export async function uploadGuestPhoto(invitationId: string, file: File, guestName: string): Promise<string | null> {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${invitationId}/${Date.now()}.${fileExt}`;
+export async function uploadGuestPhotos(invitationId: string, files: FileList, guestName: string): Promise<boolean> {
+  try {
+    const uploadPromises = Array.from(files).map(async (file) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${invitationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-  const { error } = await supabase.storage.from('guest-photos').upload(fileName, file);
+      // 1. Subir al Storage (Bucket: fotos-evento)
+      const { error: uploadError } = await supabase.storage
+        .from('fotos-evento')
+        .upload(fileName, file);
 
-  if (error) {
-    console.error('Error subiendo foto:', error);
-    return null;
-  }
+      if (uploadError) {
+        console.error('🚨 Error de Storage:', uploadError.message);
+        throw uploadError;
+      }
 
-  const { error: insertError } = await supabase
-    .from('guest_photos')
-    .insert({
-      invitation_id: invitationId,
-      guest_name: guestName,
-      photo_url: `${supabaseUrl}/storage/v1/object/public/guest-photos/${fileName}`,
-      photo_bucket_path: fileName,
-      approved: false,
+      // 2. Registrar en la tabla de la base de datos
+      const { error: insertError } = await supabase
+        .from('guest_photos')
+        .insert({
+          invitation_id: invitationId,
+          guest_name: guestName,
+          photo_url: `${supabaseUrl}/storage/v1/object/public/fotos-evento/${fileName}`,
+          photo_bucket_path: fileName,
+          approved: true,
+        });
+
+      if (insertError) {
+        console.error('🚨 Error de DB al registrar foto:', insertError.message);
+        throw insertError;
+      }
     });
 
-  if (insertError) return null;
-  return fileName;
+    await Promise.all(uploadPromises);
+    return true;
+  } catch (error: any) {
+    console.error('🚨 Error detallado en uploadGuestPhotos:', error.message || error);
+    return false;
+  }
+}
+
+export async function uploadGuestPhoto(invitationId: string, file: File, guestName: string): Promise<string | null> {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${invitationId}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('fotos-evento')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('🚨 Error de Storage (Singular):', uploadError.message);
+      return null;
+    }
+
+    const { error: insertError } = await supabase
+      .from('guest_photos')
+      .insert({
+        invitation_id: invitationId,
+        guest_name: guestName,
+        photo_url: `${supabaseUrl}/storage/v1/object/public/fotos-evento/${fileName}`,
+        photo_bucket_path: fileName,
+        approved: false,
+      });
+
+    if (insertError) {
+      console.error('🚨 Error de DB al insertar foto única:', insertError.message);
+      return null;
+    }
+    
+    return fileName;
+  } catch (err: any) {
+    console.error('🚨 Error inesperado en uploadGuestPhoto:', err.message || err);
+    return null;
+  }
 }
 
 export async function getApprovedGuestPhotos(invitationId: string): Promise<GuestPhoto[]> {
@@ -285,7 +337,7 @@ export async function createGuestMessage(message: GuestMessage): Promise<string 
     .single();
 
   if (error) {
-    console.error('Error creando mensaje:', error);
+    console.error('🚨 Error creando mensaje:', error.message, error.details);
     return null;
   }
   return data.id;

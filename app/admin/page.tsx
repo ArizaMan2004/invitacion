@@ -3,80 +3,57 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { 
   Users, 
   LogOut, 
-  Music, 
-  Mail, 
-  MousePointer2, 
-  Eye, 
-  EyeOff, 
-  Settings, 
-  Search, 
-  PlayCircle, 
-  PauseCircle, 
+  Image as ImageIcon, 
+  MessageSquare, 
+  BarChart3, 
   CheckCircle2, 
-  X, 
-  Palette, 
-  MapPin, 
-  Calendar 
+  XCircle, 
+  PlayCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  ExternalLink
 } from 'lucide-react';
 
 // Utilidades de Supabase y Tipos
 import { 
-  getInvitation, 
-  updateInvitation, 
-  createInvitation, 
-  loginAdmin, 
+  supabase, // 🔥 Asegurado para la auto-recuperación
   getAdminSession, 
   clearAdminSession, 
-  updateEnvelopeImages,
-  getRSVPResponses
+  getRSVPResponses,
+  getApprovedGuestPhotos,
+  getPendingGuestPhotos,
+  approveGuestPhoto,
+  getApprovedGuestMessages,
+  getPendingGuestMessages,
+  approveGuestMessage,
+  getInvitation
 } from '@/lib/supabase';
-import { RSVPResponse, InvitationData } from '@/lib/types';
-import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
-import { InvitationSPA } from '@/components/InvitationSPA';
+import { RSVPResponse, GuestPhoto, GuestMessage, InvitationData } from '@/lib/types';
 
-// --- CONFIGURACIÓN DE MÚSICA RECOMENDADA ---
-const RECOMMENDED_SONGS = [
-  { id: '1', title: "Tiempo de Vals", artist: "Chayanne", url: "https://www.youtube.com/watch?v=1bGQ1-7mB9I", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&q=80" },
-  { id: '2', title: "A Thousand Years", artist: "Christina Perri", url: "https://www.youtube.com/watch?v=rtOvBOTyX00", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&q=80" },
-  { id: '3', title: "Perfect", artist: "Ed Sheeran", url: "https://www.youtube.com/watch?v=2Vv-BfVoq4g", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&q=80" },
-  { id: '4', title: "Quinceañera", artist: "Thalia", url: "https://www.youtube.com/watch?v=mD2bXn2u92g", cover: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=100&q=80" },
-  { id: '5', title: "No Crezcas Más", artist: "Tercer Cielo", url: "https://www.youtube.com/watch?v=6P3gXvWJ9gQ", cover: "https://images.unsplash.com/photo-1493225457124-a1a2a5f5f9af?w=100&q=80" },
-];
-
-const getYouTubeId = (url: string) => {
-  if (!url) return null;
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
-  return match ? match[1] : null;
-};
-
-type TabId = 'visual' | 'design' | 'envelope' | 'music' | 'rsvp' | 'settings';
+type TabId = 'dashboard' | 'media' | 'rsvp' | 'messages';
 
 export default function AdvancedAdminEditor() {
   // --- ESTADOS DE AUTENTICACIÓN ---
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
   
   // --- ESTADOS DE DATOS ---
   const [invitationId, setInvitationId] = useState('');
-  const [data, setData] = useState<InvitationData>(DEFAULT_INVITATION_DATA);
-  const [envelopeBackUrl, setEnvelopeBackUrl] = useState('');
-  const [envelopeFlapUrl, setEnvelopeFlapUrl] = useState('');
-  const [rsvpResponses, setRsvpResponses] = useState<RSVPResponse[]>([]);
+  const [invitation, setInvitation] = useState<InvitationData | null>(null);
+  const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
+  const [photos, setPhotos] = useState<GuestPhoto[]>([]);
+  const [pendingPhotos, setPendingPhotos] = useState<GuestPhoto[]>([]);
+  const [messages, setMessages] = useState<GuestMessage[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<GuestMessage[]>([]);
   
   // --- ESTADOS DE INTERFAZ ---
-  const [activeTab, setActiveTab] = useState<TabId>('design');
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [dataLoading, setDataLoading] = useState(false);
-  const [musicSearchTerm, setMusicSearchTerm] = useState('');
-  const [previewSongUrl, setPreviewSongUrl] = useState<string | null>(null);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
 
   // Verificación de sesión al cargar
   useEffect(() => {
@@ -84,7 +61,20 @@ export default function AdvancedAdminEditor() {
       const session = await getAdminSession();
       if (session) {
         setIsAuthenticated(true);
-        const id = localStorage.getItem('invitationId');
+        let id = localStorage.getItem('invitationId');
+        
+        // 🔥 NUEVO: AUTO-RECUPERACIÓN DE INVITATION ID
+        // Si el admin entra directo y no hay ID en memoria, traemos el primer evento disponible
+        if (!id) {
+          const { data, error } = await supabase.from('invitations').select('id').limit(1).maybeSingle();
+          if (data?.id) {
+            id = data.id;
+            localStorage.setItem('invitationId', id);
+          } else {
+            console.warn("No hay invitaciones creadas en la base de datos.");
+          }
+        }
+
         if (id) {
           setInvitationId(id);
           await loadAllData(id);
@@ -95,305 +85,274 @@ export default function AdvancedAdminEditor() {
     init();
   }, []);
 
-  // CARGA COMPLETA DE DATOS CON FALLBACKS DE SEGURIDAD
   const loadAllData = async (id: string) => {
     setDataLoading(true);
     try {
-      const [inv, rsvp] = await Promise.all([
+      const [inv, rsvpRes, appPhotos, penPhotos, appMsg, penMsg] = await Promise.all([
         getInvitation(id),
         getRSVPResponses(id),
+        getApprovedGuestPhotos(id),
+        getPendingGuestPhotos(id),
+        getApprovedGuestMessages(id),
+        getPendingGuestMessages(id)
       ]);
       
-      if (inv) {
-        setData({ 
-          ...DEFAULT_INVITATION_DATA, 
-          ...inv,
-          // CORRECCIÓN CRÍTICA: Si la DB no tiene imágenes, forzamos las de DEFAULT_INVITATION_DATA (locales)
-          heroImage: inv.heroImage || DEFAULT_INVITATION_DATA.heroImage,
-          galleryImages: (inv.galleryImages && inv.galleryImages.length > 0) 
-            ? inv.galleryImages 
-            : DEFAULT_INVITATION_DATA.galleryImages
-        });
-        setEnvelopeBackUrl((inv as any).envelope_back_image || '/envelope-back.jpg');
-        setEnvelopeFlapUrl((inv as any).envelope_flap_image || '/envelope-flap.jpg');
-      }
-      setRsvpResponses(rsvp || []);
+      setInvitation(inv);
+      setRsvps(rsvpRes || []);
+      setPhotos(appPhotos || []);
+      setPendingPhotos(penPhotos || []);
+      setMessages(appMsg || []);
+      setPendingMessages(penMsg || []);
     } catch (error) {
-      console.error('Error sincronizando datos:', error);
+      console.error('Error sincronizando panel:', error);
     } finally {
       setDataLoading(false);
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    const userId = await loginAdmin(email, password);
-    if (userId) {
-      setIsAuthenticated(true);
-      const id = localStorage.getItem('invitationId');
-      if (id) {
-        setInvitationId(id);
-        await loadAllData(id);
-      }
-    } else {
-      setLoginError('Credenciales inválidas.');
-    }
+  const handleApproveMedia = async (id: string) => {
+    const success = await approveGuestPhoto(id);
+    if (success && invitationId) loadAllData(invitationId);
   };
 
-  const handleDataChange = (field: keyof InvitationData, value: any) => {
-    setData(prev => ({ ...prev, [field]: value }));
+  const handleApproveMessage = async (id: string) => {
+    const success = await approveGuestMessage(id);
+    if (success && invitationId) loadAllData(invitationId);
   };
 
-  const handlePublish = async () => {
-    if (!invitationId) {
-      alert('Primero crea o carga una invitación en la pestaña Ajustes.');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const successData = await updateInvitation(invitationId, data);
-      const successEnvelope = await updateEnvelopeImages(invitationId, envelopeBackUrl, envelopeFlapUrl);
-      if (successData && successEnvelope) alert('¡Publicado con éxito!');
-    } catch (error) {
-      console.error(error);
-      alert('Error al publicar.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCreateNewInvitation = async () => {
-    setDataLoading(true);
-    try {
-      const newId = await createInvitation(DEFAULT_INVITATION_DATA);
-      if (newId) {
-        setInvitationId(newId);
-        localStorage.setItem('invitationId', newId);
-        await loadAllData(newId);
-        alert(`Nueva invitación ID: ${newId}`);
-      }
-    } finally {
-      setDataLoading(false);
-    }
-  };
-
-  if (isLoading) return <div className="h-screen flex items-center justify-center bg-zinc-900 text-white font-serif tracking-widest">CARGANDO SISTEMA...</div>;
+  if (isLoading) return <div className="h-screen flex items-center justify-center bg-[#121912] text-[#b8860b] font-serif tracking-[0.3em] animate-pulse">AUTENTICANDO SISTEMA...</div>;
 
   if (!isAuthenticated) return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-100 p-4">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm border">
-        <h2 className="text-2xl font-bold mb-6 text-center text-zinc-800">Admin Access</h2>
-        {loginError && <p className="text-red-500 text-xs mb-4">{loginError}</p>}
-        <Input className="mb-4" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
-        <Input className="mb-6" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
-        <Button type="submit" className="w-full bg-zinc-900 text-white hover:bg-zinc-800">ENTRAR AL EDITOR</Button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-[#121912] p-4">
+      <div className="text-center space-y-6">
+        <h2 className="text-[#fcfcf0] text-2xl font-serif">Acceso Restringido</h2>
+        <p className="text-[#a0b0a0] text-sm italic">Por favor, inicia sesión desde la página de acceso principal.</p>
+        <Button onClick={() => window.location.href = '/login'} className="bg-[#b8860b] text-[#121912] font-bold">VOLVER AL LOGIN</Button>
+      </div>
     </div>
   );
 
   return (
-    <div className="flex h-screen w-full bg-zinc-200 overflow-hidden font-sans">
+    <div className="flex h-screen w-full bg-[#0a0f0a] overflow-hidden font-sans text-[#fcfcf0]">
       
-      {previewSongUrl && (
-        <iframe className="hidden" src={`https://www.youtube.com/embed/${getYouTubeId(previewSongUrl)}?autoplay=1`} allow="autoplay" />
-      )}
-
-      <AnimatePresence>
-        {!isPreviewMode && (
-          <motion.aside 
-            initial={{ x: -350, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -350, opacity: 0 }}
-            className="w-[350px] bg-white shadow-2xl flex flex-col z-20 border-r border-zinc-200 shrink-0"
-          >
-            <div className="p-4 border-b bg-zinc-50 flex justify-between items-center">
-              <span className="font-bold text-[10px] tracking-[0.2em] text-zinc-400 uppercase">Bosque Encantado v2.0</span>
-              <Button variant="ghost" size="icon" onClick={() => { clearAdminSession(); setIsAuthenticated(false); }}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* TABS DE NAVEGACIÓN LATERAL */}
-            <div className="flex flex-wrap border-b">
-              {[
-                { id: 'design', icon: <Palette className="h-4 w-4" /> },
-                { id: 'visual', icon: <MousePointer2 className="h-4 w-4" /> },
-                { id: 'envelope', icon: <Mail className="h-4 w-4" /> },
-                { id: 'music', icon: <Music className="h-4 w-4" /> },
-                { id: 'rsvp', icon: <Users className="h-4 w-4" /> },
-                { id: 'settings', icon: <Settings className="h-4 w-4" /> },
-              ].map(tab => (
-                <button 
-                  key={tab.id} onClick={() => setActiveTab(tab.id as TabId)}
-                  className={`p-3 flex justify-center flex-1 border-b-2 transition-colors ${activeTab === tab.id ? 'border-green-600 text-green-600 bg-green-50' : 'border-transparent text-zinc-400'}`}
-                >
-                  {tab.icon}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex-1 overflow-y-auto relative p-5 space-y-6 custom-scrollbar">
-              {dataLoading && <div className="absolute inset-0 bg-white/70 z-50 flex items-center justify-center font-bold text-green-700 animate-pulse">SINCRONIZANDO...</div>}
-
-              {/* CONTENIDO DE PESTAÑAS */}
-              {activeTab === 'design' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-left-4">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase">Estilo de Interfaz</label>
-                    <div className="flex gap-2 p-1 bg-zinc-100 rounded-lg">
-                      <button onClick={() => handleDataChange('themeMode', 'light')} className={`flex-1 py-2 text-[10px] font-bold rounded-md ${data.themeMode !== 'dark' ? 'bg-white shadow-sm' : 'text-zinc-500'}`}>CLARO</button>
-                      <button onClick={() => handleDataChange('themeMode', 'dark')} className={`flex-1 py-2 text-[10px] font-bold rounded-md ${data.themeMode === 'dark' ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-500'}`}>OSCURO</button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border">
-                      <span className="text-[10px] font-bold text-zinc-600 uppercase">Color de Texto</span>
-                      <input type="color" value={data.textColor || '#e8efe8'} onChange={(e) => handleDataChange('textColor', e.target.value)} className="w-8 h-8 rounded-full cursor-pointer border-2 border-white shadow-sm" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-zinc-50 rounded-xl border">
-                      <span className="text-[10px] font-bold text-zinc-600 uppercase">Color de Acento</span>
-                      <input type="color" value={data.accentColor || '#6b8e23'} onChange={(e) => handleDataChange('accentColor', e.target.value)} className="w-8 h-8 rounded-full cursor-pointer border-2 border-white shadow-sm" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase">Fondos Maestros</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-zinc-50 border rounded-xl flex flex-col items-center gap-2">
-                        <input type="color" value={data.backgroundColor || '#121f12'} onChange={(e) => handleDataChange('backgroundColor', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                        <p className="text-[9px] font-bold text-zinc-500 uppercase">Fondo Web</p>
-                      </div>
-                      <div className="p-3 bg-zinc-50 border rounded-xl flex flex-col items-center gap-2">
-                        <input type="color" value={data.cardColor || '#1d331d'} onChange={(e) => handleDataChange('cardColor', e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                        <p className="text-[9px] font-bold text-zinc-500 uppercase">Tarjetas</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'visual' && (
-                <div className="space-y-5 animate-in fade-in slide-in-from-left-4">
-                  <div className="flex items-center gap-2 text-zinc-600 text-[10px] font-bold uppercase"><Calendar className="w-4 h-4" /> Fecha y Hora</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input type="date" value={data.eventDate || ''} onChange={e => handleDataChange('eventDate', e.target.value)} className="text-xs" />
-                    <Input type="time" value={data.eventTime || ''} onChange={e => handleDataChange('eventTime', e.target.value)} className="text-xs" />
-                  </div>
-                  <hr />
-                  <div className="flex items-center gap-2 text-zinc-600 text-[10px] font-bold uppercase"><MapPin className="w-4 h-4" /> Ubicación GPS</div>
-                  <Input placeholder="Nombre del Lugar" value={data.venue || ''} onChange={e => handleDataChange('venue', e.target.value)} />
-                  <Input placeholder="Dirección" value={data.venueAddress || ''} onChange={e => handleDataChange('venueAddress', e.target.value)} />
-                  <Input placeholder="Iframe de Google Maps (URL)" value={data.mapIframeSrc || ''} onChange={e => handleDataChange('mapIframeSrc', e.target.value)} />
-                </div>
-              )}
-
-              {activeTab === 'envelope' && (
-                <div className="space-y-5 animate-in fade-in slide-in-from-left-4">
-                  <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 text-[10px] text-amber-900 leading-relaxed">
-                    <p>Configura las texturas del sobre virtual. Puedes usar rutas locales como <strong>/envelope-back.jpg</strong>.</p>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Imagen Exterior</label>
-                    <Input value={envelopeBackUrl} onChange={e => setEnvelopeBackUrl(e.target.value)} className="text-xs" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Imagen Solapa (Flap)</label>
-                    <Input value={envelopeFlapUrl} onChange={e => setEnvelopeFlapUrl(e.target.value)} className="text-xs" />
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'music' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
-                    <Input placeholder="Buscar canción..." className="pl-9 bg-zinc-100 border-0" value={musicSearchTerm} onChange={e => setMusicSearchTerm(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    {RECOMMENDED_SONGS.filter(s => s.title.toLowerCase().includes(musicSearchTerm.toLowerCase())).map(song => (
-                      <div key={song.id} onClick={() => handleDataChange('youtubeMusicLink', song.url)} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border ${data.youtubeMusicLink === song.url ? 'border-green-400 bg-green-50' : 'border-transparent hover:bg-zinc-100'}`}>
-                        <div className="relative w-10 h-10 rounded-lg overflow-hidden group">
-                          <img src={song.cover} className="w-full h-full object-cover" />
-                          <div onClick={e => { e.stopPropagation(); setPreviewSongUrl(previewSongUrl === song.url ? null : song.url); }} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            {previewSongUrl === song.url ? <PauseCircle className="text-white w-5 h-5" /> : <PlayCircle className="text-white w-5 h-5" />}
-                          </div>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                          <p className="text-[11px] font-bold truncate">{song.title}</p>
-                          <p className="text-[9px] text-zinc-500 truncate">{song.artist}</p>
-                        </div>
-                        {data.youtubeMusicLink === song.url && <CheckCircle2 className="w-4 h-4 text-green-600" />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'rsvp' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <h3 className="font-bold text-sm text-zinc-800 uppercase tracking-tighter">Confirmaciones ({rsvpResponses.length})</h3>
-                  {rsvpResponses.map(rsvp => (
-                    <div key={rsvp.id} className="p-3 bg-zinc-50 border rounded-xl text-xs space-y-1">
-                      <div className="flex justify-between font-bold">
-                        <span>{rsvp.guestName}</span>
-                        <span className={rsvp.attending ? 'text-green-600' : 'text-red-600'}>{rsvp.attending ? 'SÍ' : 'NO'}</span>
-                      </div>
-                      {rsvp.additionalNotes && <p className="text-zinc-500 italic">"{rsvp.additionalNotes}"</p>}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeTab === 'settings' && (
-                <div className="space-y-6 text-center animate-in fade-in">
-                  <Button onClick={handleCreateNewInvitation} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 shadow-lg shadow-green-100">NUEVA INVITACIÓN (TWINS)</Button>
-                  <div className="p-4 bg-zinc-50 border rounded-xl">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-2">ID Activo</label>
-                    <Input value={invitationId} onChange={e => setInvitationId(e.target.value)} className="text-xs font-mono text-center" />
-                    <Button onClick={() => { if(invitationId){ localStorage.setItem('invitationId', invitationId); loadAllData(invitationId); } }} className="w-full mt-3 h-9 bg-zinc-800 text-white text-[10px]">RECARGAR ESTE ID</Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="p-4 border-t bg-zinc-50">
-              <Button onClick={handlePublish} disabled={isSaving || dataLoading} className="w-full bg-green-700 hover:bg-green-800 text-white font-black h-12 shadow-xl shadow-green-200">
-                {isSaving ? "GUARDANDO..." : "PUBLICAR CAMBIOS"}
-              </Button>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      <main className="flex-1 relative flex flex-col min-w-0 bg-zinc-300">
-        {/* BARRA SUPERIOR DE PREVISUALIZACIÓN */}
-        <div className="h-12 bg-zinc-800 flex items-center justify-between px-4 z-10 shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-            </div>
-            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">invitation_editor_v2: {invitationId || 'offline'}</span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setIsPreviewMode(!isPreviewMode)} className="text-xs text-zinc-300 hover:text-white h-8">
-            {isPreviewMode ? <><EyeOff className="mr-2 h-4 w-4" /> Salir del Render</> : <><Eye className="mr-2 h-4 w-4" /> Maximizar Vista</>}
-          </Button>
+      {/* SIDEBAR DE NAVEGACIÓN */}
+      <aside className="w-20 md:w-64 bg-[#121912] border-r border-white/5 flex flex-col z-20 shrink-0">
+        <div className="p-6 border-b border-white/5 flex flex-col gap-1">
+          <span className="font-serif text-[#b8860b] text-xl hidden md:block">Gestión Elite</span>
+          <span className="text-[9px] tracking-[0.2em] text-[#a0b0a0] uppercase">v2.5 Control Panel</span>
         </div>
 
-        {/* ÁREA DE RENDERIZADO DEL TELÉFONO */}
-        <div className="flex-1 overflow-y-auto p-0 md:p-8 custom-scrollbar">
-          <div className={`mx-auto transition-all duration-700 ease-in-out shadow-2xl bg-white ${isPreviewMode ? 'w-full max-w-none rounded-none' : 'w-full max-w-[420px] rounded-[3.5rem] ring-8 ring-zinc-900/10 overflow-hidden'}`}>
-            <InvitationSPA 
-              initialData={data} 
-              invitationId={invitationId} 
-              isEditing={true} 
-              onDataChange={handleDataChange}
-            />
+        <nav className="flex-1 p-4 space-y-2">
+          {[
+            { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-5 h-5" /> },
+            { id: 'media', label: 'Álbum y Videos', icon: <ImageIcon className="w-5 h-5" /> },
+            { id: 'rsvp', label: 'Asistencias', icon: <Users className="w-5 h-5" /> },
+            { id: 'messages', label: 'Mensajes', icon: <MessageSquare className="w-5 h-5" /> },
+          ].map(tab => (
+            <button 
+              key={tab.id} onClick={() => setActiveTab(tab.id as TabId)}
+              className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all ${activeTab === tab.id ? 'bg-[#b8860b] text-[#121912] shadow-lg shadow-[#b8860b]/10' : 'text-[#a0b0a0] hover:bg-white/5'}`}
+            >
+              {tab.icon}
+              <span className="hidden md:block font-medium text-sm">{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/5">
+          <Button variant="ghost" className="w-full justify-start gap-4 text-red-400 hover:bg-red-400/10" onClick={() => { clearAdminSession(); window.location.reload(); }}>
+            <LogOut className="w-5 h-5" />
+            <span className="hidden md:block text-sm">Cerrar Sesión</span>
+          </Button>
+        </div>
+      </aside>
+
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar relative">
+        {dataLoading && <div className="sticky top-0 z-50 h-1 bg-[#b8860b] animate-shimmer" />}
+
+        <header className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-serif text-[#b8860b]">
+              {activeTab === 'dashboard' && 'Resumen General'}
+              {activeTab === 'media' && 'Galería Colaborativa'}
+              {activeTab === 'rsvp' && 'Control de Invitados'}
+              {activeTab === 'messages' && 'Muro de Dedicatorias'}
+            </h1>
+            <p className="text-sm text-[#a0b0a0] mt-1">ID Evento: <span className="font-mono text-xs text-white">{invitationId || 'Buscando...'}</span></p>
           </div>
+          <Button onClick={() => loadAllData(invitationId)} className="bg-white/5 hover:bg-white/10 border border-white/10 text-xs tracking-widest">SINCRONIZAR DATOS</Button>
+        </header>
+
+        <div className="px-8 pb-12">
+          <AnimatePresence mode="wait">
+            
+            {/* 📊 TAB: DASHBOARD */}
+            {activeTab === 'dashboard' && (
+              <motion.div key="dash" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard title="Total Confirmados" value={rsvps.filter(r => r.attending).length} subValue={`De ${rsvps.length} totales`} icon={<CheckCircle2 className="text-green-500" />} />
+                <StatsCard title="Media Pendiente" value={pendingPhotos.length} subValue="Nuevas fotos/videos" icon={<ImageIcon className="text-amber-500" />} />
+                <StatsCard title="Mensajes Nuevos" value={pendingMessages.length} subValue="Por revisar" icon={<MessageSquare className="text-blue-500" />} />
+                <StatsCard title="Asistencia %" value={`${Math.round((rsvps.filter(r => r.attending).length / (rsvps.length || 1)) * 100)}%`} subValue="Ratio de éxito" icon={<BarChart3 className="text-purple-500" />} />
+              </motion.div>
+            )}
+
+            {/* 📸 TAB: MEDIA (Carrusel y Moderación) */}
+            {activeTab === 'media' && (
+              <motion.div key="media" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                
+                {/* 🔥 NUEVO: Aviso si no hay nada en absoluto */}
+                {pendingPhotos.length === 0 && photos.length === 0 && (
+                  <div className="text-center py-24 border-2 border-dashed border-white/10 rounded-3xl bg-white/5">
+                    <ImageIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                    <p className="text-[#a0b0a0] font-light">Aún no hay fotos ni videos subidos por los invitados.</p>
+                  </div>
+                )}
+
+                {pendingPhotos.length > 0 && (
+                  <section className="bg-amber-900/10 border border-amber-500/20 p-6 rounded-3xl">
+                    <h3 className="text-amber-500 font-bold text-sm uppercase tracking-widest mb-6 flex items-center gap-2"><Clock className="w-4 h-4" /> Moderación Pendiente</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {pendingPhotos.map(photo => (
+                        <div key={photo.id} className="relative group aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black/50">
+                          <img src={photo.photoUrl} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button onClick={() => handleApproveMedia(photo.id)} className="p-2 bg-green-500 rounded-full text-black hover:scale-110 transition-transform shadow-lg"><CheckCircle2 className="w-5 h-5" /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {photos.length > 0 && (
+                  <section>
+                    <h3 className="text-[#a0b0a0] font-bold text-sm uppercase tracking-widest mb-6">Galería Pública (Aprobadas)</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {photos.map((photo, index) => (
+                        <div 
+                          key={photo.id} 
+                          onClick={() => setSelectedMediaIndex(index)}
+                          className="cursor-pointer aspect-square rounded-2xl overflow-hidden border border-white/5 hover:border-[#b8860b]/50 transition-all shadow-xl bg-black/50"
+                        >
+                          <img src={photo.photoUrl} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </motion.div>
+            )}
+
+            {/* 👥 TAB: RSVPs */}
+            {activeTab === 'rsvp' && (
+              <motion.div key="rsvp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#121912] rounded-[2rem] border border-white/5 overflow-hidden">
+                {rsvps.length === 0 ? (
+                  <p className="p-12 text-center text-white/50">No hay confirmaciones de asistencia todavía.</p>
+                ) : (
+                  <table className="w-full text-left">
+                    <thead className="bg-white/5 text-[10px] uppercase tracking-widest text-[#a0b0a0]">
+                      <tr>
+                        <th className="p-6">Invitado</th>
+                        <th className="p-6">Estado</th>
+                        <th className="p-6">Cupos</th>
+                        <th className="p-6">Notas / Dieta</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {rsvps.map(rsvp => (
+                        <tr key={rsvp.id} className="hover:bg-white/5 transition-colors">
+                          <td className="p-6 font-medium">{rsvp.guestName}</td>
+                          <td className="p-6">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${rsvp.attending ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                              {rsvp.attending ? 'ASISTIRÁ' : 'NO ASISTIRÁ'}
+                            </span>
+                          </td>
+                          <td className="p-6 opacity-60">{rsvp.numberOfGuests} pax</td>
+                          <td className="p-6 text-sm italic opacity-50 max-w-xs truncate">{rsvp.additionalNotes || 'Sin observaciones'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </motion.div>
+            )}
+
+            {/* 💬 TAB: MENSAJES */}
+            {activeTab === 'messages' && (
+              <motion.div key="msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {pendingMessages.length === 0 && messages.length === 0 && (
+                  <p className="col-span-full py-12 text-center text-white/50 border-2 border-dashed border-white/5 rounded-3xl">No hay mensajes en el muro.</p>
+                )}
+                
+                {pendingMessages.map(msg => (
+                  <div key={msg.id} className="bg-[#1a241a] p-6 rounded-3xl border-l-4 border-amber-500 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-[#b8860b]">{msg.guestName}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleApproveMessage(msg.id)} className="text-green-400 hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></button>
+                      </div>
+                    </div>
+                    <p className="text-sm italic text-[#fcfcf0]/80">"{msg.message}"</p>
+                    <p className="text-[10px] uppercase tracking-widest opacity-40">Pendiente de aprobación</p>
+                  </div>
+                ))}
+                {messages.map(msg => (
+                  <div key={msg.id} className="bg-[#121912] p-6 rounded-3xl border border-white/5 space-y-4">
+                    <span className="font-bold text-[#a0b0a0] block">{msg.guestName}</span>
+                    <p className="text-sm italic opacity-70">"{msg.message}"</p>
+                    <div className="pt-4 flex items-center gap-2 text-[10px] text-green-500 uppercase font-bold">
+                      <CheckCircle2 className="w-3 h-3" /> Visible en el muro
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+          </AnimatePresence>
         </div>
       </main>
 
+      {/* 🖼️ MODAL CARRUSEL DE MEDIA */}
+      <AnimatePresence>
+        {selectedMediaIndex !== null && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
+            <button onClick={() => setSelectedMediaIndex(null)} className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"><XCircle className="w-10 h-10" /></button>
+            
+            <button 
+              onClick={() => setSelectedMediaIndex(prev => prev! > 0 ? prev! - 1 : photos.length - 1)}
+              className="absolute left-4 p-4 text-white/20 hover:text-white transition-all"
+            ><ChevronLeft className="w-12 h-12" /></button>
+
+            <motion.div key={selectedMediaIndex} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-4xl max-h-[80vh] flex flex-col items-center">
+              <img src={photos[selectedMediaIndex].photoUrl} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+              <div className="mt-6 text-center">
+                <p className="text-xl font-serif text-[#b8860b]">Subido por {photos[selectedMediaIndex].guestName}</p>
+                <p className="text-xs opacity-40 uppercase tracking-widest mt-2">{new Date(photos[selectedMediaIndex].createdAt).toLocaleDateString()}</p>
+              </div>
+            </motion.div>
+
+            <button 
+              onClick={() => setSelectedMediaIndex(prev => prev! < photos.length - 1 ? prev! + 1 : 0)}
+              className="absolute right-4 p-4 text-white/20 hover:text-white transition-all"
+            ><ChevronRight className="w-12 h-12" /></button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}
+
+// Componentes Auxiliares
+function StatsCard({ title, value, subValue, icon }: any) {
+  return (
+    <div className="bg-[#121912] p-8 rounded-[2.5rem] border border-white/5 shadow-xl space-y-4">
+      <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">{icon}</div>
+      <div>
+        <h4 className="text-3xl font-serif text-[#fcfcf0]">{value}</h4>
+        <p className="text-xs font-bold text-[#b8860b] uppercase tracking-widest mt-1">{title}</p>
+        <p className="text-[10px] text-[#a0b0a0] mt-2 italic">{subValue}</p>
+      </div>
     </div>
   );
 }
