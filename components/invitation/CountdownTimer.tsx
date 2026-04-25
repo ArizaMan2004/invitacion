@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 
 interface CountdownTimerProps {
-  eventDate: string;
-  eventTime: string;
+  eventDate?: string; // Cambiado a opcional para validación
+  eventTime?: string; // Cambiado a opcional para validación
+  targetDate?: string; // Soporte para el nombre de prop usado en el SPA
+  accentColor?: string;
 }
 
 interface TimeRemaining {
@@ -14,11 +16,10 @@ interface TimeRemaining {
   seconds: number;
 }
 
-// Convertimos los recuadros en "cristal" redondeado
 const TimeUnit = ({ value, label }: { value: number; label: string }) => (
   <div className="flex flex-col items-center">
-    <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl md:rounded-[2rem] border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.12)] mb-3 md:mb-5 transition-transform hover:scale-105">
-      <span className="text-3xl md:text-5xl font-light text-[#fcfcf0] drop-shadow-md">
+    <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl md:rounded-[2rem] border border-white/10 shadow-xl mb-3 transition-transform hover:scale-105">
+      <span className="text-2xl md:text-5xl font-light text-[#fcfcf0]">
         {String(value).padStart(2, '0')}
       </span>
     </div>
@@ -28,22 +29,31 @@ const TimeUnit = ({ value, label }: { value: number; label: string }) => (
   </div>
 );
 
-export function CountdownTimer({ eventDate, eventTime }: CountdownTimerProps) {
+export function CountdownTimer({ eventDate, eventTime, targetDate, accentColor = '#b8860b' }: CountdownTimerProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
-  
-  const [isMounted, setIsMounted] = useState(false);
+
+  // Usamos targetDate si existe, si no eventDate
+  const dateToUse = targetDate || eventDate;
+  const timeToUse = eventTime || "19:00"; // Hora por defecto si no viene nada
 
   useEffect(() => {
     setIsMounted(true);
     
     const calculateTimeRemaining = () => {
-      const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+      if (!dateToUse) return;
+
+      // Formato ISO robusto: YYYY-MM-DDTHH:mm:ss
+      // Aseguramos que la fecha tenga el formato correcto para el constructor de Date
+      const dateString = dateToUse.includes('T') ? dateToUse : `${dateToUse}T${timeToUse}`;
+      const eventDateTime = new Date(dateString);
       const now = new Date();
+      
       const diff = eventDateTime.getTime() - now.getTime();
 
       if (diff > 0) {
@@ -53,6 +63,9 @@ export function CountdownTimer({ eventDate, eventTime }: CountdownTimerProps) {
           minutes: Math.floor((diff / 1000 / 60) % 60),
           seconds: Math.floor((diff / 1000) % 60),
         });
+      } else {
+        // Si la fecha ya pasó
+        setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
     };
 
@@ -60,22 +73,18 @@ export function CountdownTimer({ eventDate, eventTime }: CountdownTimerProps) {
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [eventDate, eventTime]);
+  }, [dateToUse, timeToUse]);
 
-  if (!isMounted) return null;
+  if (!isMounted || !dateToUse) return null;
 
   return (
-    // Eliminamos el bg-white para que se vea el fondo del contenedor principal
-    <section className="py-10 md:py-14 w-full">
+    <section className="py-10 w-full">
       <div className="max-w-3xl mx-auto flex flex-col items-center">
-        <h2 className="text-2xl md:text-3xl font-serif text-center mb-10 tracking-[0.2em] text-[#b8860b] uppercase">
-          Faltan
-        </h2>
-        <div className="flex justify-center gap-4 md:gap-8">
+        <div className="flex gap-4 md:gap-8 justify-center items-center">
           <TimeUnit value={timeRemaining.days} label="Días" />
-          <TimeUnit value={timeRemaining.hours} label="Hrs" />
-          <TimeUnit value={timeRemaining.minutes} label="Min" />
-          <TimeUnit value={timeRemaining.seconds} label="Seg" />
+          <TimeUnit value={timeRemaining.hours} label="Horas" />
+          <TimeUnit value={timeRemaining.minutes} label="Min." />
+          <TimeUnit value={timeRemaining.seconds} label="Seg." />
         </div>
       </div>
     </section>
