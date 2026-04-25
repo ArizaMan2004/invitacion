@@ -141,16 +141,47 @@ export function InvitationSPA({
           <p className="mt-8 text-xs tracking-[0.3em] uppercase opacity-40">Mis Padres: {initialData.parentNames}</p>
         </motion.section>
 
-        {/* 4. FECHA Y UBICACIÓN */}
+        {/* 4. FECHA Y UBICACIÓN + MAPA */}
         <motion.section {...sectionAnim} className="py-24 px-4">
-          <EventDateTime 
-            date={initialData.eventDate}
-            time={initialData.eventTime}
-            venue={initialData.venue}
-            address={initialData.venueAddress}
-            mapIframe={initialData.mapIframeSrc}
-            accentColor={theme.accent}
-          />
+          <div className="max-w-5xl mx-auto">
+            <EventDateTime 
+              date={initialData.eventDate}
+              time={initialData.eventTime}
+              venue={initialData.venue}
+              address={initialData.venueAddress}
+              mapIframe={initialData.mapIframeSrc}
+              accentColor={theme.accent}
+            />
+
+            {/* ENCABEZADO DE UBICACIÓN */}
+            <div className="mt-20 text-center mb-12">
+              <h2 className="text-4xl font-serif mb-2">Ubicación</h2>
+              <p className="text-[10px] tracking-[0.3em] uppercase opacity-40" style={{ color: theme.accent }}>
+                Cómo llegar a la celebración
+              </p>
+            </div>
+
+            {/* CONTENEDOR DEL MAPA ESTILO IOS */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="p-2 md:p-3 rounded-[2.5rem] bg-white/[0.02] border border-white/5 backdrop-blur-sm max-w-4xl mx-auto shadow-2xl"
+            >
+              <div className="rounded-[2rem] overflow-hidden relative w-full h-[350px] md:h-[450px]">
+                <iframe 
+                  src={initialData.mapIframeSrc || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1777133800110!5m2!1ses!2sve"} 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="absolute inset-0 w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
+                />
+              </div>
+            </motion.div>
+          </div>
         </motion.section>
 
         {/* 5. CÓDIGO DE VESTIMENTA */}
