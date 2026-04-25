@@ -2,6 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import localFont from 'next/font/local';
+
+// Configuración de la fuente local corregida
+// Subimos solo un nivel (../) desde la carpeta "components" para llegar a "public"
+const customHeroFont = localFont({
+  src: '../public/fonts/Elegante.ttf', 
+  variable: '--font-hero',
+  display: 'swap',
+});
 
 // Componentes de la Invitación
 import { CountdownTimer } from './invitation/CountdownTimer';
@@ -50,7 +59,7 @@ export function InvitationSPA({
 
   return (
     <div 
-      className="min-h-screen w-full overflow-x-hidden selection:bg-[#b8860b] selection:text-black"
+      className={`min-h-screen w-full overflow-x-hidden selection:bg-[#b8860b] selection:text-black ${customHeroFont.variable}`}
       style={{ backgroundColor: theme.background, color: theme.text }}
     >
       {/* CAPA DE PARTÍCULAS MÁGICAS */}
@@ -88,7 +97,8 @@ export function InvitationSPA({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="text-6xl md:text-9xl font-serif mb-8"
+              className="text-6xl md:text-9xl mb-8"
+              style={{ fontFamily: 'var(--font-hero)' }}
             >
               {initialData.quinceaneraName}
             </motion.h1>
@@ -143,7 +153,7 @@ export function InvitationSPA({
           />
         </motion.section>
 
-        {/* 5. CÓDIGO DE VESTIMENTA (NUEVA SECCIÓN REEMPLAZADA) */}
+        {/* 5. CÓDIGO DE VESTIMENTA */}
         <motion.section {...sectionAnim} className="py-32 px-6 bg-white/[0.01]">
           <div className="max-w-5xl mx-auto text-center">
             <div className="mb-16">

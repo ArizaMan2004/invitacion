@@ -7,7 +7,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Invitación Quinceañera',
+  title: 'Invitacion para los 15 años de Jesus y Jessenia',
   description: 'Invitación elegante a la celebración de 15 años',
   generator: 'v0.app',
   icons: {
