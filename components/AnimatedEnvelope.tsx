@@ -4,155 +4,172 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
 interface AnimatedEnvelopeProps {
-  guestName?: string;
+  eventTime?: string;
+  welcomeMessage?: string;
   onOpen: () => void;
 }
 
 export function AnimatedEnvelope({
-  guestName = 'Estimado Invitado',
+  eventTime = "19:00 HRS",
+  welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
   onOpen,
 }: AnimatedEnvelopeProps) {
-  const [isOpening, setIsOpening] = useState(false);
+  const [step, setStep] = useState<'idle' | 'opening' | 'paperUp' | 'fading'>('idle');
 
   const handleClick = () => {
-    setIsOpening(true);
-    // Esperar a que termine la animación de apertura
+    // Evita doble clic
+    if (step !== 'idle') return;
+
+    setStep('opening');
+    
+    setTimeout(() => {
+      setStep('paperUp');
+    }, 1500);
+
+    setTimeout(() => {
+      setStep('fading');
+    }, 4800);
+
     setTimeout(() => {
       onOpen();
-    }, 1500);
+    }, 6200);
   };
 
+  const fluidEasing = [0.33, 1, 0.68, 1];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-700 flex items-center justify-center p-4">
-      <div className="flex flex-col items-center gap-8">
-        {/* Animated Envelope - Blue and Gold Style */}
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 1.2 } }}
+      className="min-h-screen bg-green-950 flex items-center justify-center p-4 overflow-hidden"
+    >
+      <div className="flex flex-col items-center gap-14 w-full max-w-md relative">
+        
+        {/* CONTENEDOR PRINCIPAL DEL SOBRE (AHORA INTERACTIVO) */}
         <motion.div
-          initial={{ scale: 0.5, opacity: 0, rotateY: -90 }}
-          animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="w-full max-w-md"
-          style={{ perspective: '1000px' }}
+          onClick={handleClick}
+          animate={
+            step === 'fading' 
+              ? { scale: 3.5, opacity: 0, filter: "blur(25px)", y: -180 } 
+              : { scale: 1, opacity: 1, y: 0 }
+          }
+          // Pequeño zoom al pasar el ratón para indicar que es clickeable
+          whileHover={step === 'idle' ? { scale: 1.02 } : {}}
+          transition={{ duration: 1.8, ease: fluidEasing }}
+          className={`relative w-full ${step === 'idle' ? 'cursor-pointer' : ''}`}
+          style={{ perspective: '1800px' }}
         >
           <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
-            {/* Envelope Back */}
-            <div className="absolute inset-0 bg-blue-400 rounded-md shadow-2xl border border-blue-300" />
+            
+            <div className="absolute inset-0 bg-white rounded-lg shadow-inner border-t border-amber-300/40 z-10" />
 
-            {/* Envelope Body - White part */}
+            {/* LA TARJETA DE INVITACIÓN */}
             <motion.div
-              className="absolute inset-0 bg-white rounded-md shadow-2xl overflow-hidden"
-              style={{ perspective: '1200px' }}
+              initial={{ y: 0, opacity: 0 }}
+              animate={
+                step === 'paperUp' || step === 'fading'
+                  ? { y: -185, opacity: 1, scale: [1, 1.02, 1] } 
+                  : { y: 0, opacity: 0 }
+              }
+              transition={{ duration: 1.4, ease: fluidEasing }}
+              className="absolute inset-x-5 top-5 bg-white rounded shadow-[0_15px_60px_-15px_rgba(0,0,0,0.4)] p-8 text-center z-20 h-[105%] border-l-2 border-amber-300/50"
             >
-              {/* Decorative line on envelope body */}
-              <div className="absolute top-1/3 left-0 right-0 h-px bg-blue-200" />
-
-              {/* Address section */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-8 pb-12">
-                <p className="text-xs tracking-widest text-blue-700 uppercase mb-3">
-                  Estimado:
+              <div className="h-full flex flex-col items-center justify-start pt-8">
+                <div className="absolute top-4 left-4 text-amber-400 font-serif opacity-30 text-xs">◆</div>
+                <div className="absolute top-4 right-4 text-amber-400 font-serif opacity-30 text-xs">◆</div>
+                
+                <p className="text-green-900 font-serif italic text-xl mb-4 leading-relaxed">
+                  {welcomeMessage}
                 </p>
-                <h2 className="text-4xl font-serif font-bold text-gray-800 text-center leading-tight">
-                  {guestName}
-                </h2>
-                <div className="mt-6 w-20 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent" />
+                <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent mb-7" />
+                
+                <p className="text-green-700/50 text-xs tracking-[0.4em] uppercase mb-2 font-medium">Recepción:</p>
+                <h3 className="text-4xl font-serif font-bold text-green-950 tracking-tighter drop-shadow-sm">
+                  {eventTime}
+                </h3>
               </div>
-
-              {/* Decorative corner */}
-              <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-blue-200" />
-              <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-blue-200" />
             </motion.div>
 
-            {/* Flap - Opens up */}
+            {/* FRENTE DEL SOBRE */}
+            <div className="absolute inset-0 bg-white rounded-lg shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)] z-30 flex items-center justify-center border-l-4 border-amber-300">
+               <div className="text-[120px] font-serif text-amber-300/10 pointer-events-none">XV</div>
+            </div>
+
+            {/* SOLAPA TRIANGULAR */}
             <motion.div
               initial={{ rotateX: 0 }}
-              animate={isOpening ? { rotateX: -150 } : { rotateX: 0 }}
-              whileHover={!isOpening ? { rotateX: -25 } : {}}
-              transition={{
-                rotateX: isOpening
-                  ? { duration: 1.2, ease: 'easeInOut' }
-                  : { duration: 0.4, ease: 'easeOut' },
-              }}
-              className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-blue-500 to-blue-400 rounded-t-md origin-top shadow-xl"
-              style={{ transformStyle: 'preserve-3d' }}
+              animate={step !== 'idle' ? { rotateX: -160 } : { rotateX: 0 }}
+              whileHover={step === 'idle' ? { rotateX: -22 } : {}}
+              transition={{ duration: 1.4, ease: fluidEasing }}
+              className="absolute inset-x-0 top-0 h-1/2 bg-white rounded-t-lg origin-top shadow-2xl z-40 
+                         after:content-[''] after:absolute after:inset-x-0 after:bottom-[-40px] after:h-[80px] 
+                         after:bg-white after:rounded-b-[100px] after:shadow-2xl after:border-amber-300/40 after:border-b"
+              style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
             >
-              {/* Flap inside */}
-              <div
-                className="absolute inset-0 bg-gradient-to-b from-blue-400 to-blue-500 flex flex-col items-center justify-center"
-                style={{ backfaceVisibility: 'hidden' }}
-              >
-                {/* Decorative Wax Seal */}
+              <div className="absolute inset-0 bg-green-900 rounded-t-lg flex flex-col items-center justify-center">
+                <div className="absolute inset-x-0 bottom-[-40px] h-[80px] bg-green-900 rounded-b-[100px]" />
+                
                 <motion.div
-                  initial={{ scale: 1 }}
-                  animate={isOpening ? { scale: 0.8, opacity: 0 } : { scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 border-4 border-white flex items-center justify-center shadow-xl"
+                  animate={step !== 'idle' ? { scale: 0.8, opacity: 0 } : { scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute bottom-[-20px] w-20 h-20 rounded-full bg-green-700 border-8 border-amber-300 flex items-center justify-center 
+                             shadow-[0_0_20px_0_#d97706_inset,0_10px_30px_-5px_rgba(0,0,0,0.5)] z-50 overflow-hidden"
                 >
-                  <span className="text-3xl font-serif font-bold text-blue-600">XV</span>
+                  <div className="relative text-3xl font-serif font-bold text-amber-400 drop-shadow-[0_2px_1px_rgba(0,0,0,0.5)]">XV</div>
+                  <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/crissxcross.png')]" />
                 </motion.div>
-
-                {/* Ribbon detail */}
-                <div className="absolute inset-x-0 top-1/2 h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
               </div>
             </motion.div>
-
-            {/* Paper texture lines on back flap */}
-            <div className="absolute inset-x-0 top-0 h-1/2 pointer-events-none">
-              <div className="absolute inset-0 opacity-10" style={{
-                backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,.1) 1px, rgba(0,0,0,.1) 2px)'
-              }} />
-            </div>
+            
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/smooth-wall-dark.png')] z-50 rounded-lg" />
           </div>
         </motion.div>
 
-        {/* Text and Button */}
+        {/* BOTÓN Y TEXTOS */}
         <AnimatePresence mode="wait">
-          {!isOpening ? (
+          {step === 'idle' ? (
             <motion.div
-              key="closed"
-              initial={{ opacity: 0, y: 20 }}
+              key="ui-btn"
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.6 }}
+              exit={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+              transition={{ duration: 1.2, ease: fluidEasing }}
               className="text-center"
             >
               <motion.p
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-                className="text-lg text-white mb-8 font-light"
+                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="text-amber-300/80 font-serif italic text-lg mb-8"
               >
-                Tienes una invitación especial
+                Toca el sobre para abrirlo
               </motion.p>
-
+              
               <button
                 onClick={handleClick}
-                disabled={isOpening}
-                className="relative px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg rounded-lg shadow-lg hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-10 py-3 bg-green-700 text-white font-serif font-bold rounded-full 
+                           shadow-[0_10px_30px_0_rgba(16,185,129,0.3),0_0_15px_-2px_#fbbf24] 
+                           hover:shadow-[0_15px_40px_0_rgba(16,185,129,0.4),0_0_25px_-1px_#fcd34d] 
+                           hover:bg-green-600 active:scale-95 transition-all duration-300 cursor-pointer text-sm"
               >
-                Abrir Sobre
-                <motion.span
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="inline-block ml-2"
-                >
-                  →
-                </motion.span>
+                Abrir Invitación
               </button>
-
-              <p className="text-xs text-blue-100 mt-6 uppercase tracking-widest">
-                Haz clic en el sobre para continuar
-              </p>
             </motion.div>
           ) : (
             <motion.div
-              key="opening"
+              key="ui-msg"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: step === 'fading' ? 0 : 1 }}
+              transition={{ duration: 1 }}
               className="text-center"
             >
-              <p className="text-lg text-white">Abriendo invitación...</p>
+              <p className="text-white/40 text-xs tracking-[0.5em] uppercase font-light animate-pulse">
+                Descubriendo un sueño...
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
