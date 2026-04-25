@@ -9,6 +9,8 @@ import { EventDateTime } from './invitation/EventDateTime';
 import { PhotoGallery } from './invitation/PhotoGallery';
 import { RSVPForm } from './invitation/RSVPForm';
 import { AudioPlayer } from './invitation/AudioPlayer';
+// 🌟 Importamos las chispas mágicas que creamos antes
+import { MagicSparks } from './invitation/MagicSparks'; 
 
 // Componentes del Editor (Admin)
 import { EditableWrapper } from './admin/EditableWrapper';
@@ -21,6 +23,14 @@ interface InvitationSPAProps {
   isEditing?: boolean;
   onDataChange?: (field: keyof InvitationData, value: any) => void;
 }
+
+// ✨ Configuración de animación reutilizable para el scroll
+const scrollAnim = {
+  initial: { opacity: 0, y: 50 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-100px" },
+  transition: { duration: 0.8, ease: "easeOut" }
+};
 
 export function InvitationSPA({
   initialData,
@@ -58,35 +68,68 @@ export function InvitationSPA({
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ backgroundColor: theme.bg, color: theme.text }} className="min-h-screen relative transition-colors duration-500">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ backgroundColor: theme.bg, color: theme.text }} className="min-h-screen relative transition-colors duration-500 overflow-hidden">
       
-      {/* 1. PORTADA */}
+      {/* 1. PORTADA CON ANIMACIONES Y CHISPAS */}
       <EditableWrapper label="Imagen de Portada" type="image" isEditing={isEditing} onEdit={() => openGallery('heroImage')}>
         <div className="relative h-[90vh] w-full flex items-center justify-center overflow-hidden">
-          {initialData.heroImage && <motion.img initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }} src={initialData.heroImage} className="absolute inset-0 w-full h-full object-cover" />}
-          <div className="absolute inset-0 bg-black/40" />
+          {initialData.heroImage && (
+            <motion.img 
+              initial={{ scale: 1.1 }} 
+              animate={{ scale: 1 }} 
+              transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }} 
+              src={initialData.heroImage} 
+              className="absolute inset-0 w-full h-full object-cover" 
+            />
+          )}
+          
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
+          
+          {/* 🌟 Las Chispas Mágicas flotando en el fondo */}
+          <MagicSparks />
+
           <div className="relative z-10 text-center px-4 mt-12">
-            <h2 className="text-white text-xl md:text-2xl font-light tracking-[0.3em] uppercase mb-4">Nuestros 15 Años</h2>
-            <EditableText field="quinceaneraName" value={initialData.quinceaneraName} className="text-white text-5xl md:text-7xl font-serif drop-shadow-2xl block" />
-            <div className="mt-8 text-white/80 font-serif italic text-lg">
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className="text-white text-xl md:text-2xl font-light tracking-[0.3em] uppercase mb-4"
+            >
+              Mis 15 Años
+            </motion.h2>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1, duration: 1.5, ease: "easeOut" }}
+            >
+              <EditableText field="quinceaneraName" value={initialData.quinceaneraName} className="text-white text-5xl md:text-7xl font-serif drop-shadow-2xl block" />
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.8, duration: 1.5 }}
+              className="mt-8 text-white/80 font-serif italic text-lg"
+            >
               <EditableText field="parentNames" value={initialData.parentNames} />
-            </div>
+            </motion.div>
           </div>
         </div>
       </EditableWrapper>
 
       {/* 2. CUENTA REGRESIVA */}
-      <div className="relative z-20 -mt-16 px-4">
+      <motion.div {...scrollAnim} className="relative z-20 -mt-16 px-4">
         <CountdownTimer eventDate={initialData.eventDate} eventTime={initialData.eventTime} />
-      </div>
+      </motion.div>
 
       {/* 3. FECHA Y HORA */}
-      <section className="py-20 px-6">
+      <motion.section {...scrollAnim} className="py-20 px-6">
         <EventDateTime eventDate={initialData.eventDate} eventTime={initialData.eventTime} />
-      </section>
+      </motion.section>
 
       {/* 4. UBICACIÓN */}
-      <section className="py-16 px-4 text-center">
+      <motion.section {...scrollAnim} className="py-16 px-4 text-center">
         <h2 style={{ color: theme.accent }} className="text-3xl font-serif uppercase tracking-widest mb-10">Ubicación</h2>
         <div className="max-w-lg mx-auto space-y-2 mb-10">
           <EditableText field="venue" value={initialData.venue} className="text-2xl font-bold block" />
@@ -99,38 +142,43 @@ export function InvitationSPA({
             <div className="w-full h-full flex items-center justify-center opacity-50"><p>Mapa no configurado.</p></div>
           )}
         </div>
-      </section>
+      </motion.section>
 
       {/* 5. MENSAJE */}
-      <section className="py-24 px-8 text-center" style={{ backgroundColor: theme.card }}>
+      <motion.section {...scrollAnim} className="py-24 px-8 text-center" style={{ backgroundColor: theme.card }}>
         <h2 style={{ color: theme.accent }} className="text-4xl font-serif mb-12">Un Mensaje Especial</h2>
         <div className="max-w-3xl mx-auto">
           <EditableText field="dedicationMessage" value={initialData.dedicationMessage} multiline className="text-2xl font-light italic leading-relaxed" />
         </div>
-      </section>
+      </motion.section>
 
-      {/* 6. GALERÍA (CORREGIDO PARA ADMIN) */}
-      <EditableWrapper 
-        label="Galería de Fotos" 
-        type="image" 
-        isEditing={isEditing} 
-        onEdit={() => {
-          const urls = prompt("Ingresa las URLs de las fotos separadas por coma:", initialData.galleryImages?.join(', '));
-          if (urls && onDataChange) {
-            onDataChange('galleryImages', urls.split(',').map(u => u.trim()));
-          }
-        }}
-      >
-        <PhotoGallery images={initialData.galleryImages || []} />
-      </EditableWrapper>
+      {/* 6. GALERÍA */}
+      <motion.div {...scrollAnim}>
+        <EditableWrapper 
+          label="Galería de Fotos" 
+          type="image" 
+          isEditing={isEditing} 
+          onEdit={() => {
+            const urls = prompt("Ingresa las URLs de las fotos separadas por coma:", initialData.galleryImages?.join(', '));
+            if (urls && onDataChange) {
+              onDataChange('galleryImages', urls.split(',').map(u => u.trim()));
+            }
+          }}
+        >
+          <PhotoGallery images={initialData.galleryImages || []} />
+        </EditableWrapper>
+      </motion.div>
 
       {/* 7. VESTIMENTA Y RSVP */}
       <div className="py-20 space-y-20">
-        <div className="max-w-md mx-auto text-center p-8 rounded-2xl" style={{ backgroundColor: theme.card }}>
+        <motion.div {...scrollAnim} className="max-w-md mx-auto text-center p-8 rounded-2xl shadow-xl" style={{ backgroundColor: theme.card }}>
           <h2 style={{ color: theme.accent }} className="text-xl font-serif uppercase mb-4 tracking-tighter">Código de Vestimenta</h2>
           <EditableText field="dressCode" value={initialData.dressCode} className="text-2xl font-bold" />
-        </div>
-        <RSVPForm invitationId={invitationId} />
+        </motion.div>
+        
+        <motion.div {...scrollAnim}>
+          <RSVPForm invitationId={invitationId} />
+        </motion.div>
       </div>
 
       {/* 8. AUDIO */}

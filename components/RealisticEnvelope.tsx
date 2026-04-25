@@ -30,17 +30,18 @@ export function RealisticEnvelope({
   const handleClick = () => {
     if (openingStage === 'closed' && !isAnimating) {
       setIsAnimating(true);
-      // Flap opens
+      // 1. Se abre la solapa de arriba
       setOpeningStage('flap');
       setTimeout(() => {
-        // Sides slide out
+        // 2. Se abren las solapas laterales
         setOpeningStage('sides');
         setTimeout(() => {
-          // Full open
+          // 3. Estado totalmente abierto (la tarjeta sube un poco)
           setOpeningStage('open');
           setTimeout(() => {
+            // 4. Transición a la página principal
             onOpen();
-          }, 500);
+          }, 800);
         }, 600);
       }, 1200);
     }
@@ -50,7 +51,7 @@ export function RealisticEnvelope({
     <div style={{ background: `linear-gradient(135deg, ${backgroundColor}, #2a2a2a)` }} className="min-h-screen flex items-center justify-center p-4">
       <MagicalSparkles isActive={openingStage !== 'closed'} color={accentColor} count={40} />
       <div className="w-full max-w-2xl">
-        {/* 3D Envelope Container */}
+        {/* Contenedor 3D del Sobre */}
         <div
           className="relative mx-auto"
           style={{
@@ -60,18 +61,17 @@ export function RealisticEnvelope({
             perspective: '1200px',
           }}
         >
-          {/* Envelope Body - Base white rectangle */}
+          {/* 1. FONDO DEL SOBRE (Capa más profunda) */}
           <motion.div
             className="absolute inset-0"
             animate={{
               rotateX: openingStage === 'sides' || openingStage === 'open' ? 15 : 0,
             }}
             transition={{ duration: 0.8 }}
-            style={{ transformStyle: 'preserve-3d' }}
+            style={{ transformStyle: 'preserve-3d', zIndex: 0 }}
           >
-            {/* Back panel with texture */}
             <div className="absolute inset-0 bg-white rounded-lg shadow-2xl overflow-hidden">
-              {backImage && (
+              {backImage ? (
                 <Image
                   src={backImage}
                   alt="Envelope back"
@@ -79,13 +79,12 @@ export function RealisticEnvelope({
                   className="object-cover"
                   priority
                 />
-              )}
-              {!backImage && (
+              ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100" />
               )}
 
-              {/* Address section on back */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+              {/* Dirección en la parte de atrás */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-10">
                 <p className="text-sm tracking-widest text-blue-700 uppercase mb-3">
                   Para:
                 </p>
@@ -94,94 +93,100 @@ export function RealisticEnvelope({
                 </h2>
               </div>
 
-              {/* Decorative corners */}
-              <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-blue-200 opacity-50" />
-              <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-blue-200 opacity-50" />
+              {/* Decoraciones de las esquinas */}
+              <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-blue-200 opacity-50 z-10" />
+              <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-blue-200 opacity-50 z-10" />
+              
+              {/* Sombra interna para dar profundidad */}
+              <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none" />
             </div>
           </motion.div>
 
-          {/* Left side panel */}
+          {/* 2. LA TARJETA (Oculta dentro del sobre) - Z-INDEX 10 */}
+          <motion.div
+            className="absolute inset-x-4 top-10 bottom-4 bg-white rounded-lg shadow-xl flex items-center justify-center border border-gray-100"
+            style={{ zIndex: 10 }}
+            animate={{
+              // Sube ligeramente cuando el sobre está abierto
+              y: openingStage === 'open' ? -35 : 0,
+              rotateX: openingStage === 'sides' || openingStage === 'open' ? 15 : 0,
+            }}
+            transition={{ duration: 0.8, delay: openingStage === 'open' ? 0.2 : 0 }}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: openingStage === 'open' ? 1 : 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-center px-4"
+            >
+              <p className="text-xl md:text-2xl text-blue-600 font-semibold">
+                Tu invitación especial
+              </p>
+            </motion.div>
+          </motion.div>
+
+          {/* 3. SOLAPA IZQUIERDA - Z-INDEX 20 */}
           <motion.div
             className="absolute left-0 top-0 bottom-0 w-1/2"
             animate={
               openingStage === 'sides' || openingStage === 'open'
-                ? { rotateY: -45, x: -50 }
+                ? { rotateY: -115, x: -10 } // Abre hacia afuera
                 : { rotateY: 0, x: 0 }
             }
             transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ transformStyle: 'preserve-3d', transformOrigin: 'left center' }}
+            style={{ transformStyle: 'preserve-3d', transformOrigin: 'left center', zIndex: 20 }}
           >
-            <div className="absolute inset-0 bg-white rounded-l-lg shadow-lg border border-blue-100 overflow-hidden">
+            <div className="absolute inset-0 bg-white rounded-l-lg shadow-[5px_0_15px_rgba(0,0,0,0.1)] border-r border-blue-100 overflow-hidden">
               {backImage && (
-                <Image
-                  src={backImage}
-                  alt="Left panel"
-                  fill
-                  className="object-cover opacity-40"
-                />
+                <Image src={backImage} alt="Left panel" fill className="object-cover opacity-90" />
               )}
             </div>
           </motion.div>
 
-          {/* Right side panel */}
+          {/* 4. SOLAPA DERECHA - Z-INDEX 20 */}
           <motion.div
             className="absolute right-0 top-0 bottom-0 w-1/2"
             animate={
               openingStage === 'sides' || openingStage === 'open'
-                ? { rotateY: 45, x: 50 }
+                ? { rotateY: 115, x: 10 } // Abre hacia afuera
                 : { rotateY: 0, x: 0 }
             }
             transition={{ duration: 0.8, delay: 0.4 }}
-            style={{ transformStyle: 'preserve-3d', transformOrigin: 'right center' }}
+            style={{ transformStyle: 'preserve-3d', transformOrigin: 'right center', zIndex: 20 }}
           >
-            <div className="absolute inset-0 bg-white rounded-r-lg shadow-lg border border-blue-100 overflow-hidden">
+            <div className="absolute inset-0 bg-white rounded-r-lg shadow-[-5px_0_15px_rgba(0,0,0,0.1)] border-l border-blue-100 overflow-hidden">
               {backImage && (
-                <Image
-                  src={backImage}
-                  alt="Right panel"
-                  fill
-                  className="object-cover opacity-40"
-                />
+                <Image src={backImage} alt="Right panel" fill className="object-cover opacity-90" />
               )}
             </div>
           </motion.div>
 
-          {/* Top Flap - Opens upward */}
+          {/* 5. SOLAPA SUPERIOR - Z-INDEX 30 */}
           <motion.div
             className="absolute inset-x-0 top-0 h-1/2"
             animate={
               openingStage === 'flap' || openingStage === 'sides' || openingStage === 'open'
-                ? { rotateX: -140, y: -30 }
+                ? { rotateX: -160, y: -10 } 
                 : { rotateX: 0, y: 0 }
             }
             transition={{
               rotateX: { duration: 1.2, ease: 'easeInOut' },
               y: { duration: 1.2, ease: 'easeInOut' },
             }}
-            style={{
-              transformStyle: 'preserve-3d',
-              transformOrigin: 'top center',
-              zIndex: 10,
-            }}
+            style={{ transformStyle: 'preserve-3d', transformOrigin: 'top center', zIndex: 30 }}
             onClick={handleClick}
           >
             <div
-              className="absolute inset-0 bg-white rounded-t-lg shadow-xl overflow-hidden cursor-pointer"
+              className="absolute inset-0 bg-white rounded-t-lg shadow-[0_5px_15px_rgba(0,0,0,0.15)] overflow-hidden cursor-pointer"
               style={{ backfaceVisibility: 'hidden' }}
             >
               {flapImage ? (
-                <Image
-                  src={flapImage}
-                  alt="Envelope flap"
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                <Image src={flapImage} alt="Envelope flap" fill className="object-cover" priority />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-400 to-blue-500" />
               )}
 
-              {/* Flap front decoration */}
+              {/* Sello de XV años */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <motion.div
                   animate={
@@ -189,49 +194,27 @@ export function RealisticEnvelope({
                       ? { scale: 0.5, opacity: 0 }
                       : { scale: 1, opacity: 1 }
                   }
-                  className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 border-4 border-white shadow-lg flex items-center justify-center"
+                  className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 border-4 border-white shadow-lg flex items-center justify-center translate-y-4"
                 >
-                  <span className="text-2xl font-serif font-bold text-blue-600">
-                    XV
-                  </span>
+                  <span className="text-2xl font-serif font-bold text-blue-600">XV</span>
                 </motion.div>
               </div>
-
-              {/* Ornamental design on flap */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 pointer-events-none">
-                <div className="text-4xl text-white font-serif">✤</div>
-              </div>
             </div>
 
-            {/* Flap back side (visible when flipping) */}
+            {/* Parte interna de la solapa superior */}
             <div
-              className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-400 rounded-t-lg shadow-xl"
-              style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+              className="absolute inset-0 bg-gradient-to-b from-gray-200 to-gray-300 rounded-t-lg shadow-xl"
+              style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
             >
-              <div className="absolute inset-0 opacity-20 flex items-center justify-center">
-                <div className="text-gray-500 text-xs">Interior del sobre</div>
+              <div className="absolute inset-0 opacity-40 flex items-center justify-center">
+                <div className="text-gray-500 text-xs tracking-widest uppercase">Interior del sobre</div>
               </div>
             </div>
           </motion.div>
 
-          {/* Bottom part - invitation preview hint */}
-          <motion.div
-            className="absolute inset-x-0 bottom-0 h-1/2 bg-white rounded-b-lg shadow-xl"
-            style={{ zIndex: openingStage === 'open' ? 1 : 0 }}
-          >
-            {openingStage === 'open' && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-sm text-blue-600 font-semibold">
-                    Tu invitación especial
-                  </p>
-                </div>
-              </div>
-            )}
-          </motion.div>
         </div>
 
-        {/* Interactive hint */}
+        {/* Texto y botón de "Abrir Sobre" */}
         <AnimatePresence>
           {openingStage === 'closed' && (
             <motion.div

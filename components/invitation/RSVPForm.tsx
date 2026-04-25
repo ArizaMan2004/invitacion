@@ -36,50 +36,44 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
     setError('');
 
     try {
-      // Guardar respuesta RSVP. 
-      // Enviamos valores por defecto para los campos que ya no usamos
-      // para evitar que la función de Supabase falle.
+      // 1. Guardar la confirmación de asistencia
+      // Enviamos el nombre y valores por defecto/vacíos para el resto
       const rsvpId = await createRSVPResponse({
         invitationId,
         guestName: formData.name,
-        guestEmail: '', // Ya no lo pedimos
-        guestPhone: '', // Ya no lo pedimos
-        attending: true, // Asumimos que asiste si llena el formulario
-        numberOfGuests: 1, // Por defecto 1
-        dietaryRestrictions: '', 
+        guestEmail: '', 
+        guestPhone: '',
+        attending: true, 
+        numberOfGuests: 1, 
+        dietaryRestrictions: '',
       });
 
       if (!rsvpId) {
-        setError('Error al guardar tu confirmación. Intenta nuevamente.');
-        setLoading(false);
-        return;
+        throw new Error('No se pudo generar el registro de RSVP');
       }
 
-      // Guardar el mensaje para los cumpleañeros si escribieron algo
+      // 2. Guardar el mensaje para los cumpleañeros (solo si escribieron algo)
       if (formData.message.trim()) {
         await createGuestMessage({
           invitationId,
           guestName: formData.name,
           guestEmail: '', 
           message: formData.message,
-          approved: false, // Puedes aprobarlos luego en tu panel
+          approved: false, 
         });
       }
 
       setSubmitted(true);
       
-      // Limpiar el formulario y quitar el mensaje de éxito después de unos segundos
+      // Opcional: resetear el formulario después de 5 segundos
       setTimeout(() => {
-        setFormData({
-          name: '',
-          message: '',
-        });
+        setFormData({ name: '', message: '' });
         setSubmitted(false);
-      }, 5000); 
+      }, 5000);
 
     } catch (err) {
-      setError('Ocurrió un error al enviar tus datos. Por favor intenta de nuevo.');
-      console.error('[v0] RSVP Error:', err);
+      setError('Hubo un problema al guardar tu respuesta. Por favor, inténtalo de nuevo.');
+      console.error('RSVP Error:', err);
     } finally {
       setLoading(false);
     }
@@ -93,12 +87,12 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
         </h2>
 
         {submitted ? (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center shadow-sm">
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center shadow-sm animate-in fade-in zoom-in duration-300">
             <p className="text-xl font-medium text-green-800 mb-2">
-              ¡Gracias por confirmar!
+              ¡Confirmación enviada!
             </p>
             <p className="text-green-700">
-              Nos alegra mucho que nos acompañes en este día tan especial.
+              Gracias por acompañarnos en este día tan especial.
             </p>
           </div>
         ) : (
@@ -112,8 +106,8 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
               </div>
             )}
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-medium text-gray-700">
                 Nombre y Apellido *
               </label>
               <Input
@@ -124,12 +118,12 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
                 onChange={handleChange}
                 placeholder="Ej. Juan Pérez"
                 required
-                className="w-full bg-white"
+                className="w-full bg-white border-gray-200 focus:ring-gray-400"
               />
             </div>
 
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="space-y-2">
+              <label htmlFor="message" className="text-sm font-medium text-gray-700">
                 Un mensaje para los cumpleañeros (Opcional)
               </label>
               <Textarea
@@ -137,16 +131,16 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Escribe tus buenos deseos aquí..."
+                placeholder="Escribe tus buenos deseos..."
                 rows={4}
-                className="w-full bg-white resize-none"
+                className="w-full bg-white border-gray-200 focus:ring-gray-400 resize-none"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium text-lg py-6 rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-gray-900 hover:bg-black text-white font-medium text-lg py-6 rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Enviando...' : 'Confirmar Asistencia'}
             </Button>
