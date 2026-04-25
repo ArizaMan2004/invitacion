@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 
 interface CountdownTimerProps {
   eventDate: string;
@@ -15,18 +14,34 @@ interface TimeRemaining {
   seconds: number;
 }
 
-export function CountdownTimer({
-  eventDate,
-  eventTime,
-}: CountdownTimerProps) {
+// Al sacar el componente de la función principal, evitamos que se destruya 
+// y vuelva a renderizar en cada tick del reloj.
+const TimeUnit = ({ value, label }: { value: number; label: string }) => (
+  <div className="flex flex-col items-center">
+    <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-100 shadow-sm mb-2 md:mb-4">
+      <span className="text-2xl md:text-5xl font-light text-gray-800">
+        {String(value).padStart(2, '0')}
+      </span>
+    </div>
+    <span className="text-[10px] md:text-sm font-medium text-gray-500 uppercase tracking-widest">
+      {label}
+    </span>
+  </div>
+);
+
+export function CountdownTimer({ eventDate, eventTime }: CountdownTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
+  
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    
     const calculateTimeRemaining = () => {
       const eventDateTime = new Date(`${eventDate}T${eventTime}`);
       const now = new Date();
@@ -48,41 +63,21 @@ export function CountdownTimer({
     return () => clearInterval(interval);
   }, [eventDate, eventTime]);
 
-  const TimeUnit = ({
-    value,
-    label,
-  }: {
-    value: number;
-    label: string;
-  }) => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col items-center"
-    >
-      <div className="bg-gradient-to-b from-blue-100 to-blue-50 rounded-lg p-4 md:p-6 border-2 border-blue-200 shadow-lg">
-        <p className="text-3xl md:text-5xl font-bold text-blue-900">
-          {String(value).padStart(2, '0')}
-        </p>
-      </div>
-      <p className="mt-2 text-sm md:text-base font-semibold text-gray-600 uppercase tracking-widest">
-        {label}
-      </p>
-    </motion.div>
-  );
+  // Esto previene los desajustes de hidratación (Hydration Mismatch) 
+  // al asegurar que el contador solo se muestre una vez cargado en el cliente.
+  if (!isMounted) return null;
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-b from-white to-blue-50">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12 text-blue-900">
-          Faltan:
+    <section className="py-16 px-4 bg-white">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-2xl md:text-3xl font-light text-center mb-8 md:mb-10 text-gray-800 tracking-wide">
+          Faltan
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="flex justify-center gap-3 md:gap-8">
           <TimeUnit value={timeRemaining.days} label="Días" />
-          <TimeUnit value={timeRemaining.hours} label="Horas" />
-          <TimeUnit value={timeRemaining.minutes} label="Minutos" />
-          <TimeUnit value={timeRemaining.seconds} label="Segundos" />
+          <TimeUnit value={timeRemaining.hours} label="Hrs" />
+          <TimeUnit value={timeRemaining.minutes} label="Min" />
+          <TimeUnit value={timeRemaining.seconds} label="Seg" />
         </div>
       </div>
     </section>
