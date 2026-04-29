@@ -3,15 +3,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
+// Si tienes el componente MagicalSparkles, puedes importarlo. 
+// import { MagicalSparkles } from './MagicalSparkles';
+
 interface AnimatedEnvelopeProps {
   eventTime?: string;
   welcomeMessage?: string;
+  guestName?: string;
+  primaryColor?: string; // Verde musgo
+  accentColor?: string; // Oro viejo
+  backgroundColor?: string; // Fondo bosque
   onOpen: () => void;
 }
 
 export function AnimatedEnvelope({
   eventTime = "19:00 HRS",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
+  guestName = "Invitado Especial",
+  primaryColor = '#1a331a', 
+  accentColor = '#d4af37', 
+  backgroundColor = '#08110b',
   onOpen,
 }: AnimatedEnvelopeProps) {
   const [step, setStep] = useState<'idle' | 'opening' | 'paperUp' | 'fading'>('idle');
@@ -24,105 +35,146 @@ export function AnimatedEnvelope({
     
     setTimeout(() => {
       setStep('paperUp');
-    }, 1500);
+    }, 1200); // Ligeramente más rápido para no perder la atención
 
     setTimeout(() => {
       setStep('fading');
-    }, 4800);
+    }, 4500);
 
     setTimeout(() => {
       onOpen();
-    }, 6200);
+    }, 5800);
   };
 
-  const fluidEasing = [0.33, 1, 0.68, 1];
+  // Curvas de animación fluidas y elásticas
+  const fluidEasing = [0.34, 1.56, 0.64, 1]; // Efecto rebote suave
+  const cinematicEasing = [0.45, 0, 0.55, 1]; // Para el zoom final
 
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 1.2 } }}
-      className="min-h-screen bg-green-950 flex items-center justify-center p-4 overflow-hidden"
+      style={{ background: `linear-gradient(135deg, ${backgroundColor}, #101a10)` }}
+      className="h-[100dvh] min-h-[600px] flex items-center justify-center p-4 overflow-hidden relative"
     >
-      <div className="flex flex-col items-center gap-14 w-full max-w-md relative">
+      {/* Destellos mágicos de fondo (opcional si tienes el componente) */}
+      {/* <MagicalSparkles isActive={step !== 'idle'} color={accentColor} count={40} /> */}
+
+      <div className="flex flex-col items-center gap-14 w-full max-w-md relative z-10">
         
-        {/* CONTENEDOR PRINCIPAL DEL SOBRE (AHORA INTERACTIVO) */}
+        {/* CONTENEDOR PRINCIPAL DEL SOBRE */}
         <motion.div
           onClick={handleClick}
           animate={
             step === 'fading' 
-              ? { scale: 3.5, opacity: 0, filter: "blur(25px)", y: -180 } 
+              ? { scale: 5, opacity: 0, filter: "blur(20px)", y: -150 } // Zoom cinematográfico hacia adentro
               : { scale: 1, opacity: 1, y: 0 }
           }
-          // Pequeño zoom al pasar el ratón para indicar que es clickeable
-          whileHover={step === 'idle' ? { scale: 1.02 } : {}}
-          transition={{ duration: 1.8, ease: fluidEasing }}
-          className={`relative w-full ${step === 'idle' ? 'cursor-pointer' : ''}`}
-          style={{ perspective: '1800px' }}
+          whileHover={step === 'idle' ? { scale: 1.03, y: -5 } : {}}
+          transition={{ duration: step === 'fading' ? 1.5 : 0.8, ease: step === 'fading' ? cinematicEasing : fluidEasing }}
+          className={`relative w-full ${step === 'idle' ? 'cursor-pointer drop-shadow-[0_20px_50px_rgba(212,175,55,0.15)]' : ''}`}
+          style={{ perspective: '2000px' }}
         >
           <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
             
-            <div className="absolute inset-0 bg-white rounded-lg shadow-inner border-t border-amber-300/40 z-10" />
+            {/* FONDO INTERIOR DEL SOBRE */}
+            <div className="absolute inset-0 bg-white rounded-xl shadow-inner z-10 overflow-hidden border border-white/10" style={{ background: primaryColor }}>
+              <div className="absolute inset-0 bg-black/40 shadow-[inset_0_30px_60px_rgba(0,0,0,0.8)]" />
+            </div>
 
             {/* LA TARJETA DE INVITACIÓN */}
             <motion.div
               initial={{ y: 0, opacity: 0 }}
               animate={
                 step === 'paperUp' || step === 'fading'
-                  ? { y: -185, opacity: 1, scale: [1, 1.02, 1] } 
-                  : { y: 0, opacity: 0 }
+                  ? { y: -200, opacity: 1, scale: [0.95, 1.02, 1] } 
+                  : { y: 0, opacity: 0, scale: 0.95 }
               }
               transition={{ duration: 1.4, ease: fluidEasing }}
-              className="absolute inset-x-5 top-5 bg-white rounded shadow-[0_15px_60px_-15px_rgba(0,0,0,0.4)] p-8 text-center z-20 h-[105%] border-l-2 border-amber-300/50"
+              className="absolute inset-x-5 top-5 rounded-lg shadow-[0_15px_60px_-15px_rgba(0,0,0,0.6)] p-6 md:p-8 text-center z-20 h-[105%]"
+              style={{ 
+                background: '#fdfcf0', // Papel marfil
+                borderLeft: `2px solid ${accentColor}80`,
+                borderRight: `1px solid ${accentColor}30`
+              }}
             >
-              <div className="h-full flex flex-col items-center justify-start pt-8">
-                <div className="absolute top-4 left-4 text-amber-400 font-serif opacity-30 text-xs">◆</div>
-                <div className="absolute top-4 right-4 text-amber-400 font-serif opacity-30 text-xs">◆</div>
+              <div className="h-full flex flex-col items-center justify-start pt-6">
+                <div className="absolute top-4 left-4 font-serif opacity-40 text-xs" style={{ color: accentColor }}>✦</div>
+                <div className="absolute top-4 right-4 font-serif opacity-40 text-xs" style={{ color: accentColor }}>✦</div>
                 
-                <p className="text-green-900 font-serif italic text-xl mb-4 leading-relaxed">
+                <p className="text-xs tracking-[0.3em] uppercase mb-4 opacity-50 font-medium" style={{ color: primaryColor }}>
+                  Para: {guestName}
+                </p>
+
+                <p className="font-serif italic text-lg md:text-xl mb-4 leading-relaxed" style={{ color: primaryColor }}>
                   {welcomeMessage}
                 </p>
-                <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-400/80 to-transparent mb-7" />
                 
-                <p className="text-green-700/50 text-xs tracking-[0.4em] uppercase mb-2 font-medium">Recepción:</p>
-                <h3 className="text-4xl font-serif font-bold text-green-950 tracking-tighter drop-shadow-sm">
+                <div className="w-16 h-[1px] mb-6" style={{ background: `linear-gradient(to right, transparent, ${accentColor}, transparent)` }} />
+                
+                <p className="text-xs tracking-[0.4em] uppercase mb-2 font-medium opacity-70" style={{ color: primaryColor }}>Recepción:</p>
+                <h3 className="text-3xl md:text-4xl font-serif font-bold tracking-tighter drop-shadow-sm" style={{ color: primaryColor }}>
                   {eventTime}
                 </h3>
               </div>
             </motion.div>
 
             {/* FRENTE DEL SOBRE */}
-            <div className="absolute inset-0 bg-white rounded-lg shadow-[0_30px_90px_-20px_rgba(0,0,0,0.5)] z-30 flex items-center justify-center border-l-4 border-amber-300">
-               <div className="text-[120px] font-serif text-amber-300/10 pointer-events-none">XV</div>
+            <div 
+              className="absolute inset-0 rounded-xl shadow-[0_30px_90px_-20px_rgba(0,0,0,0.8)] z-30 flex items-center justify-center overflow-hidden"
+              style={{ 
+                background: `linear-gradient(145deg, ${primaryColor}, #0a140a)`,
+                borderTop: `1px solid ${accentColor}30`
+              }}
+            >
+               {/* Marca de agua elegante */}
+               <div className="text-[140px] font-serif pointer-events-none opacity-[0.04]" style={{ color: accentColor }}>XV</div>
             </div>
 
-            {/* SOLAPA TRIANGULAR */}
+            {/* SOLAPA TRIANGULAR CON SELLO */}
             <motion.div
               initial={{ rotateX: 0 }}
-              animate={step !== 'idle' ? { rotateX: -160 } : { rotateX: 0 }}
-              whileHover={step === 'idle' ? { rotateX: -22 } : {}}
+              animate={step !== 'idle' ? { rotateX: -170 } : { rotateX: 0 }}
+              whileHover={step === 'idle' ? { rotateX: -25 } : {}}
               transition={{ duration: 1.4, ease: fluidEasing }}
-              className="absolute inset-x-0 top-0 h-1/2 bg-white rounded-t-lg origin-top shadow-2xl z-40 
-                         after:content-[''] after:absolute after:inset-x-0 after:bottom-[-40px] after:h-[80px] 
-                         after:bg-white after:rounded-b-[100px] after:shadow-2xl after:border-amber-300/40 after:border-b"
+              className="absolute inset-x-0 top-0 h-[65%] origin-top shadow-2xl z-40"
+              style={{ 
+                transformStyle: 'preserve-3d', 
+                backfaceVisibility: 'hidden',
+                // Triángulo perfecto en CSS
+                clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+                background: `linear-gradient(180deg, #1a331a, ${primaryColor})`,
+              }}
+            >
+               {/* Resplandor en los bordes del triángulo */}
+              <div className="absolute inset-0 border-t border-white/10" />
+            </motion.div>
+
+            {/* SELLO DE CERA (Independiente para no deformarse con el clip-path) */}
+            <motion.div
+              initial={{ rotateX: 0 }}
+              animate={step !== 'idle' ? { rotateX: -170, opacity: 0 } : { rotateX: 0, opacity: 1 }}
+              whileHover={step === 'idle' ? { rotateX: -25 } : {}}
+              transition={{ duration: step !== 'idle' ? 0.8 : 1.4, ease: fluidEasing }}
+              className="absolute left-1/2 top-[65%] origin-[center_-130%] z-50 pointer-events-none"
               style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
             >
-              <div className="absolute inset-0 bg-green-900 rounded-t-lg flex flex-col items-center justify-center">
-                <div className="absolute inset-x-0 bottom-[-40px] h-[80px] bg-green-900 rounded-b-[100px]" />
-                
-                <motion.div
-                  animate={step !== 'idle' ? { scale: 0.8, opacity: 0 } : { scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.8 }}
-                  className="absolute bottom-[-20px] w-20 h-20 rounded-full bg-green-700 border-8 border-amber-300 flex items-center justify-center 
-                             shadow-[0_0_20px_0_#d97706_inset,0_10px_30px_-5px_rgba(0,0,0,0.5)] z-50 overflow-hidden"
-                >
-                  <div className="relative text-3xl font-serif font-bold text-amber-400 drop-shadow-[0_2px_1px_rgba(0,0,0,0.5)]">XV</div>
-                  <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/crissxcross.png')]" />
-                </motion.div>
+              <div 
+                className="w-20 h-20 -mt-10 -ml-10 rounded-full flex items-center justify-center shadow-[0_15px_30px_rgba(0,0,0,0.6)] border-2 border-black/20"
+                style={{ 
+                  background: `linear-gradient(135deg, ${accentColor}, #8a6a20)`,
+                  boxShadow: `inset 0 0 15px rgba(255,255,255,0.4), 0 10px 20px rgba(0,0,0,0.5)`
+                }}
+              >
+                <div className="relative text-3xl font-serif font-bold drop-shadow-[0_2px_1px_rgba(0,0,0,0.5)]" style={{ color: '#fff0c0' }}>
+                  XV
+                </div>
               </div>
             </motion.div>
             
-            <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/smooth-wall-dark.png')] z-50 rounded-lg" />
+            {/* Textura sutil general para el sobre */}
+            <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/black-paper.png')] z-50 rounded-xl" />
           </div>
         </motion.div>
 
@@ -133,24 +185,28 @@ export function AnimatedEnvelope({
               key="ui-btn"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-              transition={{ duration: 1.2, ease: fluidEasing }}
+              exit={{ opacity: 0, y: 20, filter: "blur(10px)", scale: 0.9 }}
+              transition={{ duration: 0.8, ease: fluidEasing }}
               className="text-center"
             >
               <motion.p
-                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="text-amber-300/80 font-serif italic text-lg mb-8"
+                className="font-serif italic text-lg mb-8"
+                style={{ color: accentColor }}
               >
-                Toca el sobre para abrirlo
+                Toca el sobre para descubrir la magia
               </motion.p>
               
               <button
                 onClick={handleClick}
-                className="px-10 py-3 bg-green-700 text-white font-serif font-bold rounded-full 
-                           shadow-[0_10px_30px_0_rgba(16,185,129,0.3),0_0_15px_-2px_#fbbf24] 
-                           hover:shadow-[0_15px_40px_0_rgba(16,185,129,0.4),0_0_25px_-1px_#fcd34d] 
-                           hover:bg-green-600 active:scale-95 transition-all duration-300 cursor-pointer text-sm"
+                style={{ 
+                  background: `linear-gradient(135deg, ${accentColor}, #9a7615)`,
+                  color: '#08110b' // Texto oscuro para contrastar con el oro
+                }}
+                className="px-10 py-4 font-serif font-bold rounded-full 
+                           shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.4)]
+                           active:scale-95 transition-all duration-300 cursor-pointer text-base uppercase tracking-widest"
               >
                 Abrir Invitación
               </button>
@@ -163,8 +219,8 @@ export function AnimatedEnvelope({
               transition={{ duration: 1 }}
               className="text-center"
             >
-              <p className="text-white/40 text-xs tracking-[0.5em] uppercase font-light animate-pulse">
-                Descubriendo un sueño...
+              <p className="text-white/60 text-xs tracking-[0.5em] uppercase font-light animate-pulse mt-10">
+                Iniciando el hechizo...
               </p>
             </motion.div>
           )}
