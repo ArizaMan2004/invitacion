@@ -18,7 +18,7 @@ import { RSVPForm } from './invitation/RSVPForm';
 import { AudioPlayer } from './invitation/AudioPlayer';
 import { MagicSparks } from './invitation/MagicSparks'; 
 import { Trivia } from './invitation/trivia';
-import { PhotoUploader } from './invitation/PhotoUploader';
+import { PhotoUploader } from './invitation//PhotoUploader';
 
 // Componentes del Editor (Admin)
 import { EditableWrapper } from './admin/EditableWrapper';
@@ -244,6 +244,13 @@ export function InvitationSPA({
     text: initialData.textColor || '#fdfcf0' 
   };
 
+  // LIMPIEZA DE RUTA: 
+  // Si la ruta viene vacía, no tiene barra (/) o contiene "C:\", forzamos el fallback seguro
+  let heroImageSrc = initialData.heroImage;
+  if (!heroImageSrc || heroImageSrc.includes('C:\\') || !heroImageSrc.startsWith('/')) {
+    heroImageSrc = '/images/placeholder-hero.jpg';
+  }
+
   return (
     <div 
       className={`min-h-screen w-full overflow-x-hidden selection:bg-[#d4af37] selection:text-black ${customHeroFont.variable}`}
@@ -264,7 +271,7 @@ export function InvitationSPA({
           className="absolute inset-0 z-0"
         >
           <img 
-            src={initialData.heroImage} 
+            src={heroImageSrc} 
             alt="Hero Bosque Encantado" 
             className="w-full h-full object-cover"
           />
@@ -308,8 +315,21 @@ export function InvitationSPA({
               style={{ background: `linear-gradient(to bottom, transparent, ${theme.accent}, transparent)` }} 
             />
             <p className="font-serif italic text-base md:text-2xl opacity-95 max-w-xl text-shadow-sm leading-relaxed px-4">
-              "Acompañanos en este dia tan especial para celebrar la vida y nacimiento de Jesus y Jessenia."
+              "Acompáñanos en este día tan especial para celebrar la vida y nuestro nacimiento."
             </p>
+
+            {/* Agregado: Nombres de los padres */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.8, duration: 1 }}
+              className="mt-6 md:mt-8 flex flex-col items-center gap-1 opacity-90"
+            >
+              <span className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-2 font-medium" style={{ color: theme.accent }}>
+                Con la bendición de nuestros padres
+              </span>
+              <p className="font-serif text-sm md:text-lg tracking-wide">Neida de Capielo y Jesús Capielo</p>
+            </motion.div>
           </motion.div>
         </div>
 
@@ -531,6 +551,18 @@ export function InvitationSPA({
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-40 bg-[#d4af37]/15 blur-[60px] pointer-events-none" />
             
             <div className="relative z-10 p-10 md:p-16 text-center">
+              
+              {/* SECCIÓN DE PASES */}
+              <div className="mb-12 md:mb-16 inline-flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border bg-black/20 shadow-[0_0_30px_rgba(212,175,55,0.1)] backdrop-blur-md w-full max-w-xs mx-auto" style={{ borderColor: `${theme.accent}30` }}>
+                <svg className="w-8 h-8 mb-3 opacity-80" fill="none" stroke={theme.accent} viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+                </svg>
+                <p className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium opacity-80" style={{ color: theme.accent }}>Pases de Entrada</p>
+                <p className="text-4xl md:text-5xl font-serif text-white tracking-widest drop-shadow-md">
+                  {(initialData as any).passes || "2"} <span className="text-lg md:text-xl opacity-60 font-sans tracking-normal block mt-1">Personas</span>
+                </p>
+              </div>
+
               <h2 className="text-4xl md:text-5xl font-serif mb-5 tracking-wide">¿Aceptarás el Llamado?</h2>
               <p className="text-[11px] tracking-[0.25em] uppercase mb-10 md:mb-14" style={{ color: theme.accent }}>Confirma tu presencia en el Claro Real</p>
               <RSVPForm invitationId={invitationId} />
@@ -547,7 +579,7 @@ export function InvitationSPA({
           <p className="text-[11px] tracking-[0.9em] uppercase" style={{ color: theme.accent, textShadow: `0 0 5px ${theme.accent}40` }}>
             {initialData.quinceaneraName} • MMXXVI
           </p>
-          <p className="mt-4 text-[9px] opacity-50 tracking-widest">Hecho con magia en el Bosque Encantado</p>
+          
         </footer>
       </div>
     </div>

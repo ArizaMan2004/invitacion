@@ -16,32 +16,35 @@ export function HeroSection({
   parentNames,
   heroImage,
 }: HeroSectionProps) {
+  
+  // Validación estricta para next/image. 
+  // Si no hay imagen o la ruta no parece válida, usamos el placeholder seguro.
+  const imageSrc = heroImage && heroImage.includes('/') 
+    ? heroImage.replace(/^(?:\.\.\/)*public/, '') // Limpia "public/" si viene de la BD por error
+    : '/images/placeholder-hero.jpg';
+
   return (
     <section className="relative h-[85vh] md:h-screen w-full flex items-center justify-center overflow-hidden bg-blue-50">
       
       {/* 1. Contenedor de la Imagen de Fondo */}
       <div className="absolute inset-0 z-0">
-        {heroImage ? (
-          <motion.div
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 2, ease: "easeOut" }}
-            className="relative h-full w-full"
-          >
-            <Image
-              src={heroImage}
-              alt={quinceaneraName ? `Foto de portada de ${quinceaneraName}` : 'Foto principal de la Quinceañera'}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-            {/* Overlay Gradiente ajustado sutilmente para dar profundidad */}
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 via-white/20 to-white/95" />
-          </motion.div>
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-blue-100 to-white" />
-        )}
+        <motion.div
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="relative h-full w-full"
+        >
+          <Image
+            src={imageSrc}
+            alt={quinceaneraName ? `Foto de portada de ${quinceaneraName}` : 'Foto principal de la Quinceañera'}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+          {/* Overlay Gradiente ajustado sutilmente para dar profundidad */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 via-white/20 to-white/95" />
+        </motion.div>
       </div>
 
       {/* 2. 🌟 Las Chispas Mágicas 🌟 */}
