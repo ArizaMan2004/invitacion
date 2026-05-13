@@ -274,6 +274,8 @@ export function InvitationSPA({
             src={heroImageSrc} 
             alt="Hero Bosque Encantado" 
             className="w-full h-full object-cover"
+            fetchPriority="high"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#08110b]/50 via-transparent to-[#08110b] backdrop-blur-[1px]" />
         </motion.div>
@@ -318,7 +320,7 @@ export function InvitationSPA({
               "Acompáñanos en este día tan especial para celebrar la vida y nuestro nacimiento."
             </p>
 
-            {/* Agregado: Nombres de los padres */}
+            {/* Ajuste: Nombres de los padres con tamaño incrementado */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -328,7 +330,7 @@ export function InvitationSPA({
               <span className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-2 font-medium" style={{ color: theme.accent }}>
                 Con la bendición de nuestros padres
               </span>
-              <p className="font-serif text-sm md:text-lg tracking-wide">Neida de Capielo y Jesús Capielo</p>
+              <p className="font-serif text-lg md:text-2xl tracking-wide italic">Neida de Capielo y Jesús Capielo</p>
             </motion.div>
           </motion.div>
         </div>
@@ -399,8 +401,9 @@ export function InvitationSPA({
               style={{ borderColor: `${theme.accent}30` }}
             >
               <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px]">
+                {/* AQUÍ SE ACTUALIZÓ EL SRC DEL IFRAME Y SE MANTUVIERON LOS ESTILOS */}
                 <iframe 
-                  src={initialData.mapIframeSrc || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1777133800110!5m2!1ses!2sve"} 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0, filter: 'contrast(1.1) sepia(0.3) hue-rotate(85deg) saturate(0.8)' }} 
@@ -521,28 +524,7 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        {/* 7. GALERÍA COLABORATIVA */}
-        <motion.section {...sectionAnim} className="py-20 md:py-36 px-4 md:px-6 relative">
-          <div className="max-w-4xl mx-auto relative z-10">
-            <div className="bg-[#121d12]/90 backdrop-blur-3xl p-10 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-[0_0_70px_rgba(212,175,55,0.15)]" style={{ borderColor: `${theme.accent}30` }}>
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-[#d4af37]/15 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-[#d4af37]/35 shadow-[0_0_25px_rgba(212,175,55,0.25)]">
-                <span className="text-3xl md:text-4xl">📸</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-serif mb-5 md:mb-7 tracking-wide">Inmortaliza el Momento</h2>
-              <p className="text-sm md:text-base opacity-90 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed">
-                ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
-              </p>
-              
-              <PhotoUploader 
-                invitationId={invitationId} 
-                guestName="Explorador" 
-                accentColor={theme.accent} 
-              />
-            </div>
-          </div>
-        </motion.section>
-
-        {/* 8. RSVP */}
+        {/* 7. RSVP (MOVIDO ARRIBA ANTES DE LA GALERÍA) */}
         <motion.div {...sectionAnim} className="py-20 md:py-36 px-4">
           <div 
             className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-[0_0_60px_rgba(212,175,55,0.2)] border transition-all duration-700 hover:shadow-[0_0_80px_rgba(212,175,55,0.3)] relative" 
@@ -570,6 +552,27 @@ export function InvitationSPA({
           </div>
         </motion.div>
 
+        {/* 8. GALERÍA COLABORATIVA (MOVIDO ABAJO DEL RSVP) */}
+        <motion.section {...sectionAnim} className="py-20 md:py-36 px-4 md:px-6 relative">
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="bg-[#121d12]/90 backdrop-blur-3xl p-10 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-[0_0_70px_rgba(212,175,55,0.15)]" style={{ borderColor: `${theme.accent}30` }}>
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-[#d4af37]/15 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-[#d4af37]/35 shadow-[0_0_25px_rgba(212,175,55,0.25)]">
+                <span className="text-3xl md:text-4xl">📸</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-serif mb-5 md:mb-7 tracking-wide">Inmortaliza el Momento</h2>
+              <p className="text-sm md:text-base opacity-90 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed">
+                ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
+              </p>
+              
+              <PhotoUploader 
+                invitationId={invitationId} 
+                guestName="Explorador" 
+                accentColor={theme.accent} 
+              />
+            </div>
+          </div>
+        </motion.section>
+
         {/* REPRODUCTOR DE AUDIO */}
         <AudioPlayer youtubeUrl={initialData.youtubeMusicLink} accentColor={theme.accent} />
 
@@ -579,7 +582,7 @@ export function InvitationSPA({
           <p className="text-[11px] tracking-[0.9em] uppercase" style={{ color: theme.accent, textShadow: `0 0 5px ${theme.accent}40` }}>
             {initialData.quinceaneraName} • MMXXVI
           </p>
-          
+          <p className="mt-4 text-[9px] opacity-50 tracking-widest">Hecho con magia en el Bosque Encantado</p>
         </footer>
       </div>
     </div>
