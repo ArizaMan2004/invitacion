@@ -327,10 +327,12 @@ export function InvitationSPA({
               transition={{ delay: 1.8, duration: 1 }}
               className="mt-6 md:mt-8 flex flex-col items-center gap-1 opacity-90"
             >
-              <span className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-2 font-medium" style={{ color: theme.accent }}>
+              <span className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-3 font-medium" style={{ color: theme.accent }}>
                 Con la bendición de nuestros padres
               </span>
-              <p className="font-serif text-lg md:text-2xl tracking-wide italic">Neida de Capielo y Jesús Capielo</p>
+              <p className="font-serif text-3xl md:text-5xl lg:text-6xl tracking-wide italic text-shadow-md">
+                Jesús Capielo y Neida de Capielo
+              </p>
             </motion.div>
           </motion.div>
         </div>
