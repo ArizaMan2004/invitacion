@@ -88,7 +88,7 @@ const FallingLeaves = ({ accentColor }: { accentColor: string }) => {
   const leafCount = 15;
   const leavesData = useMemo(() => {
     const leafPaths = [
-      "M12 2C12 2 6 6 6 12C6 18 12 22 12 22C12 22 18 18 18 12C18 6 12 2 12 2Z",
+      "M12 2C12 2 6 6 6 12C6 18 12 22 12 22C12 22 18 18 12 22C18 6 12 2 12 2Z",
       "M2.41 12C2.41 12 1 10.5 1 7.5a5.5 5.5 0 0 1 11-1.47 5.5 5.5 0 0 1 11 1.47c0 3-1.41 4.5-1.41 4.5S23 16 12 22C1 16 2.41 12 2.41 12Z"
     ];
 
@@ -330,7 +330,7 @@ export function InvitationSPA({
               <span className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-3 font-medium" style={{ color: theme.accent }}>
                 Con la bendición de nuestros padres
               </span>
-              <p className="font-serif text-3xl md:text-5xl lg:text-6xl tracking-wide italic text-shadow-md">
+              <p className="font-serif text-3xl md:text-2xl lg:text-6xl tracking-wide italic text-shadow-md">
                 Jesús Capielo y Neida de Capielo
               </p>
             </motion.div>
@@ -425,9 +425,9 @@ export function InvitationSPA({
 
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <div className="mb-14 md:mb-20">
-              <h2 className="text-4xl md:text-5xl font-serif mb-5 tracking-wide">Codigo de Vestimenta</h2>
+              <h2 className="text-4xl md:text-5xl font-serif mb-5 tracking-wide">Dress Code</h2>
               <p className="text-[11px] tracking-[0.4em] uppercase" style={{ color: theme.accent }}>
-                Estilo Semi Casual Formal
+                Estilo Semi Formal
               </p>
             </div>
             
@@ -446,7 +446,7 @@ export function InvitationSPA({
                 </div>
                 <h3 className="text-2xl md:text-3xl font-serif mb-5 italic text-[#d4af37]">Damas</h3>
                 <p className="text-sm opacity-90 leading-relaxed uppercase tracking-[0.25em]">
-                  Semi Casual Formal
+                  Semi Formal
                 </p>
                 <div className="mt-5 w-16 h-[1px] bg-[#d4af37]/30" />
                 <p className="mt-5 text-[11px] opacity-70 uppercase tracking-widest italic leading-relaxed text-center">
@@ -484,7 +484,7 @@ export function InvitationSPA({
                 </div>
                 <h3 className="text-2xl md:text-3xl font-serif mb-5 italic text-[#d4af37]">Caballeros</h3>
                 <p className="text-sm opacity-90 leading-relaxed uppercase tracking-[0.25em]">
-                  Semi Casual Formal
+                  Semi Formal
                 </p>
                 <div className="mt-5 w-16 h-[1px] bg-[#d4af37]/30" />
                 <p className="mt-5 text-[11px] opacity-70 uppercase tracking-widest italic leading-relaxed text-center">
@@ -535,18 +535,6 @@ export function InvitationSPA({
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-40 bg-[#d4af37]/15 blur-[60px] pointer-events-none" />
             
             <div className="relative z-10 p-10 md:p-16 text-center">
-              
-              {/* SECCIÓN DE PASES */}
-              <div className="mb-12 md:mb-16 inline-flex flex-col items-center justify-center p-6 md:p-8 rounded-[2rem] border bg-black/20 shadow-[0_0_30px_rgba(212,175,55,0.1)] backdrop-blur-md w-full max-w-xs mx-auto" style={{ borderColor: `${theme.accent}30` }}>
-                <svg className="w-8 h-8 mb-3 opacity-80" fill="none" stroke={theme.accent} viewBox="0 0 24 24" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
-                </svg>
-                <p className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium opacity-80" style={{ color: theme.accent }}>Pases de Entrada</p>
-                <p className="text-4xl md:text-5xl font-serif text-white tracking-widest drop-shadow-md">
-                  {(initialData as any).passes || "2"} <span className="text-lg md:text-xl opacity-60 font-sans tracking-normal block mt-1">Personas</span>
-                </p>
-              </div>
-
               <h2 className="text-4xl md:text-5xl font-serif mb-5 tracking-wide">¿Aceptarás el Llamado?</h2>
               <p className="text-[11px] tracking-[0.25em] uppercase mb-10 md:mb-14" style={{ color: theme.accent }}>Confirma tu presencia en el Claro Real</p>
               <RSVPForm invitationId={invitationId} />

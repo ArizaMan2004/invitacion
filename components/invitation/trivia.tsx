@@ -26,9 +26,9 @@ const QUESTIONS_JESUS: Question[] = [
 
 // --- PREGUNTAS PARA JESSENIA ---
 const QUESTIONS_JESSENIA: Question[] = [
-  { id: 1, question: "¿Cuál es el color favorito de Jessenia?", options: ["Rosa", "Lila", "Azul Cielo", "Verde"], correctAnswer: 1 },
-  { id: 2, question: "¿A qué país desea viajar Jessenia?", options: ["Francia", "Japón", "Corea del Sur", "Italia"], correctAnswer: 2 },
-  { id: 3, question: "¿Cuál es su género de película favorito?", options: ["Terror", "Romance", "Acción", "Comedia"], correctAnswer: 1 },
+  { id: 1, question: "¿Cuál es el equipo favorito de Jessenia?", options: ["Real Madrid", "Barca", "Roma", "City"], correctAnswer: 0 },
+  { id: 2, question: "¿Cuál fue el primer deporte que practicó Jessenia?", options: ["Gimnasia artística", "Ballet", "Fútbol", "Natación"], correctAnswer: 1 },
+  { id: 3, question: "¿Qué es lo que más hace Jessenia en las tardes?", options: ["Dormir", "Estudiar", "Entrenar", "Nada"], correctAnswer: 2 },
 ];
 
 type GamePhase = 'selection' | 'playing' | 'finished';
