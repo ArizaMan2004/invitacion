@@ -137,25 +137,8 @@ const AmbientVideoBackground = () => (
       <source src="/FONDO.mp4" type="video/mp4" />
     </video>
     
-    {/* Capa de fusión de color (Aplica la tonalidad Azul/Morado sobre el video) */}
-    <div className="absolute inset-0 bg-gradient-to-br from-[#6b21a8] to-[#1e3a8a] mix-blend-color" />
-    
     {/* Capa de oscurecimiento superior e inferior para mejorar el contraste de lectura */}
     <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
-
-    {/* Brillos ambientales animados (Morados y Azules) para extra profundidad */}
-    <motion.div
-      className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full mix-blend-screen filter blur-[120px] bg-[#6b21a8] opacity-70"
-      animate={{ x: [0, 20, 0], y: [0, 30, 0] }} 
-      transition={{ duration: 20, repeat: Infinity, ease: "linear" }} 
-      style={{ willChange: "transform" }}
-    />
-    <motion.div
-      className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full mix-blend-screen filter blur-[150px] bg-[#1e3a8a] opacity-70"
-      animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
-      transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      style={{ willChange: "transform" }}
-    />
   </div>
 );
 
@@ -408,8 +391,6 @@ export function InvitationSPA({
     heroImageSrc = '/images/placeholder-hero.jpg';
   }
 
-  const baseGoldFilter = "brightness(0) saturate(100%) invert(85%) sepia(30%) saturate(1000%) hue-rotate(355deg) brightness(105%) contrast(110%)";
-
   return (
     <div 
       className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffffff] selection:text-[#0a0514] ${customHeroFont.variable} ${customApaFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
@@ -436,11 +417,10 @@ export function InvitationSPA({
           <img 
             src={heroImageSrc} 
             alt="Hero Bosque Encantado" 
-            className="w-full h-full object-cover grayscale" 
+            className="w-full h-full object-cover" 
             fetchPriority="high"
             loading="eager"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#6b21a8] to-[#1e3a8a] mix-blend-color" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
         </motion.div>
 
@@ -453,30 +433,38 @@ export function InvitationSPA({
             transition={{ delay: 0.3, duration: 0.8 }}
             className="block text-[11px] md:text-sm tracking-[0.6em] uppercase mb-4 md:mb-6 drop-shadow-md font-sans font-bold text-white shrink-0"
           >
-            Felices XV Años
+            Te damos la bienvenida a nuestros
           </motion.span>
 
-          {/* LOGO RESPONSIVO CON LÍMITE DE ALTURA PARA ORDENADORES */}
+          {/* LOGO RESPONSIVO CON EFECTO DE RESPIRACIÓN Y ENTRADA */}
           <motion.img 
             src="/logojj.png"
             alt="Logo XV Años"
             initial={{ 
               opacity: 0, 
               scale: 0.9,
-              filter: `${baseGoldFilter} drop-shadow(0 0 0px rgba(255,215,0,0))`
+              filter: "drop-shadow(0 0 10px rgba(255,255,255,0.2))"
             }}
             animate={{ 
               opacity: 1, 
               scale: 1,
+              // Keyframes para el resplandor de respiración
               filter: [
-                `${baseGoldFilter} drop-shadow(0 0 10px rgba(255,215,0,0.4))`,
-                `${baseGoldFilter} drop-shadow(0 0 35px rgba(255,215,0,0.8))`,
-                `${baseGoldFilter} drop-shadow(0 0 10px rgba(255,215,0,0.4))`
+                "drop-shadow(0 0 10px rgba(255,255,255,0.2))", // Resplandor bajo
+                "drop-shadow(0 0 35px rgba(255,255,255,0.7))", // Resplandor alto (Inhalar)
+                "drop-shadow(0 0 10px rgba(255,255,255,0.2))"  // Resplandor bajo (Exhalar)
               ]
             }}
             transition={{ 
-              default: { delay: 0.5, duration: 1.2 }, 
-              filter: { delay: 1.7, duration: 5, repeat: Infinity, ease: "easeInOut" }
+              opacity: { delay: 0.5, duration: 1.2 },
+              scale: { delay: 0.5, duration: 1.2 },
+              // Animación infinita solo para el filtro (resplandor)
+              filter: {
+                delay: 0.5,
+                duration: 3, // Segundos que tarda en completar una respiración
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
             }}
             className="w-full max-w-[280px] sm:max-w-[380px] md:max-w-[500px] lg:max-w-[650px] max-h-[30vh] md:max-h-[35vh] lg:max-h-[40vh] object-contain mx-auto mb-6 md:mb-10 px-2 shrink-0"
           />
