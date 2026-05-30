@@ -54,7 +54,7 @@ const sectionAnim = {
 };
 
 const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, delay?: number, className?: string }) => {
-  const letters = Array.from(text);
+  const words = text.split(" ");
   
   const container = {
     hidden: { opacity: 0 },
@@ -76,12 +76,21 @@ const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, del
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
-      style={{ display: "inline-block" }}
+      style={{ display: "inline-block", wordBreak: "normal" }}
     >
-      {letters.map((char, index) => (
-        <motion.span key={index} variants={child} style={{ display: "inline-block" }}>
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
+      {words.map((word, wordIndex) => (
+        <span key={wordIndex} className="inline-block whitespace-nowrap">
+          {Array.from(word).map((char, charIndex) => (
+            <motion.span key={charIndex} variants={child} className="inline-block">
+              {char}
+            </motion.span>
+          ))}
+          {wordIndex < words.length - 1 && (
+            <motion.span variants={child} className="inline-block">
+              &nbsp;
+            </motion.span>
+          )}
+        </span>
       ))}
     </motion.span>
   );
@@ -359,7 +368,6 @@ export function InvitationSPA({
     heroImageSrc = '/images/placeholder-hero.jpg';
   }
 
-  // Base del filtro CSS para convertir cualquier color a Dorado brillante
   const baseGoldFilter = "brightness(0) saturate(100%) invert(85%) sepia(30%) saturate(1000%) hue-rotate(355deg) brightness(105%) contrast(110%)";
 
   return (
@@ -373,6 +381,7 @@ export function InvitationSPA({
       <FlyingButterflies color="#ffffff" />
       <GrowingMagicPlant color={theme.accent} />
 
+      {/* HERO SECTION */}
       <section className="relative h-[100dvh] min-h-[600px] w-full flex items-center justify-center overflow-hidden z-10">
         <motion.div 
           initial={{ opacity: 0 }} 
@@ -395,18 +404,19 @@ export function InvitationSPA({
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
         </motion.div>
 
-        <div className="relative z-10 text-center px-6 w-full max-w-4xl mx-auto flex flex-col items-center justify-center">
+        {/* CONTENEDOR FLEX PRINCIPAL PERFECTAMENTE CENTRADO */}
+        <div className="relative z-10 text-center px-4 md:px-8 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-10 pb-24">
           
           <motion.span 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="block text-[11px] md:text-sm tracking-[0.6em] uppercase mb-4 md:mb-6 drop-shadow-md font-sans font-bold text-white"
+            className="block text-[11px] md:text-sm tracking-[0.6em] uppercase mb-4 md:mb-6 drop-shadow-md font-sans font-bold text-white shrink-0"
           >
             Felices XV Años
           </motion.span>
 
-          {/* LOGO ANIMADO (Reemplaza el texto H1) */}
+          {/* LOGO RESPONSIVO CON LÍMITE DE ALTURA PARA ORDENADORES */}
           <motion.img 
             src="/logojj.png"
             alt="Logo XV Años"
@@ -426,51 +436,53 @@ export function InvitationSPA({
             }}
             transition={{ 
               default: { delay: 0.5, duration: 1.2 }, 
-              filter: { 
-                delay: 1.7, 
-                duration: 5, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }
+              filter: { delay: 1.7, duration: 5, repeat: Infinity, ease: "easeInOut" }
             }}
-            className="w-full max-w-[400px] md:max-w-[600px] h-auto object-contain mx-auto mb-6 md:mb-8"
+            className="w-full max-w-[280px] sm:max-w-[380px] md:max-w-[500px] lg:max-w-[650px] max-h-[30vh] md:max-h-[35vh] lg:max-h-[40vh] object-contain mx-auto mb-6 md:mb-10 px-2 shrink-0"
           />
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.8 }}
-            className="flex flex-col items-center gap-4 md:gap-8 w-full"
+            className="flex flex-col items-center gap-4 md:gap-6 w-full max-w-3xl shrink-0"
           >
             <div 
-              className="w-[2px] h-16 md:h-28 rounded-full bg-gradient-to-b from-transparent via-[#ffd700] to-transparent" 
+              className="w-[2px] h-10 md:h-20 rounded-full bg-gradient-to-b from-transparent via-[#ffd700] to-transparent" 
             />
             
             <TypewriterText 
               text='"Acompáñanos en este día tan especial para celebrar la vida y nuestro nacimiento."'
               delay={1.5}
-              className="font-serif italic text-xl md:text-3xl font-medium opacity-100 max-w-2xl drop-shadow-md leading-relaxed px-4 text-white"
+              className="font-serif italic text-lg md:text-2xl lg:text-3xl font-medium opacity-100 drop-shadow-md leading-relaxed text-white w-full"
             />
 
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5, duration: 0.8 }}
-              className="mt-6 md:mt-8 flex flex-col items-center gap-2 opacity-100"
+              className="mt-4 md:mt-6 flex flex-col items-center gap-2 opacity-100 w-full"
             >
-              <span className="text-[10px] md:text-[12px] uppercase tracking-[0.3em] mb-2 font-bold font-sans text-white drop-shadow-md">
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold font-sans text-white drop-shadow-md text-center">
                 Con la bendición de nuestros padres
               </span>
-              <p className="font-serif text-3xl md:text-4xl lg:text-5xl tracking-wide italic font-bold text-shadow-lg text-white">
+              <p 
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wide text-white text-center break-words w-full"
+                style={{ 
+                  fontFamily: 'var(--font-hero)',
+                  textShadow: '0 0 25px rgba(255,215,0,0.6), 0 4px 10px rgba(0,0,0,0.9)'
+                }}
+              >
                 Jesús Capielo y Neida de Capielo
               </p>
             </motion.div>
           </motion.div>
         </div>
 
+        {/* INDICADOR DESLIZA (Fijado abajo) */}
         <motion.div 
           style={{ opacity: scrollIndicatorOpacity }}
-          className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white"
+          className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white"
         >
           <span className="text-[10px] tracking-[0.3em] uppercase font-bold font-sans">Desliza</span>
           <motion.div
@@ -518,7 +530,7 @@ export function InvitationSPA({
               accentColor="#ffffff"
             />
 
-            <div className="mt-12 md:mt-16 text-center mb-6">
+            <div className="mt-12 md:mt-16 text-center mb-6 px-4">
               <TypewriterText 
                 text="La historia empieza a la hora, así que llega puntual."
                 delay={0}
@@ -526,9 +538,9 @@ export function InvitationSPA({
               />
             </div>
 
-            <div className="mt-16 md:mt-24 text-center mb-10 md:mb-14">
+            <div className="mt-16 md:mt-24 text-center mb-10 md:mb-14 px-4">
               <h2 className="text-4xl md:text-6xl font-serif mb-3 tracking-wide font-bold text-white">Ubicación</h2>
-              <p className="text-[11px] tracking-[0.4em] uppercase font-sans font-bold text-white opacity-90 drop-shadow-sm">
+              <p className="text-[11px] tracking-[0.4em] uppercase font-sans font-bold text-white opacity-90 drop-shadow-sm text-center">
                 Sigue el sendero hacia la celebración
               </p>
             </div>
@@ -574,11 +586,11 @@ export function InvitationSPA({
                   </svg>
                 </div>
                 <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-white drop-shadow-sm">Damas</h3>
-                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white">
+                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center">
                   Semi Formal
                 </p>
                 <div className="mt-5 w-16 h-[2px] bg-white/30" />
-                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white">
+                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words">
                   Sugerencia: Vestido de cóctel, falda o conjunto elegante.
                 </p>
 
@@ -589,7 +601,7 @@ export function InvitationSPA({
                   className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border transition-all duration-200 hover:scale-105 bg-white/10 text-white font-bold"
                   style={{ borderColor: 'rgba(255,255,255,0.3)' }}
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
                   <span className="text-[11px] uppercase tracking-widest font-bold">Ver Ideas</span>
@@ -609,11 +621,11 @@ export function InvitationSPA({
                   </svg>
                 </div>
                 <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-white drop-shadow-sm">Caballeros</h3>
-                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white">
+                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center">
                   Semi Formal
                 </p>
                 <div className="mt-5 w-16 h-[2px] bg-white/30" />
-                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white">
+                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words">
                   Sugerencia: Pantalón de vestir, camisa elegante.
                 </p>
 
@@ -624,7 +636,7 @@ export function InvitationSPA({
                   className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border transition-all duration-200 hover:scale-105 bg-white/10 text-white font-bold"
                   style={{ borderColor: 'rgba(255,255,255,0.3)' }}
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
                   <span className="text-[11px] uppercase tracking-widest font-bold">Ver Ideas</span>
@@ -637,7 +649,7 @@ export function InvitationSPA({
         <motion.section {...sectionAnim} className="py-20 md:py-36 relative overflow-hidden text-white">
           <div className="relative z-10 text-center mb-10 md:mb-16 px-6">
             <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">¿Conoces la Leyenda?</h2>
-            <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md">Demuestra cuánto sabes sobre los cumpleañeros</p>
+            <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md text-center">Demuestra cuánto sabes sobre los cumpleañeros</p>
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
             <Trivia 
@@ -653,9 +665,9 @@ export function InvitationSPA({
             className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-xl border relative backdrop-blur-md" 
             style={{ borderColor: 'rgba(255,255,255,0.1)', backgroundColor: theme.cardBg }}
           >
-            <div className="relative z-10 p-10 md:p-16 text-center">
+            <div className="relative z-10 p-8 md:p-16 text-center">
               <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">¿Aceptarás el Llamado?</h2>
-              <p className="text-[12px] md:text-sm tracking-[0.25em] uppercase mb-10 md:mb-14 font-sans font-bold text-white">Confirma tu presencia en el Claro Real</p>
+              <p className="text-[12px] md:text-sm tracking-[0.25em] uppercase mb-10 md:mb-14 font-sans font-bold text-white text-center">Confirma tu presencia en el Claro Real</p>
               <RSVPForm invitationId={invitationId} />
             </div>
           </div>
@@ -664,14 +676,14 @@ export function InvitationSPA({
         <motion.section {...sectionAnim} className="py-20 md:py-36 px-4 md:px-6 relative text-white">
           <div className="max-w-4xl mx-auto relative z-10">
             <div 
-              className="backdrop-blur-md p-10 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-xl" 
+              className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-xl" 
               style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
             >
               <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-white/20">
                 <span className="text-3xl md:text-4xl">📸</span>
               </div>
               <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 md:mb-7 tracking-wide text-white drop-shadow-md">Inmortaliza el Momento</h2>
-              <p className="text-base md:text-lg font-sans font-medium opacity-100 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed text-white">
+              <p className="text-base md:text-lg font-sans font-medium opacity-100 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed text-white text-center">
                 ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
               </p>
               
@@ -686,9 +698,9 @@ export function InvitationSPA({
 
         <AudioPlayer youtubeUrl={initialData.youtubeMusicLink} accentColor="#ffffff" />
 
-        <footer className="py-16 md:py-28 text-center opacity-80 relative z-10 text-white">
+        <footer className="py-16 md:py-28 text-center opacity-80 relative z-10 text-white px-4">
           <div className="w-20 h-[2px] bg-white mx-auto mb-8 md:mb-10 opacity-30" />
-          <p className="text-[12px] md:text-sm tracking-[0.9em] uppercase font-sans font-bold text-white drop-shadow-md">
+          <p className="text-[12px] md:text-sm tracking-[0.9em] uppercase font-sans font-bold text-white drop-shadow-md break-words">
             {initialData.quinceaneraName} • XV
           </p>
           <p className="mt-4 text-[10px] md:text-xs opacity-70 tracking-widest font-sans font-medium text-white">Te Esperamos!</p>
