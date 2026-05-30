@@ -53,6 +53,27 @@ const sectionAnim = {
   transition: { duration: 0.8, ease: "easeOut" } 
 };
 
+// --- SEPARADOR ELEGANTE ---
+const ElegantDivider = () => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8, filter: "blur(5px)" }}
+    whileInView={{ opacity: 0.5, scale: 1, filter: "blur(0px)" }}
+    viewport={{ once: true, margin: "-50px" }}
+    transition={{ duration: 1, ease: "easeOut" }}
+    className="w-full flex justify-center items-center py-6 md:py-10 pointer-events-none z-10 relative"
+  >
+    <svg width="240" height="30" viewBox="0 0 240 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#ffd700] drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">
+      <path d="M 50 15 Q 85 0 120 15 T 190 15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      <path d="M 50 15 Q 85 30 120 15 T 190 15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      <path d="M 50 15 C 25 15, 15 0, 35 5 C 45 7.5, 45 15, 45 15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      <path d="M 190 15 C 215 15, 225 30, 205 25 C 195 22.5, 195 15, 195 15" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      <circle cx="120" cy="15" r="2.5" fill="currentColor" />
+      <circle cx="85" cy="15" r="1.5" fill="currentColor" />
+      <circle cx="155" cy="15" r="1.5" fill="currentColor" />
+    </svg>
+  </motion.div>
+);
+
 const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, delay?: number, className?: string }) => {
   const words = text.split(" ");
   
@@ -96,24 +117,37 @@ const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, del
   );
 };
 
-const AmbientGradient = () => (
-  <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-gradient-to-br from-[#120524] via-[#090b21] to-[#040b1a]">
+// --- FONDO DE VIDEO ANIMADO ---
+const AmbientVideoBackground = () => (
+  <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
+    {/* Video de Fondo */}
+    <video
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="absolute inset-0 w-full h-full object-cover opacity-60"
+    >
+      <source src="/FONDO.mp4" type="video/mp4" />
+    </video>
+    
+    {/* Capa de fusión de color (Aplica la tonalidad Azul/Morado sobre el video) */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#6b21a8] to-[#1e3a8a] mix-blend-color" />
+    
+    {/* Capa de oscurecimiento superior e inferior para mejorar el contraste de lectura */}
+    <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
+
+    {/* Brillos ambientales animados (Morados y Azules) para extra profundidad */}
     <motion.div
-      className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full mix-blend-screen filter blur-[120px] bg-[#6b21a8]"
+      className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full mix-blend-screen filter blur-[120px] bg-[#6b21a8] opacity-70"
       animate={{ x: [0, 20, 0], y: [0, 30, 0] }} 
       transition={{ duration: 20, repeat: Infinity, ease: "linear" }} 
       style={{ willChange: "transform" }}
     />
     <motion.div
-      className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full mix-blend-screen filter blur-[150px] bg-[#1e3a8a]"
+      className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] rounded-full mix-blend-screen filter blur-[150px] bg-[#1e3a8a] opacity-70"
       animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
       transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      style={{ willChange: "transform" }}
-    />
-    <motion.div
-      className="absolute -bottom-[20%] left-[20%] w-[80%] h-[60%] rounded-full mix-blend-screen filter blur-[140px] bg-[#312e81]"
-      animate={{ x: [0, 20, 0], y: [0, -30, 0] }}
-      transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
       style={{ willChange: "transform" }}
     />
   </div>
@@ -375,13 +409,12 @@ export function InvitationSPA({
       className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffffff] selection:text-[#0a0514] ${customHeroFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
       style={{ backgroundColor: theme.background, color: theme.text }}
     >
-      <AmbientGradient />
+      <AmbientVideoBackground />
       <MagicalFireflies color={theme.accent} />
       <FallingStars accentColor={theme.accent} />
       <FlyingButterflies color="#ffffff" />
       <GrowingMagicPlant color={theme.accent} />
 
-      {/* HERO SECTION */}
       <section className="relative h-[100dvh] min-h-[600px] w-full flex items-center justify-center overflow-hidden z-10">
         <motion.div 
           initial={{ opacity: 0 }} 
@@ -404,7 +437,6 @@ export function InvitationSPA({
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
         </motion.div>
 
-        {/* CONTENEDOR FLEX PRINCIPAL PERFECTAMENTE CENTRADO */}
         <div className="relative z-10 text-center px-4 md:px-8 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-10 pb-24">
           
           <motion.span 
@@ -416,7 +448,6 @@ export function InvitationSPA({
             Felices XV Años
           </motion.span>
 
-          {/* LOGO RESPONSIVO CON LÍMITE DE ALTURA PARA ORDENADORES */}
           <motion.img 
             src="/logojj.png"
             alt="Logo XV Años"
@@ -479,7 +510,6 @@ export function InvitationSPA({
           </motion.div>
         </div>
 
-        {/* INDICADOR DESLIZA (Fijado abajo) */}
         <motion.div 
           style={{ opacity: scrollIndicatorOpacity }}
           className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white"
@@ -499,7 +529,9 @@ export function InvitationSPA({
 
       <div className="relative z-20">
         
-        <motion.section {...sectionAnim} className="py-16 md:py-28 px-4 text-center relative">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-center relative">
           <h2 className="text-[11px] md:text-sm tracking-[0.4em] uppercase font-bold font-sans mb-10 md:mb-14 text-white drop-shadow-md">Solo Faltan</h2>
           <div 
             className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-md shadow-xl max-w-4xl mx-auto w-full text-white"
@@ -509,7 +541,9 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        <motion.section {...sectionAnim} className="py-20 md:py-36 px-6 text-center max-w-3xl mx-auto">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 text-center max-w-3xl mx-auto">
           <EditableWrapper isEnabled={isEditing} onEdit={(val) => onDataChange?.('dedicationMessage', val)}>
             <TypewriterText 
               text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
@@ -519,7 +553,9 @@ export function InvitationSPA({
           </EditableWrapper>
         </motion.section>
 
-        <motion.section {...sectionAnim} className="py-16 md:py-28 px-4 text-white">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
           <div className="max-w-5xl mx-auto">
             <EventDateTime 
               date={initialData.eventDate}
@@ -565,7 +601,9 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        <motion.section {...sectionAnim} className="py-20 md:py-36 px-6 relative text-white">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 relative text-white">
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <div className="mb-14 md:mb-20">
               <h2 className="text-5xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">Dress Code</h2>
@@ -646,7 +684,9 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        <motion.section {...sectionAnim} className="py-20 md:py-36 relative overflow-hidden text-white">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 relative overflow-hidden text-white">
           <div className="relative z-10 text-center mb-10 md:mb-16 px-6">
             <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">¿Conoces la Leyenda?</h2>
             <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md text-center">Demuestra cuánto sabes sobre los cumpleañeros</p>
@@ -660,7 +700,9 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        <motion.div {...sectionAnim} className="py-20 md:py-36 px-4 text-white">
+        <ElegantDivider />
+
+        <motion.div {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
           <div 
             className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-xl border relative backdrop-blur-md" 
             style={{ borderColor: 'rgba(255,255,255,0.1)', backgroundColor: theme.cardBg }}
@@ -673,7 +715,9 @@ export function InvitationSPA({
           </div>
         </motion.div>
 
-        <motion.section {...sectionAnim} className="py-20 md:py-36 px-4 md:px-6 relative text-white">
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 md:px-6 relative text-white">
           <div className="max-w-4xl mx-auto relative z-10">
             <div 
               className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-xl" 
