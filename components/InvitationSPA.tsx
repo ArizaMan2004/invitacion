@@ -12,6 +12,12 @@ const customHeroFont = localFont({
   display: 'swap',
 });
 
+const customApaFont = localFont({
+  src: '../public/fonts/apa.ttf', 
+  variable: '--font-apa',
+  display: 'swap',
+});
+
 const fontSerif = Cormorant_Garamond({ 
   subsets: ['latin'], 
   weight: ['400', '500', '600', '700'],
@@ -74,7 +80,7 @@ const ElegantDivider = () => (
   </motion.div>
 );
 
-const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, delay?: number, className?: string }) => {
+const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
   const container = {
@@ -97,7 +103,7 @@ const TypewriterText = ({ text, delay = 0, className = "" }: { text: string, del
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
-      style={{ display: "inline-block", wordBreak: "normal" }}
+      style={{ display: "inline-block", wordBreak: "normal", ...style }}
     >
       {words.map((word, wordIndex) => (
         <span key={wordIndex} className="inline-block whitespace-nowrap">
@@ -406,7 +412,7 @@ export function InvitationSPA({
 
   return (
     <div 
-      className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffffff] selection:text-[#0a0514] ${customHeroFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
+      className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffffff] selection:text-[#0a0514] ${customHeroFont.variable} ${customApaFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
       style={{ backgroundColor: theme.background, color: theme.text }}
     >
       <AmbientVideoBackground />
@@ -415,6 +421,7 @@ export function InvitationSPA({
       <FlyingButterflies color="#ffffff" />
       <GrowingMagicPlant color={theme.accent} />
 
+      {/* HERO SECTION */}
       <section className="relative h-[100dvh] min-h-[600px] w-full flex items-center justify-center overflow-hidden z-10">
         <motion.div 
           initial={{ opacity: 0 }} 
@@ -437,6 +444,7 @@ export function InvitationSPA({
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
         </motion.div>
 
+        {/* CONTENEDOR FLEX PRINCIPAL PERFECTAMENTE CENTRADO */}
         <div className="relative z-10 text-center px-4 md:px-8 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-10 pb-24">
           
           <motion.span 
@@ -448,6 +456,7 @@ export function InvitationSPA({
             Felices XV Años
           </motion.span>
 
+          {/* LOGO RESPONSIVO CON LÍMITE DE ALTURA PARA ORDENADORES */}
           <motion.img 
             src="/logojj.png"
             alt="Logo XV Años"
@@ -510,6 +519,7 @@ export function InvitationSPA({
           </motion.div>
         </div>
 
+        {/* INDICADOR DESLIZA (Fijado abajo) */}
         <motion.div 
           style={{ opacity: scrollIndicatorOpacity }}
           className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white"
@@ -532,7 +542,12 @@ export function InvitationSPA({
         <ElegantDivider />
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-center relative">
-          <h2 className="text-[11px] md:text-sm tracking-[0.4em] uppercase font-bold font-sans mb-10 md:mb-14 text-white drop-shadow-md">Solo Faltan</h2>
+          <h2 
+            className="text-6xl md:text-6xl mb-8 md:mb-12 text-white drop-shadow-md"
+            style={{ fontFamily: 'var(--font-hero)' }}
+          >
+            Solo Faltan...
+          </h2>
           <div 
             className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-md shadow-xl max-w-4xl mx-auto w-full text-white"
             style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
@@ -548,7 +563,8 @@ export function InvitationSPA({
             <TypewriterText 
               text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
               delay={0}
-              className="text-3xl md:text-5xl font-serif font-bold leading-relaxed italic opacity-100 drop-shadow-lg text-white"
+              className="text-4xl md:text-6xl leading-relaxed opacity-100 drop-shadow-lg text-white"
+              style={{ fontFamily: 'var(--font-apa)' }}
             />
           </EditableWrapper>
         </motion.section>
@@ -570,7 +586,8 @@ export function InvitationSPA({
               <TypewriterText 
                 text="La historia empieza a la hora, así que llega puntual."
                 delay={0}
-                className="text-xl md:text-3xl font-serif italic text-white drop-shadow-md tracking-wide font-bold"
+                className="text-3xl md:text-5xl text-white drop-shadow-md leading-relaxed"
+                style={{ fontFamily: 'var(--font-apa)' }}
               />
             </div>
 
