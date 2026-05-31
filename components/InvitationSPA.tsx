@@ -80,6 +80,38 @@ const ElegantDivider = () => (
   </motion.div>
 );
 
+// --- COMPONENTE DE DESTELLO (DIAMANTE) ---
+const DiamondSparkle = ({ index }: { index: number }) => {
+  const delay = (index % 5) * 0.7 + (index % 3) * 0.4;
+  
+  return (
+    <motion.svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="absolute -top-1 -right-2 text-[#ffd700] drop-shadow-[0_0_8px_rgba(255,215,0,0.8)] z-10 pointer-events-none"
+      initial={{ opacity: 0, scale: 0, rotate: 0 }}
+      animate={{
+        opacity: [0, 1, 0, 0, 0],
+        scale: [0, 1.2, 0, 0, 0],
+        rotate: [0, 90, 180, 180, 180]
+      }}
+      transition={{
+        duration: 4,
+        delay: delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+        times: [0, 0.15, 0.3, 0.6, 1] 
+      }}
+    >
+      <path d="M12 0L13.5 10.5L24 12L13.5 13.5L12 24L10.5 13.5L0 12L10.5 10.5L12 0Z" fill="currentColor" />
+    </motion.svg>
+  );
+};
+
+// --- COMPONENTE DE TEXTO ANIMADO CON DESTELLOS ---
 const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
@@ -107,11 +139,21 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
     >
       {words.map((word, wordIndex) => (
         <span key={wordIndex} className="inline-block whitespace-nowrap">
-          {Array.from(word).map((char, charIndex) => (
-            <motion.span key={charIndex} variants={child} className="inline-block">
-              {char}
-            </motion.span>
-          ))}
+          {Array.from(word).map((char, charIndex) => {
+            const globalIndex = wordIndex * 20 + charIndex;
+            const isSparkleTarget = char.trim() !== '' && (globalIndex % 11 === 0 || globalIndex % 17 === 0);
+
+            return (
+              <motion.span 
+                key={charIndex} 
+                variants={child} 
+                className="inline-block relative" 
+              >
+                {char}
+                {isSparkleTarget && <DiamondSparkle index={globalIndex} />}
+              </motion.span>
+            );
+          })}
           {wordIndex < words.length - 1 && (
             <motion.span variants={child} className="inline-block">
               &nbsp;
@@ -126,7 +168,6 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
 // --- FONDO DE VIDEO ANIMADO ---
 const AmbientVideoBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
-    {/* Video de Fondo */}
     <video
       autoPlay
       loop
@@ -137,7 +178,6 @@ const AmbientVideoBackground = () => (
       <source src="/FONDO.mp4" type="video/mp4" />
     </video>
     
-    {/* Capa de oscurecimiento superior e inferior para mejorar el contraste de lectura */}
     <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
   </div>
 );
@@ -448,20 +488,18 @@ export function InvitationSPA({
             animate={{ 
               opacity: 1, 
               scale: 1,
-              // Keyframes para el resplandor de respiración
               filter: [
-                "drop-shadow(0 0 10px rgba(255,255,255,0.2))", // Resplandor bajo
-                "drop-shadow(0 0 35px rgba(255,255,255,0.7))", // Resplandor alto (Inhalar)
-                "drop-shadow(0 0 10px rgba(255,255,255,0.2))"  // Resplandor bajo (Exhalar)
+                "drop-shadow(0 0 10px rgba(255,255,255,0.2))", 
+                "drop-shadow(0 0 35px rgba(255,255,255,0.7))", 
+                "drop-shadow(0 0 10px rgba(255,255,255,0.2))"  
               ]
             }}
             transition={{ 
               opacity: { delay: 0.5, duration: 1.2 },
               scale: { delay: 0.5, duration: 1.2 },
-              // Animación infinita solo para el filtro (resplandor)
               filter: {
                 delay: 0.5,
-                duration: 3, // Segundos que tarda en completar una respiración
+                duration: 3, 
                 repeat: Infinity,
                 ease: "easeInOut"
               }
