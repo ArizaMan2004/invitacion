@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 import localFont from 'next/font/local';
 import { Cormorant_Garamond, Montserrat } from 'next/font/google';
@@ -45,11 +45,13 @@ import { PhotoUploader } from './invitation/PhotoUploader';
 import { EditableWrapper } from './admin/EditableWrapper';
 import { InvitationData } from '@/lib/types';
 
+// --- NUEVA PROPIEDAD: ocultarMensajeNinos ---
 interface InvitationSPAProps {
   initialData: InvitationData;
   invitationId: string;
   isEditing?: boolean;
   onDataChange?: (field: keyof InvitationData, value: any) => void;
+  ocultarMensajeNinos?: boolean; 
 }
 
 const sectionAnim = {
@@ -182,7 +184,11 @@ const AmbientVideoBackground = () => (
   </div>
 );
 
+// --- PARTÍCULAS CON CORRECCIÓN DE HIDRATACIÓN ---
 const MagicalFireflies = ({ color }: { color: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const count = 40; 
   const firefliesData = useMemo(() => {
     const colors = [color, '#ffffff', '#e0b0ff', '#8ae6ff'];
@@ -195,6 +201,8 @@ const MagicalFireflies = ({ color }: { color: string }) => {
       glowColor: colors[Math.floor(Math.random() * colors.length)]
     }));
   }, [color]);
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
@@ -229,6 +237,9 @@ const MagicalFireflies = ({ color }: { color: string }) => {
 };
 
 const FallingStars = ({ accentColor }: { accentColor: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const starCount = 20; 
   const starsData = useMemo(() => {
     const starPaths = [
@@ -246,6 +257,8 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
       colorVariant: Math.random() > 0.4 ? '#ffffff' : accentColor 
     }));
   }, [accentColor]);
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
@@ -283,6 +296,9 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
 };
 
 const FlyingButterflies = ({ color }: { color: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const count = 6; 
   const butterfliesData = useMemo(() => {
     return Array.from({ length: count }).map(() => ({
@@ -293,6 +309,8 @@ const FlyingButterflies = ({ color }: { color: string }) => {
       direction: Math.random() > 0.5 ? 1 : -1, 
     }));
   }, []);
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
@@ -413,7 +431,8 @@ export function InvitationSPA({
   initialData,
   invitationId,
   isEditing = false,
-  onDataChange
+  onDataChange,
+  ocultarMensajeNinos = false // Valor por defecto falso
 }: InvitationSPAProps) {
   
   const { scrollY } = useScroll();
@@ -582,18 +601,24 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
-        <ElegantDivider />
+        {/* --- CONDICIONAL: OCULTA EL MENSAJE SI ocultarMensajeNinos ES TRUE --- */}
+        {!ocultarMensajeNinos && (
+          <>
+            <ElegantDivider />
 
-        <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 text-center max-w-3xl mx-auto">
-          <EditableWrapper isEnabled={isEditing} onEdit={(val) => onDataChange?.('dedicationMessage', val)}>
-            <TypewriterText 
-              text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
-              delay={0}
-              className="text-4xl md:text-6xl leading-relaxed opacity-100 drop-shadow-lg text-white"
-              style={{ fontFamily: 'var(--font-apa)' }}
-            />
-          </EditableWrapper>
-        </motion.section>
+            <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 text-center max-w-3xl mx-auto">
+              <EditableWrapper isEnabled={isEditing} onEdit={(val) => onDataChange?.('dedicationMessage', val)}>
+                <TypewriterText 
+                  text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
+                  delay={0}
+                  className="text-4xl md:text-6xl leading-relaxed opacity-100 drop-shadow-lg text-white"
+                  style={{ fontFamily: 'var(--font-apa)' }}
+                />
+              </EditableWrapper>
+            </motion.section>
+          </>
+        )}
+        {/* ---------------------------------------------------------------------- */}
 
         <ElegantDivider />
 
