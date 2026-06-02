@@ -105,7 +105,6 @@ interface AnimatedEnvelopeProps {
   paperTexture?: string;
   flapTexture?: string;
   sealImage?: string;
-  filigreeImage?: string;
   eventTime?: string;
   welcomeMessage?: string;
   guestName?: string;
@@ -119,7 +118,6 @@ export function AnimatedEnvelope({
   paperTexture = '/textura-verde.jpg',
   flapTexture = '/FLAP.png',
   sealImage = '/sello.png',
-  filigreeImage = '/filigrana.png',
   eventTime = "19:00 HRS",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
   guestName = "Invitado Especial",
@@ -136,25 +134,21 @@ export function AnimatedEnvelope({
     setIsAnimating(true);
     setStep('opening'); 
     
-    // El papel sube
     setTimeout(() => {
       setStep('paperUp'); 
     }, 1200);
 
-    // Zoom-in cinematográfico inmersivo
     setTimeout(() => {
       setStep('fading'); 
     }, 4500);
 
-    // Desmontaje del sobre e inicio de la SPA
     setTimeout(() => {
       onOpen(); 
-    }, 5600); // Reducido ligeramente para empalmar con el zoom
+    }, 5600);
   };
 
-  // Curvas de animación (Custom Easing) para máxima fluidez
   const springEasing = [0.34, 1.56, 0.64, 1]; 
-  const cinematicZoomEasing = [0.65, 0, 0.15, 1]; // Inicio lento, aceleración máxima, fin suave
+  const cinematicZoomEasing = [0.65, 0, 0.15, 1]; 
 
   return (
     <motion.div 
@@ -164,20 +158,17 @@ export function AnimatedEnvelope({
       style={{ backgroundColor }}
       className="h-[100dvh] min-h-[600px] flex items-center justify-center p-4 overflow-hidden relative"
     >
-      {/* 1. FONDOS MÁGICOS IGUALES A LA SPA */}
       <AmbientVideoBackground />
       <MagicalFireflies color={accentColor} />
       <FallingStars accentColor={accentColor} />
 
-      {/* 2. CONTENIDO INTERACTIVO */}
       <div className="flex flex-col items-center gap-14 w-full max-w-md relative z-10">
         
-        {/* SOBRE COMPLETO CON TRANSICIÓN DE ZOOM INMERSIVO */}
         <motion.div
           onClick={handleClick}
           animate={
             step === 'fading' 
-              ? { scale: 15, opacity: 0, y: 300, rotateX: 5 } // La cámara "atraviesa" la carta
+              ? { scale: 15, opacity: 0, y: 300, rotateX: 5 } 
               : { scale: 1, opacity: 1, y: 0, rotateX: step === 'paperUp' ? 5 : 0 }
           }
           whileHover={step === 'idle' ? { scale: 1.02, y: -5 } : {}}
@@ -190,12 +181,10 @@ export function AnimatedEnvelope({
         >
           <div className="relative w-full shadow-[0_50px_100px_rgba(0,0,0,0.9)] rounded-xl" style={{ aspectRatio: '4/3' }}>
             
-            {/* FONDO INTERIOR DEL SOBRE */}
             <div className="absolute inset-0 bg-[#04020a] rounded-xl overflow-hidden z-10">
                <div className="absolute inset-0 shadow-[inset_0_40px_60px_rgba(0,0,0,0.9)]" />
             </div>
 
-            {/* TARJETA DE INVITACIÓN (Alineada con los colores de InvitationSPA) */}
             <motion.div
               initial={{ y: 0, opacity: 0 }}
               animate={
@@ -217,7 +206,6 @@ export function AnimatedEnvelope({
               }}
             >
               <div className="h-full flex flex-col items-center justify-start pt-6 relative font-sans">
-                {/* Esquinas doradas mágicas */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-[#ffd700] opacity-80" />
                 <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-[#ffd700] opacity-80" />
 
@@ -243,22 +231,12 @@ export function AnimatedEnvelope({
                 src={paperTexture} 
                 alt="Textura" 
                 fill 
-                className="object-cover grayscale opacity-60" 
+                className="object-cover" 
                 priority
               />
-              {/* Degradado adaptado al tono oscuro/noche mágica */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#140f2d] via-[#0a0514] to-[#0a0514] mix-blend-color" />
-              <div className="absolute inset-0 border border-white/5 rounded-xl" />
               
-              {/* Filigranas doradas sutiles */}
-              <div className="absolute inset-0 p-3 pointer-events-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-60">
-                <div className="relative w-full h-full mix-blend-screen" style={{ filter: 'sepia(1) hue-rotate(10deg) saturate(3)' }}>
-                  <Image src={filigreeImage} width={80} height={80} alt="Esquina 1" className="absolute top-0 left-0" />
-                  <Image src={filigreeImage} width={80} height={80} alt="Esquina 2" className="absolute top-0 right-0 rotate-90" />
-                  <Image src={filigreeImage} width={80} height={80} alt="Esquina 3" className="absolute bottom-0 left-0 -rotate-90" />
-                  <Image src={filigreeImage} width={80} height={80} alt="Esquina 4" className="absolute bottom-0 right-0 rotate-180" />
-                </div>
-              </div>
+              <div className="absolute inset-0 bg-black/30" />
+              <div className="absolute inset-0 border border-white/5 rounded-xl" />
 
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
                 <span className="text-[140px] font-serif font-bold text-white drop-shadow-md">XV</span>
@@ -292,10 +270,10 @@ export function AnimatedEnvelope({
                     src={flapTexture} 
                     alt="Textura" 
                     fill 
-                    className="object-cover grayscale opacity-60" 
+                    className="object-cover" 
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#140f2d] to-[#0a0514] mix-blend-color" />
+                  <div className="absolute inset-0 bg-black/20" />
                   <div className="absolute inset-0 border-t border-white/10" />
                 </div>
 
@@ -304,7 +282,7 @@ export function AnimatedEnvelope({
                   className="absolute inset-0 shadow-[inset_0_20px_40px_rgba(0,0,0,0.9)] bg-[#04020a]" 
                   style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
                 >
-                  <Image src={flapTexture} alt="Interior" fill className="object-cover grayscale opacity-20 mix-blend-overlay" />
+                  <Image src={flapTexture} alt="Interior" fill className="object-cover opacity-60" />
                 </div>
               </div>
             </motion.div>
