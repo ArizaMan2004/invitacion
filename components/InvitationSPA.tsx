@@ -180,6 +180,8 @@ const AmbientVideoBackground = () => (
       <source src="/FONDO.mp4" type="video/mp4" />
     </video>
     
+    <div className="absolute inset-0 bg-gradient-to-br from-purple-700 via-purple-500 to-blue-600 mix-blend-color opacity-70" />
+
     <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
   </div>
 );
@@ -446,7 +448,7 @@ export function InvitationSPA({
   };
 
   let heroImageSrc = initialData.heroImage;
-  if (!heroImageSrc || heroImageSrc.includes('C:\\') || !heroImageSrc.startsWith('/')) {
+  if (!heroImageSrc || heroImageSrc.includes('C:\\\\') || !heroImageSrc.startsWith('/')) {
     heroImageSrc = '/images/placeholder-hero.jpg';
   }
 
@@ -502,7 +504,7 @@ export function InvitationSPA({
             initial={{ 
               opacity: 0, 
               scale: 0.9,
-              filter: "drop-shadow(0 0 10px rgba(255,255,255,0.2))"
+              filter: "drop-shadow(0 0 10px rgba(255,215,0,0.2))"
             }}
             animate={{ 
               opacity: 1, 
@@ -552,7 +554,7 @@ export function InvitationSPA({
                 Con la bendición de nuestros padres
               </span>
               <p 
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wide text-white text-center break-words w-full"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-wide text-[#ffd700] text-center break-words w-full"
                 style={{ 
                   fontFamily: 'var(--font-hero)',
                   textShadow: '0 0 25px rgba(255,215,0,0.6), 0 4px 10px rgba(0,0,0,0.9)'
@@ -588,17 +590,22 @@ export function InvitationSPA({
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-center relative">
           <h2 
-            className="text-6xl md:text-6xl mb-8 md:mb-12 text-white drop-shadow-md"
+            className="text-6xl md:text-6xl mb-8 md:mb-12 text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]"
             style={{ fontFamily: 'var(--font-hero)' }}
           >
             Solo Faltan...
           </h2>
-          <div 
-            className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-md shadow-xl max-w-4xl mx-auto w-full text-white"
-            style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
+          <motion.div 
+            className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-md shadow-[0_0_20px_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
+            style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+            transition={{ duration: 0.3 }}
           >
-            <CountdownTimer targetDate={initialData.eventDate} accentColor="#ffffff" />
-          </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="relative z-10">
+              <CountdownTimer targetDate={initialData.eventDate} accentColor={theme.accent} />
+            </div>
+          </motion.div>
         </motion.section>
 
         {/* --- CONDICIONAL: OCULTA EL MENSAJE SI ocultarMensajeNinos ES TRUE --- */}
@@ -630,7 +637,7 @@ export function InvitationSPA({
               venue={initialData.venue}
               address={initialData.venueAddress}
               mapIframe={initialData.mapIframeSrc}
-              accentColor="#ffffff"
+              accentColor={theme.accent}
             />
 
             <div className="mt-12 md:mt-16 text-center mb-6 px-4">
@@ -643,17 +650,20 @@ export function InvitationSPA({
             </div>
 
             <div className="mt-16 md:mt-24 text-center mb-10 md:mb-14 px-4">
-              <h2 className="text-4xl md:text-6xl font-serif mb-3 tracking-wide font-bold text-white">Ubicación</h2>
+              <h2 className="text-4xl md:text-6xl font-serif mb-3 tracking-wide font-bold text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">Ubicación</h2>
               <p className="text-[11px] tracking-[0.4em] uppercase font-sans font-bold text-white opacity-90 drop-shadow-sm text-center">
                 Sigue el sendero hacia la celebración
               </p>
             </div>
 
-            <div 
-              className="p-3 md:p-4 rounded-[3rem] border backdrop-blur-md max-w-4xl mx-auto shadow-xl"
-              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
+            <motion.div 
+              className="p-3 md:p-4 rounded-[3rem] border backdrop-blur-md max-w-4xl mx-auto shadow-[0_0_20px_rgba(255,215,0,0.15)] group relative overflow-hidden"
+              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
+              whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px]">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10">
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve" 
                   width="100%" 
@@ -665,89 +675,151 @@ export function InvitationSPA({
                   className="absolute inset-0 w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-500"
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.section>
 
         <ElegantDivider />
 
+        {/* MEJORADA: SECCIÓN DRESS CODE */}
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 relative text-white">
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <div className="mb-14 md:mb-20">
-              <h2 className="text-5xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">Dress Code</h2>
+              <h2 className="text-5xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">Dress Code</h2>
               <p className="text-[12px] md:text-sm tracking-[0.4em] uppercase font-sans font-bold text-white">
                 Estilo Semi Formal
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 font-sans">
-              <div 
-                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
+              
+              {/* Tarjeta Damas */}
+              <motion.div 
+                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+                transition={{ duration: 0.3 }}
               >
-                <div className="mb-8 md:mb-10 p-6 md:p-7 bg-white/10 rounded-full border border-white/20">
-                  <svg width="45" height="45" className="md:w-[55px] md:h-[55px]" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                {/* Resplandor de fondo en hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                <motion.div 
+                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30 relative z-10"
+                  animate={{
+                    boxShadow: [
+                      "0 0 15px rgba(255,215,0,0.4)",
+                      "0 0 30px rgba(255,215,0,0.8)",
+                      "0 0 15px rgba(255,215,0,0.4)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <svg width="45" height="45" className="md:w-[55px] md:h-[55px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 3c0 1.5.5 3 2 3s2-1.5 2-3M14 3c0 1.5.5 3 2 3s2-1.5 2-3" />
                     <path d="M19 8.5L12 22l-7-13.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5z" />
                   </svg>
-                </div>
-                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-white drop-shadow-sm">Damas</h3>
-                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center">
+                </motion.div>
+                
+                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-sm relative z-10">Damas</h3>
+                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
-                <div className="mt-5 w-16 h-[2px] bg-white/30" />
-                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words">
+                <div className="mt-5 w-16 h-[2px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10" />
+                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words relative z-10">
                   Sugerencia: Vestido de cóctel, falda o conjunto elegante.
                 </p>
 
-                <a 
+                <motion.a 
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20woman&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border transition-all duration-200 hover:scale-105 bg-white/10 text-white font-bold"
-                  style={{ borderColor: 'rgba(255,255,255,0.3)' }}
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10"
+                  style={{ borderColor: 'rgba(255,215,0,0.5)' }}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    boxShadow: "0 0 20px rgba(255,215,0,0.6)",
+                    backgroundColor: "rgba(255,215,0,0.15)"
+                  }}
+                  animate={{
+                    boxShadow: [
+                      "0 0 10px rgba(255,215,0,0.2)",
+                      "0 0 20px rgba(255,215,0,0.5)",
+                      "0 0 10px rgba(255,215,0,0.2)"
+                    ]
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
                   <span className="text-[11px] uppercase tracking-widest font-bold">Ver Ideas</span>
-                </a>
-              </div>
+                </motion.a>
+              </motion.div>
 
-              <div 
-                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
+              {/* Tarjeta Caballeros */}
+              <motion.div 
+                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+                transition={{ duration: 0.3 }}
               >
-                <div className="mb-8 md:mb-10 p-6 md:p-7 bg-white/10 rounded-full border border-white/20">
-                  <svg width="45" height="45" className="md:w-[55px] md:h-[55px]" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                {/* Resplandor de fondo en hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                <motion.div 
+                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30 relative z-10"
+                  animate={{
+                    boxShadow: [
+                      "0 0 15px rgba(255,215,0,0.4)",
+                      "0 0 30px rgba(255,215,0,0.8)",
+                      "0 0 15px rgba(255,215,0,0.4)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }} // Retraso para que palpiten asincrónicamente
+                >
+                  <svg width="45" height="45" className="md:w-[55px] md:h-[55px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 2v20h16V2H4z" strokeOpacity="0.15"/>
                     <path d="M12 22l4-18M12 22l-4-18M12 2v6" />
                     <path d="M9 4l3 2 3-2" />
-                    <path d="M12 8l-2 2h4l-2-2z" fill="#ffffff" fillOpacity={0.9} />
+                    <path d="M12 8l-2 2h4l-2-2z" fill="#ffd700" fillOpacity={0.9} />
                   </svg>
-                </div>
-                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-white drop-shadow-sm">Caballeros</h3>
-                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center">
+                </motion.div>
+                
+                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-sm relative z-10">Caballeros</h3>
+                <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
-                <div className="mt-5 w-16 h-[2px] bg-white/30" />
-                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words">
+                <div className="mt-5 w-16 h-[2px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10" />
+                <p className="mt-5 text-[12px] opacity-90 uppercase tracking-widest italic leading-relaxed text-center font-medium text-white break-words relative z-10">
                   Sugerencia: Pantalón de vestir, camisa elegante.
                 </p>
 
-                <a 
+                <motion.a 
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20men&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border transition-all duration-200 hover:scale-105 bg-white/10 text-white font-bold"
-                  style={{ borderColor: 'rgba(255,255,255,0.3)' }}
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10"
+                  style={{ borderColor: 'rgba(255,215,0,0.5)' }}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    boxShadow: "0 0 20px rgba(255,215,0,0.6)",
+                    backgroundColor: "rgba(255,215,0,0.15)"
+                  }}
+                  animate={{
+                    boxShadow: [
+                      "0 0 10px rgba(255,215,0,0.2)",
+                      "0 0 20px rgba(255,215,0,0.5)",
+                      "0 0 10px rgba(255,215,0,0.2)"
+                    ]
+                  }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 1.25 }}
                 >
                   <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
                   <span className="text-[11px] uppercase tracking-widest font-bold">Ver Ideas</span>
-                </a>
-              </div>
+                </motion.a>
+              </motion.div>
             </div>
           </div>
         </motion.section>
@@ -756,14 +828,14 @@ export function InvitationSPA({
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 relative overflow-hidden text-white">
           <div className="relative z-10 text-center mb-10 md:mb-16 px-6">
-            <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">¿Conoces la Leyenda?</h2>
+            <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">¿Conoces la Leyenda?</h2>
             <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md text-center">Demuestra cuánto sabes sobre los cumpleañeros</p>
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
             <Trivia 
               invitationId={invitationId} 
               guestName="Invitado Real" 
-              accentColor="#ffffff" 
+              accentColor={theme.accent} 
             />
           </div>
         </motion.section>
@@ -771,44 +843,64 @@ export function InvitationSPA({
         <ElegantDivider />
 
         <motion.div {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
-          <div 
-            className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-xl border relative backdrop-blur-md" 
-            style={{ borderColor: 'rgba(255,255,255,0.1)', backgroundColor: theme.cardBg }}
+          <motion.div 
+            className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-[0_0_20px_rgba(255,215,0,0.15)] border relative backdrop-blur-md group" 
+            style={{ borderColor: 'rgba(255,215,0,0.3)', backgroundColor: theme.cardBg }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+            transition={{ duration: 0.3 }}
           >
+            <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             <div className="relative z-10 p-8 md:p-16 text-center">
-              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-white drop-shadow-md">¿Aceptarás el Llamado?</h2>
+              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">¿Aceptarás el Llamado?</h2>
               <p className="text-[12px] md:text-sm tracking-[0.25em] uppercase mb-10 md:mb-14 font-sans font-bold text-white text-center">Confirma tu presencia en el Claro Real</p>
               <RSVPForm invitationId={invitationId} />
             </div>
-          </div>
+          </motion.div>
         </motion.div>
 
         <ElegantDivider />
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 md:px-6 relative text-white">
           <div className="max-w-4xl mx-auto relative z-10">
-            <div 
-              className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-xl" 
-              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,255,255,0.1)' }}
+            <motion.div 
+              className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-[0_0_20px_rgba(255,215,0,0.15)] group relative overflow-hidden" 
+              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
+              whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="w-20 h-20 md:w-24 md:h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-white/20">
-                <span className="text-3xl md:text-4xl">📸</span>
-              </div>
-              <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 md:mb-7 tracking-wide text-white drop-shadow-md">Inmortaliza el Momento</h2>
-              <p className="text-base md:text-lg font-sans font-medium opacity-100 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed text-white text-center">
-                ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
-              </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               
-              <PhotoUploader 
-                invitationId={invitationId} 
-                guestName="Explorador" 
-                accentColor="#ffffff" 
-              />
-            </div>
+              <div className="relative z-10">
+                <motion.div 
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30"
+                  animate={{
+                    boxShadow: [
+                      "0 0 15px rgba(255,215,0,0.4)",
+                      "0 0 30px rgba(255,215,0,0.8)",
+                      "0 0 15px rgba(255,215,0,0.4)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <span className="text-3xl md:text-4xl filter drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]">📸</span>
+                </motion.div>
+                
+                <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 md:mb-7 tracking-wide text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">Inmortaliza el Momento</h2>
+                <p className="text-base md:text-lg font-sans font-medium opacity-100 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed text-white text-center">
+                  ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
+                </p>
+                
+                <PhotoUploader 
+                  invitationId={invitationId} 
+                  guestName="Explorador" 
+                  accentColor={theme.accent} 
+                />
+              </div>
+            </motion.div>
           </div>
         </motion.section>
 
-        <AudioPlayer youtubeUrl={initialData.youtubeMusicLink} accentColor="#ffffff" />
+        <AudioPlayer youtubeUrl={initialData.youtubeMusicLink} accentColor={theme.accent} />
 
         <footer className="py-16 md:py-28 text-center opacity-80 relative z-10 text-white px-4">
           <div className="w-20 h-[2px] bg-white mx-auto mb-8 md:mb-10 opacity-30" />
