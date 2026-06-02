@@ -440,11 +440,12 @@ export function InvitationSPA({
   const { scrollY } = useScroll();
   const scrollIndicatorOpacity = useTransform(scrollY, [0, 80], [1, 0]);
 
+  // Actualizamos el theme con un cardBg más translúcido (Glassmorphism)
   const theme = {
     background: '#0a0514', 
     accent: '#ffd700', 
     text: '#ffffff', 
-    cardBg: 'rgba(20, 15, 45, 0.85)' 
+    cardBg: 'rgba(20, 15, 45, 0.4)' // Más transparente para efecto glass
   };
 
   let heroImageSrc = initialData.heroImage;
@@ -504,7 +505,7 @@ export function InvitationSPA({
             initial={{ 
               opacity: 0, 
               scale: 0.9,
-              filter: "drop-shadow(0 0 10px rgba(255,215,0,0.2))"
+              filter: "drop-shadow(0 0 10px rgba(255,255,255,0.2))"
             }}
             animate={{ 
               opacity: 1, 
@@ -596,11 +597,12 @@ export function InvitationSPA({
             Solo Faltan...
           </h2>
           <motion.div 
-            className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-md shadow-[0_0_20px_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
-            style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
-            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+            className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border backdrop-blur-xl shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
+            style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.2)' }}
+            whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
             transition={{ duration: 0.3 }}
           >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             <div className="relative z-10">
               <CountdownTimer targetDate={initialData.eventDate} accentColor={theme.accent} />
@@ -618,7 +620,7 @@ export function InvitationSPA({
                 <TypewriterText 
                   text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
                   delay={0}
-                  className="text-4xl md:text-6xl leading-relaxed opacity-100 drop-shadow-lg text-white"
+                  className="text-4xl md:text-6xl leading-relaxed opacity-100 drop-shadow-[0_0_15px_rgba(255,215,0,0.3)] text-white"
                   style={{ fontFamily: 'var(--font-apa)' }}
                 />
               </EditableWrapper>
@@ -644,7 +646,7 @@ export function InvitationSPA({
               <TypewriterText 
                 text="La historia empieza a la hora, así que llega puntual."
                 delay={0}
-                className="text-3xl md:text-5xl text-white drop-shadow-md leading-relaxed"
+                className="text-3xl md:text-5xl text-white drop-shadow-[0_0_15px_rgba(255,215,0,0.3)] leading-relaxed"
                 style={{ fontFamily: 'var(--font-apa)' }}
               />
             </div>
@@ -657,13 +659,14 @@ export function InvitationSPA({
             </div>
 
             <motion.div 
-              className="p-3 md:p-4 rounded-[3rem] border backdrop-blur-md max-w-4xl mx-auto shadow-[0_0_20px_rgba(255,215,0,0.15)] group relative overflow-hidden"
-              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
-              whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+              className="p-3 md:p-4 rounded-[3rem] border backdrop-blur-xl max-w-4xl mx-auto shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] group relative overflow-hidden"
+              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.2)' }}
+              whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
               transition={{ duration: 0.3 }}
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-              <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10">
+              <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10 shadow-inner">
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve" 
                   width="100%" 
@@ -695,16 +698,16 @@ export function InvitationSPA({
               
               {/* Tarjeta Damas */}
               <motion.div 
-                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden group"
-                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
-                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-xl flex flex-col items-center shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.2)' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Resplandor de fondo en hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 <motion.div 
-                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30 relative z-10"
+                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/40 backdrop-blur-md relative z-10"
                   animate={{
                     boxShadow: [
                       "0 0 15px rgba(255,215,0,0.4)",
@@ -720,7 +723,7 @@ export function InvitationSPA({
                   </svg>
                 </motion.div>
                 
-                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-sm relative z-10">Damas</h3>
+                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-[0_0_8px_rgba(255,215,0,0.5)] relative z-10">Damas</h3>
                 <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
@@ -733,12 +736,12 @@ export function InvitationSPA({
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20woman&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10"
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10 backdrop-blur-md"
                   style={{ borderColor: 'rgba(255,215,0,0.5)' }}
                   whileHover={{ 
                     scale: 1.05, 
                     boxShadow: "0 0 20px rgba(255,215,0,0.6)",
-                    backgroundColor: "rgba(255,215,0,0.15)"
+                    backgroundColor: "rgba(255,215,0,0.25)"
                   }}
                   animate={{
                     boxShadow: [
@@ -758,16 +761,16 @@ export function InvitationSPA({
 
               {/* Tarjeta Caballeros */}
               <motion.div 
-                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-md flex flex-col items-center shadow-[0_0_20px_rgba(255,215,0,0.15)] relative overflow-hidden group"
-                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
-                whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+                className="p-10 md:p-14 rounded-[3.5rem] border backdrop-blur-xl flex flex-col items-center shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.2)' }}
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Resplandor de fondo en hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 <motion.div 
-                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30 relative z-10"
+                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/40 backdrop-blur-md relative z-10"
                   animate={{
                     boxShadow: [
                       "0 0 15px rgba(255,215,0,0.4)",
@@ -785,7 +788,7 @@ export function InvitationSPA({
                   </svg>
                 </motion.div>
                 
-                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-sm relative z-10">Caballeros</h3>
+                <h3 className="text-3xl md:text-4xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-[0_0_8px_rgba(255,215,0,0.5)] relative z-10">Caballeros</h3>
                 <p className="text-base opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
@@ -798,12 +801,12 @@ export function InvitationSPA({
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20men&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10"
+                  className="mt-8 flex items-center justify-center gap-2 px-6 py-3 rounded-full border bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold shadow-[0_0_10px_rgba(255,215,0,0.2)] relative z-10 backdrop-blur-md"
                   style={{ borderColor: 'rgba(255,215,0,0.5)' }}
                   whileHover={{ 
                     scale: 1.05, 
                     boxShadow: "0 0 20px rgba(255,215,0,0.6)",
-                    backgroundColor: "rgba(255,215,0,0.15)"
+                    backgroundColor: "rgba(255,215,0,0.25)"
                   }}
                   animate={{
                     boxShadow: [
@@ -832,6 +835,7 @@ export function InvitationSPA({
             <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md text-center">Demuestra cuánto sabes sobre los cumpleañeros</p>
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
+            {/* Si el componente Trivia tiene un contenedor interno, quizás debas agregarle backdrop-blur-xl allí también */}
             <Trivia 
               invitationId={invitationId} 
               guestName="Invitado Real" 
@@ -844,11 +848,12 @@ export function InvitationSPA({
 
         <motion.div {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
           <motion.div 
-            className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-[0_0_20px_rgba(255,215,0,0.15)] border relative backdrop-blur-md group" 
-            style={{ borderColor: 'rgba(255,215,0,0.3)', backgroundColor: theme.cardBg }}
-            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+            className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] border relative backdrop-blur-xl group" 
+            style={{ borderColor: 'rgba(255,215,0,0.2)', backgroundColor: theme.cardBg }}
+            whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
             transition={{ duration: 0.3 }}
           >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             <div className="relative z-10 p-8 md:p-16 text-center">
               <h2 className="text-4xl md:text-6xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">¿Aceptarás el Llamado?</h2>
@@ -863,16 +868,17 @@ export function InvitationSPA({
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 md:px-6 relative text-white">
           <div className="max-w-4xl mx-auto relative z-10">
             <motion.div 
-              className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-[0_0_20px_rgba(255,215,0,0.15)] group relative overflow-hidden" 
-              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.3)' }}
-              whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+              className="backdrop-blur-xl p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border text-center shadow-[0_8px_32px_0_rgba(255,215,0,0.15)] group relative overflow-hidden" 
+              style={{ backgroundColor: theme.cardBg, borderColor: 'rgba(255,215,0,0.2)' }}
+              whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(255,215,0,0.3)', borderColor: 'rgba(255,215,0,0.4)' }}
               transition={{ duration: 0.3 }}
             >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#ffd700]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               
               <div className="relative z-10">
                 <motion.div 
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/30"
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border border-[#ffd700]/50 shadow-[0_0_15px_rgba(255,215,0,0.4)] bg-black/40 backdrop-blur-md"
                   animate={{
                     boxShadow: [
                       "0 0 15px rgba(255,215,0,0.4)",

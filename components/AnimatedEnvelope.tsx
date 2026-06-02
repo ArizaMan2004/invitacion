@@ -372,7 +372,7 @@ export function AnimatedEnvelope({
               className="text-center"
             >
               <p className="text-[#ffd700] text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans">
-                El bosque se abre...
+                CARGA LA INVITACIÓN...
               </p>
             </motion.div>
           )}
