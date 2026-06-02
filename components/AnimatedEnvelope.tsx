@@ -226,7 +226,7 @@ export function AnimatedEnvelope({
             </motion.div>
 
             {/* CUERPO DEL SOBRE INFERIOR */}
-            <div className="absolute inset-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] z-30 overflow-hidden bg-black">
+            <div className="absolute inset-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] z-30 overflow-hidden">
               <Image 
                 src={paperTexture} 
                 alt="Textura" 
@@ -235,13 +235,12 @@ export function AnimatedEnvelope({
                 priority
               />
               
-              <div className="absolute inset-0 bg-black/30" />
+              {/* Se eliminó bg-black/30 y shadow-[inset...] para que la textura muestre sus colores reales */}
               <div className="absolute inset-0 border border-white/5 rounded-xl" />
 
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
                 <span className="text-[140px] font-serif font-bold text-white drop-shadow-md">XV</span>
               </div>
-              <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] pointer-events-none" />
             </div>
 
             {/* SOLAPA TRIANGULAR SUPERIOR */}
@@ -258,7 +257,7 @@ export function AnimatedEnvelope({
               style={{ transformStyle: 'preserve-3d' }}
             >
               <div 
-                className="absolute inset-0 bg-black"
+                className="absolute inset-0"
                 style={{ 
                   clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
                   transformStyle: 'preserve-3d',
@@ -268,21 +267,27 @@ export function AnimatedEnvelope({
                 <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
                   <Image 
                     src={flapTexture} 
-                    alt="Textura" 
+                    alt="Textura Exterior" 
                     fill 
                     className="object-cover" 
                     priority
                   />
-                  <div className="absolute inset-0 bg-black/20" />
+                  {/* Se eliminó bg-black/20 para igualar el brillo exacto con el cuerpo inferior */}
                   <div className="absolute inset-0 border-t border-white/10" />
                 </div>
 
                 {/* Interior Solapa */}
                 <div 
-                  className="absolute inset-0 shadow-[inset_0_20px_40px_rgba(0,0,0,0.9)] bg-[#04020a]" 
+                  className="absolute inset-0" 
                   style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
                 >
-                  <Image src={flapTexture} alt="Interior" fill className="object-cover opacity-60" />
+                  <Image 
+                    src={flapTexture} 
+                    alt="Textura Interior" 
+                    fill 
+                    className="object-cover" 
+                  />
+                  {/* Se removió la opacidad reducida y sombras internas */}
                 </div>
               </div>
             </motion.div>
