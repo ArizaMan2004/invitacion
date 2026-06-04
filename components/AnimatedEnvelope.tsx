@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 
-// --- FONDOS Y PARTÍCULAS (Heredados de la vista principal) ---
+// --- FONDOS Y PARTÍCULAS ---
 const AmbientVideoBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
     <video
@@ -102,7 +102,8 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
 };
 
 interface AnimatedEnvelopeProps {
-  paperTexture?: string;
+  envelopeBackTexture?: string;
+  envelopeFrontTexture?: string;
   flapTexture?: string;
   sealImage?: string;
   eventTime?: string;
@@ -115,10 +116,11 @@ interface AnimatedEnvelopeProps {
 }
 
 export function AnimatedEnvelope({
-  paperTexture = '/textura-verde.jpg',
+  envelopeBackTexture = '/paper1.png',
+  envelopeFrontTexture = '/paper2.png',
   flapTexture = '/FLAP.png',
   sealImage = '/sello.png',
-  eventTime = "19:00 HRS",
+  eventTime = "08:00 PM - 11/07/2026",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
   guestName = "Invitado Especial",
   primaryColor = '#0a0514', 
@@ -181,10 +183,18 @@ export function AnimatedEnvelope({
         >
           <div className="relative w-full shadow-[0_50px_100px_rgba(0,0,0,0.9)] rounded-xl" style={{ aspectRatio: '4/3' }}>
             
-            <div className="absolute inset-0 bg-[#04020a] rounded-xl overflow-hidden z-10">
-               <div className="absolute inset-0 shadow-[inset_0_40px_60px_rgba(0,0,0,0.9)]" />
+            {/* 1. CAPA TRASERA (Fondo interior del sobre) z-0 */}
+            <div className="absolute inset-0 bg-[#04020a] rounded-xl overflow-hidden z-0">
+              <Image 
+                src={envelopeBackTexture} 
+                alt="Fondo Interior" 
+                fill 
+                className="object-cover opacity-60 brightness-50" 
+              />
+              <div className="absolute inset-0 shadow-[inset_0_40px_60px_rgba(0,0,0,0.9)]" />
             </div>
 
+            {/* 2. EL CONTENIDO (La Carta) z-10 */}
             <motion.div
               initial={{ y: 0, opacity: 0 }}
               animate={
@@ -193,7 +203,7 @@ export function AnimatedEnvelope({
                   : { y: 0, opacity: 0, scale: 0.95 }
               }
               transition={{ duration: 1.4, ease: springEasing }}
-              className="absolute inset-x-5 top-5 rounded-lg p-6 md:p-8 text-center z-20 h-[105%]"
+              className="absolute inset-x-5 top-5 rounded-lg p-6 md:p-8 text-center z-10 h-[105%]"
               style={{ 
                 background: 'rgba(20, 15, 45, 0.95)', 
                 backdropFilter: 'blur(10px)',
@@ -225,31 +235,31 @@ export function AnimatedEnvelope({
               </div>
             </motion.div>
 
-            {/* CUERPO DEL SOBRE INFERIOR */}
-            <div className="absolute inset-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] z-30 overflow-hidden">
+            {/* 3. CAPA FRONTAL (Bolsillo del sobre) z-20 */}
+            <div 
+              className="absolute inset-0 rounded-xl z-20 pointer-events-none drop-shadow-[0_-5px_15px_rgba(0,0,0,0.4)] overflow-hidden"
+              style={{ clipPath: 'polygon(0% 0%, 50% 38%, 100% 0%, 100% 100%, 0% 100%)' }}
+            >
               <Image 
-                src={paperTexture} 
-                alt="Textura" 
+                src={envelopeFrontTexture} 
+                alt="Frente del Sobre" 
                 fill 
                 className="object-cover" 
                 priority
               />
-              
-              {/* Se eliminó bg-black/30 y shadow-[inset...] para que la textura muestre sus colores reales */}
               <div className="absolute inset-0 border border-white/5 rounded-xl" />
-
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
                 <span className="text-[140px] font-serif font-bold text-white drop-shadow-md">XV</span>
               </div>
             </div>
 
-            {/* SOLAPA TRIANGULAR SUPERIOR */}
+            {/* 4. SOLAPA TRIANGULAR SUPERIOR (Flap) z-30 */}
             <motion.div
-              initial={{ rotateX: 0, zIndex: 40 }}
+              initial={{ rotateX: 0, zIndex: 30 }}
               animate={{ 
                 rotateX: step !== 'idle' ? -165 : 0, 
                 y: step !== 'idle' ? -10 : 0,
-                zIndex: (step === 'paperUp' || step === 'fading') ? 15 : 40 
+                zIndex: (step === 'paperUp' || step === 'fading') ? 5 : 30 
               }}
               whileHover={step === 'idle' ? { rotateX: -15 } : {}}
               transition={{ duration: 1.4, ease: springEasing }}
@@ -265,14 +275,7 @@ export function AnimatedEnvelope({
               >
                 {/* Exterior Solapa */}
                 <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
-                  <Image 
-                    src={flapTexture} 
-                    alt="Textura Exterior" 
-                    fill 
-                    className="object-cover" 
-                    priority
-                  />
-                  {/* Se eliminó bg-black/20 para igualar el brillo exacto con el cuerpo inferior */}
+                  <Image src={flapTexture} alt="Textura Exterior" fill className="object-cover" priority />
                   <div className="absolute inset-0 border-t border-white/10" />
                 </div>
 
@@ -281,13 +284,7 @@ export function AnimatedEnvelope({
                   className="absolute inset-0" 
                   style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
                 >
-                  <Image 
-                    src={flapTexture} 
-                    alt="Textura Interior" 
-                    fill 
-                    className="object-cover" 
-                  />
-                  {/* Se removió la opacidad reducida y sombras internas */}
+                  <Image src={flapTexture} alt="Textura Interior" fill className="object-cover" />
                 </div>
               </div>
             </motion.div>
@@ -302,17 +299,11 @@ export function AnimatedEnvelope({
               }
               whileHover={step === 'idle' ? { rotateX: -15, scale: 1.05 } : {}}
               transition={{ duration: step !== 'idle' ? 0.8 : 1.4, ease: springEasing }}
-              className="absolute left-1/2 top-[65%] origin-[center_-130%] z-50 pointer-events-none flex justify-center items-center"
+              className="absolute left-1/2 top-[65%] origin-[center_-130%] z-40 pointer-events-none flex justify-center items-center"
               style={{ transformStyle: 'preserve-3d', transform: 'translate(-50%, -50%)' }}
             >
               <div className="relative w-28 h-28 -mt-14 -ml-14 drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]">
-                <Image 
-                  src={sealImage} 
-                  alt="Sello de Cera" 
-                  fill 
-                  className="object-contain hover:brightness-125 transition-all duration-300" 
-                  priority
-                />
+                <Image src={sealImage} alt="Sello de Cera" fill className="object-contain hover:brightness-125 transition-all duration-300" priority />
               </div>
             </motion.div>
             

@@ -458,7 +458,31 @@ export function InvitationSPA({
       className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffffff] selection:text-[#0a0514] ${customHeroFont.variable} ${customApaFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
       style={{ backgroundColor: theme.background, color: theme.text }}
     >
+      {/* 1. FONDO DE VIDEO */}
       <AmbientVideoBackground />
+
+      {/* 2. IMAGEN DEL HERO FIJA EN TODA LA PÁGINA (SOBREPUESTA AL VIDEO) */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 0.7 }} 
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="fixed inset-0 z-[1] pointer-events-none"
+        style={{ 
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+        }}
+      >
+        <img 
+          src={heroImageSrc} 
+          alt="Hero Bosque Encantado" 
+          className="w-full h-full object-cover" 
+          fetchPriority="high"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
+      </motion.div>
+
+      {/* 3. CAPAS DE PARTÍCULAS Y ELEMENTOS FLOTANTES */}
       <MagicalFireflies color={theme.accent} />
       <FallingStars accentColor={theme.accent} />
       <FlyingButterflies color="#ffffff" />
@@ -466,26 +490,6 @@ export function InvitationSPA({
 
       {/* HERO SECTION */}
       <section className="relative h-[100dvh] min-h-[600px] w-full flex items-center justify-center overflow-hidden z-10">
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 0.7 }} 
-          transition={{ duration: 2, ease: "easeOut" }}
-          className="absolute inset-0 z-0"
-          style={{ 
-            maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
-          }}
-        >
-          <img 
-            src={heroImageSrc} 
-            alt="Hero Bosque Encantado" 
-            className="w-full h-full object-cover" 
-            fetchPriority="high"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
-        </motion.div>
-
         {/* CONTENEDOR FLEX PRINCIPAL PERFECTAMENTE CENTRADO */}
         <div className="relative z-10 text-center px-4 md:px-8 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-10 pb-24">
           
@@ -778,7 +782,7 @@ export function InvitationSPA({
                       "0 0 15px rgba(255,215,0,0.4)"
                     ]
                   }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }} // Retraso para que palpiten asincrónicamente
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 >
                   <svg width="45" height="45" className="md:w-[55px] md:h-[55px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 2v20h16V2H4z" strokeOpacity="0.15"/>
@@ -835,7 +839,6 @@ export function InvitationSPA({
             <p className="text-base md:text-xl opacity-100 italic font-serif font-bold text-white drop-shadow-md text-center">Demuestra cuánto sabes sobre los cumpleañeros</p>
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
-            {/* Si el componente Trivia tiene un contenedor interno, quizás debas agregarle backdrop-blur-xl allí también */}
             <Trivia 
               invitationId={invitationId} 
               guestName="Invitado Real" 
