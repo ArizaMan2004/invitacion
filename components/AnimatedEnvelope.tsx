@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 
 // --- FONDOS Y PARTÍCULAS ---
@@ -35,7 +35,7 @@ const MagicalFireflies = ({ color }: { color: string }) => {
   }, [color]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
       {firefliesData.map((data, i) => (
         <motion.div
           key={i}
@@ -77,7 +77,7 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
   }, [accentColor]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
       {starsData.map((star, i) => (
         <motion.svg
           key={i}
@@ -101,11 +101,68 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
   );
 };
 
+// --- NUEVO EFECTO: CHISPAS MÁGICAS DE TRANSICIÓN ---
+const TransitionSparks = ({ color }: { color: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const sparksCount = 45;
+  const sparks = useMemo(() => {
+    return Array.from({ length: sparksCount }).map(() => {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 80 + 30; // Distancia de dispersión (vw/vh)
+      return {
+        x: `${Math.cos(angle) * distance}vw`,
+        y: `${Math.sin(angle) * distance}vh`,
+        size: Math.random() * 4 + 2,
+        duration: Math.random() * 0.7 + 0.5,
+        delay: Math.random() * 0.2,
+      };
+    });
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center overflow-hidden">
+      {/* Explosión de partículas */}
+      {sparks.map((spark, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full bg-white"
+          style={{
+            width: spark.size,
+            height: spark.size,
+            boxShadow: `0 0 10px 2px ${color}, 0 0 20px 5px ${color}`,
+          }}
+          initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
+          animate={{
+            opacity: [1, 1, 0],
+            x: spark.x,
+            y: spark.y,
+            scale: [0, 1.5, 0.5],
+          }}
+          transition={{ duration: spark.duration, delay: spark.delay, ease: "easeOut" }}
+        />
+      ))}
+      
+      {/* Fundido oscuro para suavizar la carga de la siguiente página */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.1, ease: "easeIn" }}
+        className="absolute inset-0 bg-[#0a0514]"
+      />
+    </div>
+  );
+};
+
 interface AnimatedEnvelopeProps {
   envelopeBackTexture?: string;
   envelopeFrontTexture?: string;
   flapTexture?: string;
   sealImage?: string;
+  heroImageSrc?: string; // Propiedad agregada para la imagen del hero
   eventTime?: string;
   welcomeMessage?: string;
   guestName?: string;
@@ -120,6 +177,7 @@ export function AnimatedEnvelope({
   envelopeFrontTexture = '/paper2.png',
   flapTexture = '/FLAP.png',
   sealImage = '/sello.png',
+  heroImageSrc = '/images/placeholder-hero.jpg', // Valor por defecto
   eventTime = "08:00 PM - 11/07/2026",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
   guestName = "Invitado Especial",
@@ -150,19 +208,39 @@ export function AnimatedEnvelope({
   };
 
   const springEasing = [0.34, 1.56, 0.64, 1]; 
-  const cinematicZoomEasing = [0.65, 0, 0.15, 1]; 
 
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 1.5, ease: cinematicZoomEasing } }}
+      exit={{ opacity: 0 }}
       style={{ backgroundColor }}
       className="h-[100dvh] min-h-[600px] flex items-center justify-center p-4 overflow-hidden relative"
     >
       <AmbientVideoBackground />
+
+      {/* IMAGEN DEL HERO FIJA EN TODA LA PÁGINA */}
+      <motion.div 
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 0.7 }} 
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="fixed inset-0 z-[1] pointer-events-none"
+        style={{ 
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+        }}
+      >
+        <img 
+          src={heroImageSrc} 
+          alt="Hero Fondo" 
+          className="w-full h-full object-cover" 
+          fetchPriority="high"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
+      </motion.div>
       
-      {/* 1. OPTIMIZACIÓN: Solo renderizar partículas si el sobre NO se está abriendo */}
+      {/* Solo renderizar partículas regulares si el sobre NO se está abriendo */}
       {step === 'idle' && (
         <>
           <MagicalFireflies color={accentColor} />
@@ -170,21 +248,21 @@ export function AnimatedEnvelope({
         </>
       )}
 
+      {/* RENDERIZAR EXPLOSIÓN DE CHISPAS EN EL PASO 'FADING' */}
+      {step === 'fading' && <TransitionSparks color={accentColor} />}
+
       <div className="flex flex-col items-center gap-14 w-full max-w-md relative z-10">
         
         <motion.div
           onClick={handleClick}
           animate={
             step === 'fading' 
-              // 2. OPTIMIZACIÓN: Scale drásticamente reducido de 15 a 3
-              ? { scale: 3, opacity: 0, y: 150, rotateX: 5 } 
+              // En lugar de escalar a lo grande, el sobre se aleja y se desvanece
+              ? { scale: 0.8, opacity: 0, y: 30 } 
               : { scale: 1, opacity: 1, y: 0, rotateX: step === 'paperUp' ? 5 : 0 }
           }
           whileHover={step === 'idle' ? { scale: 1.02, y: -5 } : {}}
-          transition={{ 
-            duration: step === 'fading' ? 1.5 : 1, 
-            ease: step === 'fading' ? cinematicZoomEasing : springEasing 
-          }}
+          transition={{ duration: 1, ease: springEasing }}
           className={`relative w-full ${step === 'idle' ? 'cursor-pointer' : ''}`}
           style={{ perspective: '2000px', transformStyle: 'preserve-3d' }}
         >
@@ -213,7 +291,6 @@ export function AnimatedEnvelope({
               className="absolute inset-x-5 top-5 rounded-lg p-6 md:p-8 text-center z-10 h-[105%]"
               style={{ 
                 background: 'rgba(20, 15, 45, 0.95)', 
-                // 3. OPTIMIZACIÓN: Menos blur y box-shadow simple para la GPU
                 backdropFilter: 'blur(2px)', 
                 boxShadow: step === 'paperUp' || step === 'fading' 
                   ? '0 10px 20px rgba(0,0,0,0.8)'
@@ -354,7 +431,7 @@ export function AnimatedEnvelope({
               className="text-center"
             >
               <p className="text-[#ffd700] text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans">
-                CARGA LA INVITACIÓN...
+                REVELANDO LA MAGIA...
               </p>
             </motion.div>
           )}
