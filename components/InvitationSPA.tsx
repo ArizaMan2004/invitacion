@@ -121,6 +121,7 @@ const DiamondSparkle = ({ index }: { index: number }) => {
   );
 };
 
+// --- COMPONENTE DE TEXTO ANIMADO CON DESTELLOS CORREGIDO ---
 const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
@@ -139,7 +140,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
 
   return (
     <motion.span
-      className={className}
+      className={`${className} tracking-wider`}
       variants={container}
       initial="hidden"
       whileInView="visible"
@@ -147,7 +148,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
       style={{ display: "inline-block", wordBreak: "normal", ...style }}
     >
       {words.map((word, wordIndex) => (
-        <span key={wordIndex} className="inline-block whitespace-nowrap">
+        <span key={wordIndex} className="inline-block whitespace-nowrap mr-2 md:mr-3">
           {Array.from(word).map((char, charIndex) => {
             const globalIndex = wordIndex * 20 + charIndex;
             const isSparkleTarget = char.trim() !== '' && (globalIndex % 15 === 0 || globalIndex % 25 === 0);
@@ -157,17 +158,13 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
                 key={charIndex} 
                 variants={child} 
                 className="inline-block relative" 
+                style={{ letterSpacing: "0.05em" }}
               >
                 {char}
                 {isSparkleTarget && <DiamondSparkle index={globalIndex} />}
               </motion.span>
             );
           })}
-          {wordIndex < words.length - 1 && (
-            <motion.span variants={child} className="inline-block">
-               
-            </motion.span>
-          )}
         </span>
       ))}
     </motion.span>
@@ -185,6 +182,7 @@ const AmbientVideoBackground = () => (
     >
       <source src="/FONDO.mp4" type="video/mp4" />
     </video>
+    
     <div className="absolute inset-0 bg-gradient-to-br from-purple-700 via-purple-500 to-blue-600 mix-blend-color opacity-70" />
     <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
   </div>
@@ -427,12 +425,10 @@ export function InvitationSPA({
   const { scrollY } = useScroll();
   const scrollIndicatorOpacity = useTransform(scrollY, [0, 80], [1, 0]);
 
-  // --- TEMA ACTUALIZADO PARA EFECTO "CRISTAL" MÁS CLARO Y LLAMATIVO ---
   const theme = {
     background: '#0a0514', 
     accent: '#ffd700', 
     text: '#ffffff', 
-    // Fondo de tarjeta casi transparente con un ligero toque blanco para simular vidrio
     cardBg: 'rgba(255, 255, 255, 0.08)' 
   };
 
@@ -446,10 +442,8 @@ export function InvitationSPA({
       className={`min-h-screen w-full overflow-x-hidden selection:bg-[#ffd700] selection:text-[#0a0514] ${customHeroFont.variable} ${customApaFont.variable} ${fontSerif.variable} ${fontSans.variable} font-sans`}
       style={{ backgroundColor: theme.background, color: theme.text }}
     >
-      {/* 1. FONDO DE VIDEO */}
       <AmbientVideoBackground />
 
-      {/* 2. IMAGEN DEL HERO FIJA */}
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 0.8 }} 
@@ -470,13 +464,11 @@ export function InvitationSPA({
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/60 via-[#0a0514]/20 to-transparent" />
       </motion.div>
 
-      {/* 3. CAPAS DE PARTÍCULAS */}
       <MagicalFireflies color={theme.accent} />
       <FallingStars accentColor={theme.accent} />
       <FlyingButterflies color="#ffffff" />
       <GrowingMagicPlant color={theme.accent} />
 
-      {/* HERO SECTION */}
       <section className="relative h-[100dvh] min-h-[600px] w-full flex items-center justify-center overflow-hidden z-10">
         <div className="relative z-10 text-center px-4 md:px-8 w-full h-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-10 pb-24">
           
@@ -489,7 +481,6 @@ export function InvitationSPA({
             Te damos la bienvenida a nuestros
           </motion.span>
 
-          {/* LOGO RESPONSIVO CON BRILLO EXAGERADO */}
           <motion.img 
             src="/logojj.png"
             alt="Logo XV Años"
@@ -576,7 +567,6 @@ export function InvitationSPA({
             Solo Faltan...
           </h2>
           
-          {/* TARJETA DE CRISTAL LLAMATIVA */}
           <motion.div 
             className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border border-[#ffd700]/40 backdrop-blur-md shadow-[0_0_30px_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
             style={{ backgroundColor: theme.cardBg }}
@@ -612,7 +602,6 @@ export function InvitationSPA({
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
           <div className="max-w-5xl mx-auto">
-            {/* Wrapper invisible para el EventDateTime para mantener la coherencia transparente */}
             <div className="bg-transparent">
               <EventDateTime 
                 date={initialData.eventDate}

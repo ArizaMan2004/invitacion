@@ -101,7 +101,6 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
   );
 };
 
-// --- NUEVO EFECTO: CHISPAS MÁGICAS DE TRANSICIÓN ---
 const TransitionSparks = ({ color }: { color: string }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -110,7 +109,7 @@ const TransitionSparks = ({ color }: { color: string }) => {
   const sparks = useMemo(() => {
     return Array.from({ length: sparksCount }).map(() => {
       const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * 80 + 30; // Distancia de dispersión (vw/vh)
+      const distance = Math.random() * 80 + 30; 
       return {
         x: `${Math.cos(angle) * distance}vw`,
         y: `${Math.sin(angle) * distance}vh`,
@@ -125,7 +124,6 @@ const TransitionSparks = ({ color }: { color: string }) => {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center overflow-hidden">
-      {/* Explosión de partículas */}
       {sparks.map((spark, i) => (
         <motion.div
           key={i}
@@ -146,7 +144,6 @@ const TransitionSparks = ({ color }: { color: string }) => {
         />
       ))}
       
-      {/* Fundido oscuro para suavizar la carga de la siguiente página */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -162,7 +159,7 @@ interface AnimatedEnvelopeProps {
   envelopeFrontTexture?: string;
   flapTexture?: string;
   sealImage?: string;
-  heroImageSrc?: string; // Propiedad agregada para la imagen del hero
+  heroImageSrc?: string; 
   eventTime?: string;
   welcomeMessage?: string;
   guestName?: string;
@@ -177,7 +174,7 @@ export function AnimatedEnvelope({
   envelopeFrontTexture = '/paper2.png',
   flapTexture = '/FLAP.png',
   sealImage = '/sello.png',
-  heroImageSrc = '/images/placeholder-hero.jpg', // Valor por defecto
+  heroImageSrc = '/images/placeholder-hero.jpg', 
   eventTime = "08:00 PM - 11/07/2026",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
   guestName = "Invitado Especial",
@@ -186,8 +183,50 @@ export function AnimatedEnvelope({
   backgroundColor = '#0a0514', 
   onOpen,
 }: AnimatedEnvelopeProps) {
+  
+  // --- NUEVO ESTADO PARA EL PRELOADER ---
+  const [isLoading, setIsLoading] = useState(true);
   const [step, setStep] = useState<'idle' | 'opening' | 'paperUp' | 'fading'>('idle');
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // --- LÓGICA DE PRECARGA (PRELOADER) ---
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Array con todos los assets que queremos que estén listos antes de revelar la pantalla
+    const assetsToLoad = [
+      envelopeBackTexture,
+      envelopeFrontTexture,
+      flapTexture,
+      sealImage,
+      heroImageSrc
+    ];
+
+    const loadImages = Promise.all(
+      assetsToLoad.map((src) => {
+        return new Promise((resolve) => {
+          const img = new window.Image();
+          img.src = src;
+          // Resolvemos tanto si carga bien como si hay error para no dejar al usuario atrapado en el loader
+          img.onload = resolve;
+          img.onerror = resolve; 
+        });
+      })
+    );
+
+    loadImages.then(() => {
+      if (isMounted) {
+        // Un pequeño delay de 800ms para asegurar que el video de fondo empiece a reproducirse y la transición sea suave
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [envelopeBackTexture, envelopeFrontTexture, flapTexture, sealImage, heroImageSrc]);
 
   const handleClick = () => {
     if (step !== 'idle' || isAnimating) return;
@@ -219,11 +258,30 @@ export function AnimatedEnvelope({
     >
       <AmbientVideoBackground />
 
-      {/* IMAGEN DEL HERO FIJA EN TODA LA PÁGINA */}
+      {/* --- PANTALLA DE CARGA (OVERLAY) --- */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            key="preloader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1, ease: "easeInOut" }}
+            className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-[#0a0514]"
+          >
+            <motion.div
+              animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-16 h-16 border-t-2 border-r-2 border-[#ffd700] rounded-full mb-8 shadow-[0_0_15px_rgba(255,215,0,0.5)]"
+            />
+            <p className="text-[#ffd700] text-xs tracking-[0.4em] uppercase font-bold animate-pulse font-sans drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]">
+              Preparando la magia...
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* IMAGEN DEL HERO FIJA EN TODA LA PÁGINA (Se revela cuando se quita el loader) */}
       <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 0.7 }} 
-        transition={{ duration: 2, ease: "easeOut" }}
         className="fixed inset-0 z-[1] pointer-events-none"
         style={{ 
           maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
@@ -233,14 +291,13 @@ export function AnimatedEnvelope({
         <img 
           src={heroImageSrc} 
           alt="Hero Fondo" 
-          className="w-full h-full object-cover" 
+          className="w-full h-full object-cover opacity-70" 
           fetchPriority="high"
           loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/70 via-[#0a0514]/30 to-transparent" />
       </motion.div>
       
-      {/* Solo renderizar partículas regulares si el sobre NO se está abriendo */}
       {step === 'idle' && (
         <>
           <MagicalFireflies color={accentColor} />
@@ -248,7 +305,6 @@ export function AnimatedEnvelope({
         </>
       )}
 
-      {/* RENDERIZAR EXPLOSIÓN DE CHISPAS EN EL PASO 'FADING' */}
       {step === 'fading' && <TransitionSparks color={accentColor} />}
 
       <div className="flex flex-col items-center gap-14 w-full max-w-md relative z-10">
@@ -257,7 +313,6 @@ export function AnimatedEnvelope({
           onClick={handleClick}
           animate={
             step === 'fading' 
-              // En lugar de escalar a lo grande, el sobre se aleja y se desvanece
               ? { scale: 0.8, opacity: 0, y: 30 } 
               : { scale: 1, opacity: 1, y: 0, rotateX: step === 'paperUp' ? 5 : 0 }
           }
@@ -268,7 +323,6 @@ export function AnimatedEnvelope({
         >
           <div className="relative w-full shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-xl" style={{ aspectRatio: '4/3' }}>
             
-            {/* CAPA TRASERA (Fondo interior del sobre) z-0 */}
             <div className="absolute inset-0 bg-[#04020a] rounded-xl overflow-hidden z-0">
               <Image 
                 src={envelopeBackTexture} 
@@ -279,7 +333,6 @@ export function AnimatedEnvelope({
               <div className="absolute inset-0 shadow-[inset_0_40px_60px_rgba(0,0,0,0.9)]" />
             </div>
 
-            {/* EL CONTENIDO (La Carta) z-10 */}
             <motion.div
               initial={{ y: 0, opacity: 0 }}
               animate={
@@ -320,7 +373,6 @@ export function AnimatedEnvelope({
               </div>
             </motion.div>
 
-            {/* CAPA FRONTAL (Bolsillo del sobre) z-20 */}
             <div 
               className="absolute inset-0 rounded-xl z-20 pointer-events-none drop-shadow-[0_-5px_10px_rgba(0,0,0,0.3)] overflow-hidden"
               style={{ clipPath: 'polygon(0% 0%, 50% 38%, 100% 0%, 100% 100%, 0% 100%)' }}
@@ -338,7 +390,6 @@ export function AnimatedEnvelope({
               </div>
             </div>
 
-            {/* SOLAPA TRIANGULAR SUPERIOR (Flap) z-30 */}
             <motion.div
               initial={{ rotateX: 0, zIndex: 30 }}
               animate={{ 
@@ -358,13 +409,11 @@ export function AnimatedEnvelope({
                   transformStyle: 'preserve-3d',
                 }}
               >
-                {/* Exterior Solapa */}
                 <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
                   <Image src={flapTexture} alt="Textura Exterior" fill className="object-cover" priority />
                   <div className="absolute inset-0 border-t border-white/10" />
                 </div>
 
-                {/* Interior Solapa */}
                 <div 
                   className="absolute inset-0" 
                   style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
@@ -374,7 +423,6 @@ export function AnimatedEnvelope({
               </div>
             </motion.div>
 
-            {/* SELLO DE CERA */}
             <motion.div
               initial={{ rotateX: 0, opacity: 1, scale: 1 }}
               animate={
@@ -397,7 +445,7 @@ export function AnimatedEnvelope({
 
         {/* CONTROLES DE INTERFAZ */}
         <AnimatePresence mode="wait">
-          {step === 'idle' ? (
+          {step === 'idle' && !isLoading ? (
             <motion.div
               key="ui-btn"
               initial={{ opacity: 0, y: 15 }}
@@ -422,7 +470,7 @@ export function AnimatedEnvelope({
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
               </button>
             </motion.div>
-          ) : (
+          ) : step !== 'idle' ? (
             <motion.div
               key="ui-msg"
               initial={{ opacity: 0 }}
@@ -434,7 +482,7 @@ export function AnimatedEnvelope({
                 REVELANDO LA MAGIA...
               </p>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
 
       </div>
