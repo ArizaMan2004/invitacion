@@ -121,7 +121,7 @@ const DiamondSparkle = ({ index }: { index: number }) => {
   );
 };
 
-// --- COMPONENTE DE TEXTO ANIMADO CON DESTELLOS CORREGIDO ---
+// --- COMPONENTE DE TEXTO ANIMADO OPTIMIZADO PARA MÓVILES ---
 const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
@@ -140,7 +140,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
 
   return (
     <motion.span
-      className={`${className} tracking-wider`}
+      className={className}
       variants={container}
       initial="hidden"
       whileInView="visible"
@@ -148,7 +148,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
       style={{ display: "inline-block", wordBreak: "normal", ...style }}
     >
       {words.map((word, wordIndex) => (
-        <span key={wordIndex} className="inline-block whitespace-nowrap mr-2 md:mr-3">
+        <span key={wordIndex} className="inline-block whitespace-nowrap">
           {Array.from(word).map((char, charIndex) => {
             const globalIndex = wordIndex * 20 + charIndex;
             const isSparkleTarget = char.trim() !== '' && (globalIndex % 15 === 0 || globalIndex % 25 === 0);
@@ -158,13 +158,20 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
                 key={charIndex} 
                 variants={child} 
                 className="inline-block relative" 
-                style={{ letterSpacing: "0.05em" }}
+                // Usar margin-right fuerza la separación física en celulares, evitando que se peguen las letras
+                style={{ marginRight: "0.06em" }} 
               >
                 {char}
                 {isSparkleTarget && <DiamondSparkle index={globalIndex} />}
               </motion.span>
             );
           })}
+          {/* Espacio explícito entre palabras con ancho mínimo forzado para evitar colapsos en móviles */}
+          {wordIndex < words.length - 1 && (
+            <motion.span variants={child} className="inline-block w-3 md:w-4">
+              &nbsp;
+            </motion.span>
+          )}
         </span>
       ))}
     </motion.span>
