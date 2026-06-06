@@ -374,102 +374,215 @@ export function AnimatedEnvelope({
           className={`relative w-full ${step === 'idle' ? 'cursor-pointer' : ''}`}
           style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
-          <div className="relative w-full shadow-[0_30px_60px_rgba(0,0,0,0.8)]" style={{ aspectRatio: '16/10' }}>
+          <div className="relative w-full shadow-[0_40px_80px_rgba(0,0,0,0.9)]" style={{ aspectRatio: '14/9' }}>
             
-            {/* Fondo del libro */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] to-[#16213e] overflow-hidden rounded-lg">
-              <Image 
-                src={bookBackTexture} 
-                alt="Fondo del Libro" 
-                fill 
-                className="object-cover opacity-40" 
-              />
-              <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.7)]" />
-            </div>
-
-            {/* Centro del libro (lomo) */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0f0f1e] via-[#1a1a2e] to-[#0f0f1e] z-20 transform -translate-x-1/2 shadow-[0_0_20px_rgba(0,0,0,0.6)]" />
-
-            {/* Página Izquierda */}
-            <motion.div
-              initial={{ rotateY: 0 }}
-              animate={{
-                rotateY: step === 'opening' ? (currentPage >= 1 ? -120 : 0) : 
-                         (step === 'pageRevealing' || step === 'fading') ? -180 : 0,
-              }}
-              transition={{ duration: step === 'opening' ? 0.7 : 1.2, ease: springEasing }}
-              className="absolute left-0 top-0 w-1/2 h-full origin-right"
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className="absolute inset-0 bg-[#f5f1de] rounded-l-lg shadow-[-5px_0_15px_rgba(0,0,0,0.4)]">
+            {/* Contenedor 3D del libro cerrado */}
+            <div className="relative w-full h-full">
+              
+              {/* TAPA TRASERA (CONTRAPORTADA) - Siempre visible en el fondo */}
+              <div className="absolute left-0 top-0 w-1/2 h-full rounded-tl-2xl rounded-bl-2xl bg-gradient-to-b from-[#5a4a35] via-[#4a3a2a] to-[#3a2a1a] shadow-[-8px_0_25px_rgba(0,0,0,0.7)]">
                 <Image 
-                  src={bookPageTexture} 
-                  alt="Página Izquierda" 
+                  src={bookCoverTexture} 
+                  alt="Contraportada" 
                   fill 
-                  className="object-cover opacity-30" 
+                  className="object-cover opacity-50" 
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  {(step === 'pageRevealing' || step === 'fading') && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1, delay: 0.3 }}
-                      className="space-y-6"
-                    >
-                      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase font-bold text-[#0a0514]">
-                        Para: {guestName}
-                      </p>
-                      <p className="font-serif italic text-base md:text-lg leading-relaxed text-[#0a0514] max-w-xs">
-                        {welcomeMessage}
-                      </p>
-                    </motion.div>
-                  )}
-                </div>
+                <div className="absolute inset-0 border border-[#d4af37]/15 rounded-tl-2xl rounded-bl-2xl" />
+                {/* Textura interior de cuero */}
+                <div className="absolute inset-0 rounded-tl-2xl rounded-bl-2xl bg-gradient-to-r from-[#0a0a0a]/30 to-transparent" />
               </div>
-            </motion.div>
 
-            {/* Página Derecha */}
-            <motion.div
-              initial={{ rotateY: 0 }}
-              animate={{
-                rotateY: step === 'opening' ? (currentPage >= 2 ? 120 : 0) : 
-                         (step === 'pageRevealing' || step === 'fading') ? 0 : 0,
-              }}
-              transition={{ duration: step === 'opening' ? 0.7 : 1.2, ease: springEasing }}
-              className="absolute right-0 top-0 w-1/2 h-full origin-left"
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className="absolute inset-0 bg-[#f5f1de] rounded-r-lg shadow-[5px_0_15px_rgba(0,0,0,0.4)]">
-                <Image 
-                  src={bookPageTexture} 
-                  alt="Página Derecha" 
-                  fill 
-                  className="object-cover opacity-30" 
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  {(step === 'pageRevealing' || step === 'fading') && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1, delay: 0.6 }}
-                      className="space-y-6"
-                    >
-                      <div className="w-16 h-[2px] mx-auto bg-gradient-to-r from-transparent via-[#ffd700] to-transparent opacity-80" />
-                      <p className="text-[9px] md:text-[10px] tracking-widest uppercase opacity-80 text-[#ffd700] font-bold">Recepción</p>
-                      <h3 className="text-2xl md:text-3xl font-serif font-bold tracking-widest text-[#0a0514]">
-                        {eventTime}
-                      </h3>
-                    </motion.div>
-                  )}
+              {/* LOMO (SPINE) - Siempre visible en el centro */}
+              <motion.div
+                className="absolute left-1/2 top-0 bottom-0 w-12 bg-gradient-to-r from-[#2a1a10] via-[#3d2a18] to-[#2a1a10] z-50 transform -translate-x-1/2 shadow-[inset_-3px_0_10px_rgba(0,0,0,0.8),inset_3px_0_10px_rgba(0,0,0,0.8),0_0_25px_rgba(0,0,0,0.8)]"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {/* Textura del lomo */}
+                <div className="absolute inset-0 opacity-40 bg-cover" style={{ backgroundImage: `url(${bookBackTexture})` }} />
+                {/* Decoración XV vertical en el lomo */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[#d4af37] text-xl font-serif font-bold opacity-50 transform -rotate-90">XV</span>
                 </div>
-              </div>
-            </motion.div>
+                {/* Detalles 3D del lomo */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+              </motion.div>
 
-            {/* Decoración: XV en el lomo */}
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 opacity-5 pointer-events-none">
-              <span className="text-[120px] font-serif font-bold text-white">XV</span>
+              {/* TAPA FRONTAL (PORTADA) - Se abre */}
+              <motion.div
+                initial={{ rotateY: 0 }}
+                animate={{
+                  rotateY: step !== 'idle' ? -180 : 0,
+                }}
+                transition={{ duration: 1.8, ease: springEasing }}
+                className="absolute right-0 top-0 w-1/2 h-full origin-left"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                {/* Frente de la tapa - PORTADA */}
+                <div 
+                  className="absolute inset-0 bg-gradient-to-br from-[#6a5a45] via-[#5a4a35] to-[#3a2a1a] rounded-tr-2xl rounded-br-2xl shadow-[8px_0_25px_rgba(0,0,0,0.7)]"
+                  style={{ backfaceVisibility: 'hidden' }}
+                >
+                  <Image 
+                    src={bookCoverTexture} 
+                    alt="Portada del Libro" 
+                    fill 
+                    className="object-cover opacity-60" 
+                  />
+                  {/* Overlay decorativo de la portada */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/60 via-transparent to-transparent" />
+                  
+                  {/* Contenido de la portada */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                    <div className="text-center space-y-6">
+                      {/* Marco decorativo */}
+                      <div className="inline-block px-6 py-4 border border-[#d4af37]/40 rounded-lg bg-[#0a0a0a]/30 backdrop-blur-sm">
+                        <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#d4af37] drop-shadow-lg tracking-wider">XV</h2>
+                        <p className="text-xs md:text-sm tracking-[0.3em] uppercase text-[#d4af37]/70 mt-2">Años</p>
+                      </div>
+                      
+                      {/* Decoración inferior */}
+                      <div className="flex items-center gap-3 justify-center">
+                        <div className="w-8 h-[1px] bg-gradient-to-r from-transparent to-[#d4af37]/60" />
+                        <p className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-[#d4af37]/60">Celebración</p>
+                        <div className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[#d4af37]/60" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bordes decorativos de la portada */}
+                  <div className="absolute inset-0 border border-[#d4af37]/20 rounded-tr-2xl rounded-br-2xl" />
+                  <div className="absolute top-6 right-6 w-12 h-12 border border-[#d4af37]/30 rounded-full" />
+                  <div className="absolute bottom-6 left-6 w-8 h-8 border border-[#d4af37]/30 rounded-full" />
+                </div>
+
+                {/* Reverso de la tapa - INTERIOR */}
+                <div 
+                  className="absolute inset-0 bg-[#f5f1de] rounded-tr-2xl rounded-br-2xl"
+                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                >
+                  <Image 
+                    src={bookPageTexture} 
+                    alt="Interior de Tapa" 
+                    fill 
+                    className="object-cover opacity-20" 
+                  />
+                  <div className="absolute inset-0 border border-[#d4af37]/10 rounded-tr-2xl rounded-br-2xl" />
+                </div>
+              </motion.div>
+
+              {/* HOJAS APILADAS - Visibles solo cuando el libro está cerrado */}
+              {step === 'idle' && (
+                <div className="absolute right-0 top-0 w-1/2 h-full pointer-events-none">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <motion.div
+                      key={`leaf-${i}`}
+                      initial={{ zIndex: 40 - i, x: i * 2.5 }}
+                      animate={{ zIndex: 40 - i }}
+                      className="absolute top-0 bottom-0 w-full origin-left rounded-tr-2xl rounded-br-2xl bg-[#f5f5f5] shadow-[6px_2px_8px_rgba(0,0,0,0.3)]"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        borderRadius: '0 16px 16px 0',
+                      }}
+                    >
+                      <Image 
+                        src={bookPageTexture} 
+                        alt={`Hoja ${i}`} 
+                        fill 
+                        className="object-cover opacity-30 rounded-tr-2xl rounded-br-2xl" 
+                      />
+                      <div className="absolute inset-0 border border-[#ddd]/40 rounded-tr-2xl rounded-br-2xl" />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* PÁGINAS INTERIORES REVELADAS - Visibles después de abrir */}
+              {step !== 'idle' && (
+                <>
+                  {/* Página izquierda interior */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: step === 'pageRevealing' || step === 'fading' ? 1 : 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="absolute left-0 top-0 w-1/2 h-full rounded-tl-2xl rounded-bl-2xl bg-[#f5f1de] shadow-[-8px_0_20px_rgba(0,0,0,0.4)]"
+                    style={{ zIndex: 10 }}
+                  >
+                    <Image 
+                      src={bookPageTexture} 
+                      alt="Página Izquierda" 
+                      fill 
+                      className="object-cover opacity-20" 
+                    />
+                    <div className="absolute inset-0 border border-[#d4af37]/10 rounded-tl-2xl rounded-bl-2xl" />
+                    
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                      {(step === 'pageRevealing' || step === 'fading') && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 1, delay: 0.7 }}
+                          className="space-y-6"
+                        >
+                          <div className="space-y-3">
+                            <p className="text-[9px] md:text-xs tracking-[0.3em] uppercase font-bold text-[#0a0514] opacity-60">
+                              Para
+                            </p>
+                            <p className="text-2xl md:text-3xl font-serif font-bold text-[#0a0514]">
+                              {guestName}
+                            </p>
+                          </div>
+                          <div className="w-12 h-[1px] mx-auto bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Página derecha interior */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: step === 'pageRevealing' || step === 'fading' ? 1 : 0 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="absolute right-0 top-0 w-1/2 h-full rounded-tr-2xl rounded-br-2xl bg-[#f5f1de] shadow-[8px_0_20px_rgba(0,0,0,0.4)]"
+                    style={{ zIndex: 10 }}
+                  >
+                    <Image 
+                      src={bookPageTexture} 
+                      alt="Página Derecha" 
+                      fill 
+                      className="object-cover opacity-20" 
+                    />
+                    <div className="absolute inset-0 border border-[#d4af37]/10 rounded-tr-2xl rounded-br-2xl" />
+                    
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                      {(step === 'pageRevealing' || step === 'fading') && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 1, delay: 0.9 }}
+                          className="space-y-6"
+                        >
+                          <p className="text-xs md:text-sm leading-relaxed text-[#0a0514] italic max-w-xs">
+                            {welcomeMessage}
+                          </p>
+                          
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center gap-2 justify-center">
+                              <div className="w-6 h-[1px] bg-[#d4af37]/60" />
+                              <p className="text-[9px] tracking-widest uppercase text-[#d4af37]/70 font-bold">Fecha</p>
+                              <div className="w-6 h-[1px] bg-[#d4af37]/60" />
+                            </div>
+                            <h3 className="text-lg md:text-xl font-serif font-bold text-[#0a0514]">
+                              {eventTime}
+                            </h3>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+              
             </div>
-            
           </div>
         </motion.div>
 
