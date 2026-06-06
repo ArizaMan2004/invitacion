@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Componentes
-import { AnimatedEnvelope } from '@/components/AnimatedEnvelope';
+import { MagicalBook } from '@/components/AnimatedEnvelope';
 import { InvitationSPA } from '@/components/InvitationSPA';
 // Datos y tipos
 import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
@@ -109,7 +109,7 @@ export default function JovenesPage() {
     <main className="bg-[#0a0514] min-h-screen">
       <AnimatePresence mode="wait">
         {!envelopeOpened ? (
-          <AnimatedEnvelope
+          <MagicalBook
             key="envelope-component"
             // Saludo adaptado para los amigos
             guestName="Compañero Explorador"
