@@ -379,18 +379,26 @@ export function AnimatedEnvelope({
             {/* Contenedor 3D del libro cerrado */}
             <div className="relative w-full h-full">
               
-              {/* TAPA TRASERA (CONTRAPORTADA) - Siempre visible en el fondo */}
-              <div className="absolute left-0 top-0 w-1/2 h-full rounded-tl-2xl rounded-bl-2xl bg-gradient-to-b from-[#5a4a35] via-[#4a3a2a] to-[#3a2a1a] shadow-[-8px_0_25px_rgba(0,0,0,0.7)]">
-                <Image 
-                  src={bookCoverTexture} 
-                  alt="Contraportada" 
-                  fill 
-                  className="object-cover opacity-50" 
-                />
-                <div className="absolute inset-0 border border-[#d4af37]/15 rounded-tl-2xl rounded-bl-2xl" />
-                {/* Textura interior de cuero */}
-                <div className="absolute inset-0 rounded-tl-2xl rounded-bl-2xl bg-gradient-to-r from-[#0a0a0a]/30 to-transparent" />
-              </div>
+              {/* TAPA TRASERA (CONTRAPORTADA) - Solo visible cuando se abre */}
+              {step !== 'idle' && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: step === 'pageRevealing' || step === 'fading' ? 1 : 0 }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="absolute left-0 top-0 w-1/2 h-full rounded-tl-2xl rounded-bl-2xl bg-gradient-to-b from-[#5a4a35] via-[#4a3a2a] to-[#3a2a1a] shadow-[-8px_0_25px_rgba(0,0,0,0.7)]"
+                  style={{ zIndex: 10 }}
+                >
+                  <Image 
+                    src={bookCoverTexture} 
+                    alt="Contraportada" 
+                    fill 
+                    className="object-cover opacity-50" 
+                  />
+                  <div className="absolute inset-0 border border-[#d4af37]/15 rounded-tl-2xl rounded-bl-2xl" />
+                  {/* Textura interior de cuero */}
+                  <div className="absolute inset-0 rounded-tl-2xl rounded-bl-2xl bg-gradient-to-r from-[#0a0a0a]/30 to-transparent" />
+                </motion.div>
+              )}
 
               {/* LOMO (SPINE) - Siempre visible en el centro */}
               <motion.div
@@ -496,16 +504,16 @@ export function AnimatedEnvelope({
                 </div>
               )}
 
-              {/* PÁGINAS INTERIORES REVELADAS - Visibles después de abrir */}
+              {/* PÁGINAS INTERIORES - Se muestran cuando se abre */}
               {step !== 'idle' && (
                 <>
-                  {/* Página izquierda interior */}
+                  {/* PÁGINA IZQUIERDA (interior de contraportada) */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: step === 'pageRevealing' || step === 'fading' ? 1 : 0 }}
-                    transition={{ duration: 1, delay: 0.5 }}
+                    transition={{ duration: 1, delay: 0.6 }}
                     className="absolute left-0 top-0 w-1/2 h-full rounded-tl-2xl rounded-bl-2xl bg-[#f5f1de] shadow-[-8px_0_20px_rgba(0,0,0,0.4)]"
-                    style={{ zIndex: 10 }}
+                    style={{ zIndex: 11 }}
                   >
                     <Image 
                       src={bookPageTexture} 
@@ -520,7 +528,7 @@ export function AnimatedEnvelope({
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 1, delay: 0.7 }}
+                          transition={{ duration: 0.8, delay: 0.8 }}
                           className="space-y-6"
                         >
                           <div className="space-y-3">
@@ -537,13 +545,13 @@ export function AnimatedEnvelope({
                     </div>
                   </motion.div>
 
-                  {/* Página derecha interior */}
+                  {/* PÁGINA DERECHA (interior de portada) */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: step === 'pageRevealing' || step === 'fading' ? 1 : 0 }}
-                    transition={{ duration: 1, delay: 0.5 }}
+                    transition={{ duration: 1, delay: 0.6 }}
                     className="absolute right-0 top-0 w-1/2 h-full rounded-tr-2xl rounded-br-2xl bg-[#f5f1de] shadow-[8px_0_20px_rgba(0,0,0,0.4)]"
-                    style={{ zIndex: 10 }}
+                    style={{ zIndex: 11 }}
                   >
                     <Image 
                       src={bookPageTexture} 
@@ -558,7 +566,7 @@ export function AnimatedEnvelope({
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 1, delay: 0.9 }}
+                          transition={{ duration: 0.8, delay: 1 }}
                           className="space-y-6"
                         >
                           <p className="text-xs md:text-sm leading-relaxed text-[#0a0514] italic max-w-xs">
