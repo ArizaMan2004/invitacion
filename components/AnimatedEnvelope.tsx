@@ -248,7 +248,7 @@ export function MagicalBook({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-[100dvh] min-h-[650px] flex items-center justify-center p-4 overflow-hidden relative"
+      className="h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative"
     >
       <AmbientVideoBackground />
 
@@ -282,7 +282,7 @@ export function MagicalBook({
 
       {step === 'fading' && <TransitionSparks color={accentColor} />}
 
-      <div className="flex flex-col items-center gap-12 w-full max-w-sm relative z-10">
+      <div className="flex flex-col items-center gap-8 md:gap-12 w-full max-w-[280px] sm:max-w-[320px] md:max-w-sm relative z-10">
         
         <motion.div
           onClick={handleClick}
@@ -309,30 +309,30 @@ export function MagicalBook({
                   : { opacity: 0 }
               }
               transition={{ duration: 1.5, delay: 0.6, ease: "easeOut" }}
-              className="relative z-10 w-[85%] h-[85%] border border-[#b8860b]/30 rounded-lg p-6 flex flex-col items-center justify-center text-center bg-transparent"
+              className="relative z-10 w-[90%] md:w-[85%] h-[90%] md:h-[85%] border border-[#b8860b]/30 rounded-lg p-4 md:p-6 flex flex-col items-center justify-center text-center bg-transparent"
             >
-               <div className="absolute top-4 left-4 w-6 h-6 border-t border-l border-[#b8860b] opacity-80" />
-               <div className="absolute top-4 right-4 w-6 h-6 border-t border-r border-[#b8860b] opacity-80" />
-               <div className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-[#b8860b] opacity-80" />
-               <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-[#b8860b] opacity-80" />
+               <div className="absolute top-3 left-3 md:top-4 md:left-4 w-4 h-4 md:w-6 md:h-6 border-t border-l border-[#b8860b] opacity-80" />
+               <div className="absolute top-3 right-3 md:top-4 md:right-4 w-4 h-4 md:w-6 md:h-6 border-t border-r border-[#b8860b] opacity-80" />
+               <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 w-4 h-4 md:w-6 md:h-6 border-b border-l border-[#b8860b] opacity-80" />
+               <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 w-4 h-4 md:w-6 md:h-6 border-b border-r border-[#b8860b] opacity-80" />
 
-              <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase mb-6 font-bold text-[#b8860b]">
+              <p className="text-[9px] md:text-xs tracking-[0.3em] uppercase mb-4 md:mb-6 font-bold text-[#b8860b]">
                 Para: {guestName}
               </p>
-              <p className="font-serif italic text-xl md:text-2xl mb-6 leading-relaxed text-[#2b1810]">
+              <p className="font-serif italic text-lg md:text-2xl mb-4 md:mb-6 leading-relaxed text-[#2b1810]">
                 {welcomeMessage}
               </p>
               
-              <div className="w-20 h-[2px] mb-8 bg-gradient-to-r from-transparent via-[#b8860b] to-transparent opacity-80" />
+              <div className="w-16 md:w-20 h-[2px] mb-6 md:mb-8 bg-gradient-to-r from-transparent via-[#b8860b] to-transparent opacity-80" />
               
-              <p className="text-[9px] md:text-[10px] tracking-[0.2em] uppercase mb-2 text-[#b8860b] font-bold">La Cita</p>
-              <h3 className="text-2xl md:text-3xl font-serif font-bold tracking-widest text-[#2b1810]">
+              <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase mb-1 md:mb-2 text-[#b8860b] font-bold">La Cita</p>
+              <h3 className="text-xl md:text-3xl font-serif font-bold tracking-widest text-[#2b1810]">
                 {eventTime}
               </h3>
             </motion.div>
           </div>
 
-          {/* PORTADA DEL LIBRO CON CORRECCIÓN Z-INDEX Y CARAS 3D */}
+          {/* PORTADA DEL LIBRO */}
           <motion.div
             initial={{ rotateY: 0, zIndex: 30 }}
             animate={{ 
@@ -345,7 +345,7 @@ export function MagicalBook({
           >
             {/* CARA EXTERNA (Frente) */}
             <div 
-              className="absolute inset-0 rounded-r-2xl overflow-hidden border-l-[6px] border-[#0a0514]"
+              className="absolute inset-0 rounded-r-2xl overflow-hidden border-l-[4px] md:border-l-[6px] border-[#0a0514]"
               style={{ 
                 backfaceVisibility: 'hidden', 
                 WebkitBackfaceVisibility: 'hidden',
@@ -357,7 +357,7 @@ export function MagicalBook({
               <div className="absolute inset-0 border border-white/10 rounded-r-2xl" />
               
               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="relative w-32 h-32 drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)]">
+                 <div className="relative w-24 h-24 md:w-32 md:h-32 drop-shadow-[0_15px_15px_rgba(0,0,0,0.9)]">
                    <Image src={sealImage} alt="Emblema Mágico" fill className="object-contain hover:brightness-125 transition-all duration-300" priority />
                  </div>
               </div>
@@ -392,14 +392,14 @@ export function MagicalBook({
               <motion.p
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="font-sans text-[10px] md:text-[11px] uppercase tracking-[0.4em] mb-8 text-[#ffd700] drop-shadow-md font-bold"
+                className="font-sans text-[9px] md:text-[11px] uppercase tracking-[0.4em] mb-6 md:mb-8 text-[#ffd700] drop-shadow-md font-bold"
               >
                 Abre el libro para descubrir su secreto
               </motion.p>
               
               <button
                 onClick={handleClick}
-                className="px-10 py-4 font-sans font-bold text-[#0a0514] rounded-sm shadow-[0_0_20px_rgba(255,215,0,0.2)] active:scale-95 transition-all duration-300 cursor-pointer text-xs uppercase tracking-widest relative overflow-hidden group bg-gradient-to-r from-[#ffd700] via-[#ffdf33] to-[#b8860b] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)]"
+                className="px-6 py-3 md:px-10 md:py-4 font-sans font-bold text-[#0a0514] rounded-sm shadow-[0_0_20px_rgba(255,215,0,0.2)] active:scale-95 transition-all duration-300 cursor-pointer text-[10px] md:text-xs uppercase tracking-widest relative overflow-hidden group bg-gradient-to-r from-[#ffd700] via-[#ffdf33] to-[#b8860b] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)]"
               >
                 <span className="relative z-10">Abrir Libro Mágico</span>
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
@@ -413,7 +413,7 @@ export function MagicalBook({
               transition={{ duration: 1 }}
               className="text-center"
             >
-              <p className="text-[#ffd700] text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans">
+              <p className="text-[#ffd700] text-[10px] md:text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans">
                 REVELANDO EL CONTENIDO...
               </p>
             </motion.div>
