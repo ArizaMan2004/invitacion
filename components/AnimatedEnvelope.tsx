@@ -101,6 +101,55 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
   );
 };
 
+const BookPageFlips = ({ color }: { color: string }) => {
+  const flipCount = 8;
+  const flips = useMemo(() => {
+    return Array.from({ length: flipCount }).map((_, i) => ({
+      delay: i * 0.15,
+      duration: 0.8 + Math.random() * 0.4,
+      rotation: Math.random() > 0.5 ? 1 : -1,
+    }));
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[3] overflow-hidden">
+      {flips.map((flip, i) => (
+        <motion.div
+          key={i}
+          className="absolute"
+          style={{
+            left: `${30 + i * 8}%`,
+            top: `${20 + Math.random() * 60}%`,
+            width: '60px',
+            height: '80px',
+            perspective: '1000px',
+          }}
+          initial={{ opacity: 0, rotateY: 0 }}
+          animate={{
+            opacity: [0, 1, 0.5, 0],
+            rotateY: [0, flip.rotation * 180, flip.rotation * 360],
+            y: [0, -30, -60],
+          }}
+          transition={{
+            duration: flip.duration,
+            delay: flip.delay,
+            repeat: Infinity,
+            repeatDelay: 3,
+            ease: 'easeInOut',
+          }}
+        >
+          <div
+            className="w-full h-full rounded-sm border border-[#ffd700]/40 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]"
+            style={{
+              boxShadow: `inset 0 0 10px rgba(255,215,0,0.1), 0 0 8px ${color}40`,
+            }}
+          />
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 const TransitionSparks = ({ color }: { color: string }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -155,10 +204,9 @@ const TransitionSparks = ({ color }: { color: string }) => {
 };
 
 interface AnimatedEnvelopeProps {
-  envelopeBackTexture?: string;
-  envelopeFrontTexture?: string;
-  flapTexture?: string;
-  sealImage?: string;
+  bookCoverTexture?: string;
+  bookPageTexture?: string;
+  bookBackTexture?: string;
   heroImageSrc?: string; 
   eventTime?: string;
   welcomeMessage?: string;
@@ -170,10 +218,9 @@ interface AnimatedEnvelopeProps {
 }
 
 export function AnimatedEnvelope({
-  envelopeBackTexture = '/paper1.png',
-  envelopeFrontTexture = '/paper2.png',
-  flapTexture = '/FLAP.png',
-  sealImage = '/sello.png',
+  bookCoverTexture = '/paper1.png',
+  bookPageTexture = '/paper2.png',
+  bookBackTexture = '/FLAP.png',
   heroImageSrc = '/images/placeholder-hero.jpg', 
   eventTime = "08:00 PM - 11/07/2026",
   welcomeMessage = "¡Bienvenidos a nuestra gran celebración de 15 años!",
@@ -184,21 +231,18 @@ export function AnimatedEnvelope({
   onOpen,
 }: AnimatedEnvelopeProps) {
   
-  // --- NUEVO ESTADO PARA EL PRELOADER ---
   const [isLoading, setIsLoading] = useState(true);
-  const [step, setStep] = useState<'idle' | 'opening' | 'paperUp' | 'fading'>('idle');
+  const [step, setStep] = useState<'idle' | 'opening' | 'pageRevealing' | 'fading'>('idle');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  // --- LÓGICA DE PRECARGA (PRELOADER) ---
   useEffect(() => {
     let isMounted = true;
     
-    // Array con todos los assets que queremos que estén listos antes de revelar la pantalla
     const assetsToLoad = [
-      envelopeBackTexture,
-      envelopeFrontTexture,
-      flapTexture,
-      sealImage,
+      bookCoverTexture,
+      bookPageTexture,
+      bookBackTexture,
       heroImageSrc
     ];
 
@@ -207,7 +251,6 @@ export function AnimatedEnvelope({
         return new Promise((resolve) => {
           const img = new window.Image();
           img.src = src;
-          // Resolvemos tanto si carga bien como si hay error para no dejar al usuario atrapado en el loader
           img.onload = resolve;
           img.onerror = resolve; 
         });
@@ -216,7 +259,6 @@ export function AnimatedEnvelope({
 
     loadImages.then(() => {
       if (isMounted) {
-        // Un pequeño delay de 800ms para asegurar que el video de fondo empiece a reproducirse y la transición sea suave
         setTimeout(() => {
           setIsLoading(false);
         }, 800);
@@ -226,27 +268,36 @@ export function AnimatedEnvelope({
     return () => {
       isMounted = false;
     };
-  }, [envelopeBackTexture, envelopeFrontTexture, flapTexture, sealImage, heroImageSrc]);
+  }, [bookCoverTexture, bookPageTexture, bookBackTexture, heroImageSrc]);
+
+  const springEasing = [0.34, 1.56, 0.64, 1];
 
   const handleClick = () => {
     if (step !== 'idle' || isAnimating) return;
     setIsAnimating(true);
     setStep('opening'); 
     
+    // Simular el paso de páginas
     setTimeout(() => {
-      setStep('paperUp'); 
-    }, 1200);
+      setCurrentPage(1);
+    }, 500);
+
+    setTimeout(() => {
+      setCurrentPage(2);
+    }, 1100);
+
+    setTimeout(() => {
+      setStep('pageRevealing'); 
+    }, 1800);
 
     setTimeout(() => {
       setStep('fading'); 
-    }, 4500);
+    }, 5000);
 
     setTimeout(() => {
       onOpen(); 
-    }, 5600);
+    }, 6000);
   };
-
-  const springEasing = [0.34, 1.56, 0.64, 1]; 
 
   return (
     <motion.div 
@@ -305,140 +356,119 @@ export function AnimatedEnvelope({
         </>
       )}
 
+      {step !== 'idle' && step !== 'fading' && <BookPageFlips color={accentColor} />}
+
       {step === 'fading' && <TransitionSparks color={accentColor} />}
 
-      <div className="flex flex-col items-center gap-14 w-full max-w-md relative z-10">
+      <div className="flex flex-col items-center gap-14 w-full max-w-2xl relative z-10">
         
         <motion.div
           onClick={handleClick}
           animate={
             step === 'fading' 
               ? { scale: 0.8, opacity: 0, y: 30 } 
-              : { scale: 1, opacity: 1, y: 0, rotateX: step === 'paperUp' ? 5 : 0 }
+              : { scale: 1, opacity: 1, y: 0 }
           }
           whileHover={step === 'idle' ? { scale: 1.02, y: -5 } : {}}
           transition={{ duration: 1, ease: springEasing }}
           className={`relative w-full ${step === 'idle' ? 'cursor-pointer' : ''}`}
-          style={{ perspective: '2000px', transformStyle: 'preserve-3d' }}
+          style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
         >
-          <div className="relative w-full shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-xl" style={{ aspectRatio: '4/3' }}>
+          <div className="relative w-full shadow-[0_30px_60px_rgba(0,0,0,0.8)]" style={{ aspectRatio: '16/10' }}>
             
-            <div className="absolute inset-0 bg-[#04020a] rounded-xl overflow-hidden z-0">
+            {/* Fondo del libro */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] to-[#16213e] overflow-hidden rounded-lg">
               <Image 
-                src={envelopeBackTexture} 
-                alt="Fondo Interior" 
+                src={bookBackTexture} 
+                alt="Fondo del Libro" 
                 fill 
-                className="object-cover opacity-60 brightness-50" 
+                className="object-cover opacity-40" 
               />
-              <div className="absolute inset-0 shadow-[inset_0_40px_60px_rgba(0,0,0,0.9)]" />
+              <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.7)]" />
             </div>
 
+            {/* Centro del libro (lomo) */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0f0f1e] via-[#1a1a2e] to-[#0f0f1e] z-20 transform -translate-x-1/2 shadow-[0_0_20px_rgba(0,0,0,0.6)]" />
+
+            {/* Página Izquierda */}
             <motion.div
-              initial={{ y: 0, opacity: 0 }}
-              animate={
-                step === 'paperUp' || step === 'fading'
-                  ? { y: -190, opacity: 1, scale: 1 } 
-                  : { y: 0, opacity: 0, scale: 0.95 }
-              }
-              transition={{ duration: 1.4, ease: springEasing }}
-              className="absolute inset-x-5 top-5 rounded-lg p-6 md:p-8 text-center z-10 h-[105%]"
-              style={{ 
-                background: 'rgba(20, 15, 45, 0.95)', 
-                backdropFilter: 'blur(2px)', 
-                boxShadow: step === 'paperUp' || step === 'fading' 
-                  ? '0 10px 20px rgba(0,0,0,0.8)'
-                  : '0 -5px 15px rgba(0,0,0,0.6)',
-                borderTop: '1px solid rgba(255,215,0,0.3)',
-                borderLeft: '1px solid rgba(255,215,0,0.1)',
-                borderRight: '1px solid rgba(255,215,0,0.1)',
+              initial={{ rotateY: 0 }}
+              animate={{
+                rotateY: step === 'opening' ? (currentPage >= 1 ? -120 : 0) : 
+                         (step === 'pageRevealing' || step === 'fading') ? -180 : 0,
               }}
-            >
-              <div className="h-full flex flex-col items-center justify-start pt-6 relative font-sans">
-                <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-[#ffd700] opacity-80" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-[#ffd700] opacity-80" />
-
-                <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase mb-4 font-bold text-white drop-shadow-sm">
-                  Para: {guestName}
-                </p>
-                <p className="font-serif italic text-lg md:text-xl mb-4 leading-relaxed text-white drop-shadow-sm">
-                  {welcomeMessage}
-                </p>
-                
-                <div className="w-16 h-[2px] mb-6 bg-gradient-to-r from-transparent via-[#ffd700] to-transparent opacity-80" />
-                
-                <p className="text-[9px] md:text-[10px] tracking-widest uppercase mb-2 opacity-80 text-[#ffd700] font-bold">Recepción</p>
-                <h3 className="text-3xl md:text-4xl font-serif font-bold tracking-widest text-white drop-shadow-md">
-                  {eventTime}
-                </h3>
-              </div>
-            </motion.div>
-
-            <div 
-              className="absolute inset-0 rounded-xl z-20 pointer-events-none drop-shadow-[0_-5px_10px_rgba(0,0,0,0.3)] overflow-hidden"
-              style={{ clipPath: 'polygon(0% 0%, 50% 38%, 100% 0%, 100% 100%, 0% 100%)' }}
-            >
-              <Image 
-                src={envelopeFrontTexture} 
-                alt="Frente del Sobre" 
-                fill 
-                className="object-cover" 
-                priority
-              />
-              <div className="absolute inset-0 border border-white/5 rounded-xl" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-[0.03]">
-                <span className="text-[140px] font-serif font-bold text-white">XV</span>
-              </div>
-            </div>
-
-            <motion.div
-              initial={{ rotateX: 0, zIndex: 30 }}
-              animate={{ 
-                rotateX: step !== 'idle' ? -165 : 0, 
-                y: step !== 'idle' ? -10 : 0,
-                zIndex: (step === 'paperUp' || step === 'fading') ? 5 : 30 
-              }}
-              whileHover={step === 'idle' ? { rotateX: -15 } : {}}
-              transition={{ duration: 1.4, ease: springEasing }}
-              className="absolute inset-x-0 top-0 h-[65%] origin-top drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)]"
+              transition={{ duration: step === 'opening' ? 0.7 : 1.2, ease: springEasing }}
+              className="absolute left-0 top-0 w-1/2 h-full origin-right"
               style={{ transformStyle: 'preserve-3d' }}
             >
-              <div 
-                className="absolute inset-0"
-                style={{ 
-                  clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-                  transformStyle: 'preserve-3d',
-                }}
-              >
-                <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden' }}>
-                  <Image src={flapTexture} alt="Textura Exterior" fill className="object-cover" priority />
-                  <div className="absolute inset-0 border-t border-white/10" />
-                </div>
-
-                <div 
-                  className="absolute inset-0" 
-                  style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)' }}
-                >
-                  <Image src={flapTexture} alt="Textura Interior" fill className="object-cover" />
+              <div className="absolute inset-0 bg-[#f5f1de] rounded-l-lg shadow-[-5px_0_15px_rgba(0,0,0,0.4)]">
+                <Image 
+                  src={bookPageTexture} 
+                  alt="Página Izquierda" 
+                  fill 
+                  className="object-cover opacity-30" 
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  {(step === 'pageRevealing' || step === 'fading') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.3 }}
+                      className="space-y-6"
+                    >
+                      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase font-bold text-[#0a0514]">
+                        Para: {guestName}
+                      </p>
+                      <p className="font-serif italic text-base md:text-lg leading-relaxed text-[#0a0514] max-w-xs">
+                        {welcomeMessage}
+                      </p>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             </motion.div>
 
+            {/* Página Derecha */}
             <motion.div
-              initial={{ rotateX: 0, opacity: 1, scale: 1 }}
-              animate={
-                step !== 'idle' 
-                  ? { rotateX: -160, opacity: 0, scale: 0.8, y: 30 } 
-                  : { rotateX: 0, opacity: 1, scale: 1, y: 0 }
-              }
-              whileHover={step === 'idle' ? { rotateX: -15, scale: 1.05 } : {}}
-              transition={{ duration: step !== 'idle' ? 0.8 : 1.4, ease: springEasing }}
-              className="absolute left-1/2 top-[65%] origin-[center_-130%] z-40 pointer-events-none flex justify-center items-center"
-              style={{ transformStyle: 'preserve-3d', transform: 'translate(-50%, -50%)' }}
+              initial={{ rotateY: 0 }}
+              animate={{
+                rotateY: step === 'opening' ? (currentPage >= 2 ? 120 : 0) : 
+                         (step === 'pageRevealing' || step === 'fading') ? 0 : 0,
+              }}
+              transition={{ duration: step === 'opening' ? 0.7 : 1.2, ease: springEasing }}
+              className="absolute right-0 top-0 w-1/2 h-full origin-left"
+              style={{ transformStyle: 'preserve-3d' }}
             >
-              <div className="relative w-28 h-28 -mt-14 -ml-14 drop-shadow-[0_10px_10px_rgba(0,0,0,0.6)]">
-                <Image src={sealImage} alt="Sello de Cera" fill className="object-contain hover:brightness-125 transition-all duration-300" priority />
+              <div className="absolute inset-0 bg-[#f5f1de] rounded-r-lg shadow-[5px_0_15px_rgba(0,0,0,0.4)]">
+                <Image 
+                  src={bookPageTexture} 
+                  alt="Página Derecha" 
+                  fill 
+                  className="object-cover opacity-30" 
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  {(step === 'pageRevealing' || step === 'fading') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.6 }}
+                      className="space-y-6"
+                    >
+                      <div className="w-16 h-[2px] mx-auto bg-gradient-to-r from-transparent via-[#ffd700] to-transparent opacity-80" />
+                      <p className="text-[9px] md:text-[10px] tracking-widest uppercase opacity-80 text-[#ffd700] font-bold">Recepción</p>
+                      <h3 className="text-2xl md:text-3xl font-serif font-bold tracking-widest text-[#0a0514]">
+                        {eventTime}
+                      </h3>
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </motion.div>
+
+            {/* Decoración: XV en el lomo */}
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 opacity-5 pointer-events-none">
+              <span className="text-[120px] font-serif font-bold text-white">XV</span>
+            </div>
             
           </div>
         </motion.div>
@@ -459,14 +489,14 @@ export function AnimatedEnvelope({
                 transition={{ duration: 3, repeat: Infinity }}
                 className="font-sans text-[11px] uppercase tracking-[0.4em] mb-8 text-[#ffd700] drop-shadow-md font-bold"
               >
-                Toca el sobre para revelar la magia
+                Abre el libro para revelar la magia
               </motion.p>
               
               <button
                 onClick={handleClick}
                 className="px-10 py-4 font-sans font-bold text-[#0a0514] rounded-full shadow-lg active:scale-95 transition-all duration-300 cursor-pointer text-xs uppercase tracking-widest relative overflow-hidden group bg-gradient-to-r from-[#ffd700] to-[#b8860b] hover:shadow-[0_0_25px_rgba(255,215,0,0.5)]"
               >
-                <span className="relative z-10">Abrir Invitación</span>
+                <span className="relative z-10">Abrir Libro Mágico</span>
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
               </button>
             </motion.div>
@@ -479,7 +509,7 @@ export function AnimatedEnvelope({
               className="text-center"
             >
               <p className="text-[#ffd700] text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-sans">
-                REVELANDO LA MAGIA...
+                Pasando las páginas...
               </p>
             </motion.div>
           ) : null}
