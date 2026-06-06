@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Componentes
-import { AnimatedEnvelope } from '@/components/AnimatedEnvelope';
+// ✅ Importación con la ruta exacta en minúsculas
+import { MagicalBook } from '@/components/AnimatedEnvelope';
 import { InvitationSPA } from '@/components/InvitationSPA';
 // Datos y tipos
 import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
@@ -115,7 +116,7 @@ export default function Home() {
       */}
       <AnimatePresence mode="wait">
         {!envelopeOpened ? (
-          <AnimatedEnvelope
+          <MagicalBook
             key="envelope-component"
             // Puedes cambiar este nombre por el de tus invitados
             guestName="Invitados Especiales"
