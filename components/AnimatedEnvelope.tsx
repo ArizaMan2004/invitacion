@@ -241,8 +241,6 @@ export function MagicalBook({
     }, 6200);
   };
 
-  const springEasing = [0.34, 1.56, 0.64, 1]; 
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -292,15 +290,16 @@ export function MagicalBook({
               : { scale: 1, opacity: 1, y: 0, rotateX: step === 'reading' ? 10 : 0 }
           }
           whileHover={step === 'idle' ? { scale: 1.03, y: -5, boxShadow: "0 25px 50px rgba(0,0,0,0.8)" } : {}}
-          transition={{ duration: 1.2, ease: springEasing }}
+          // Movimiento de retroceso general muy sutil
+          transition={{ duration: 1.2, ease: "easeOut" }}
           className={`relative w-full aspect-[3/4] ${step === 'idle' ? 'cursor-pointer' : ''} rounded-r-2xl shadow-[0_30px_60px_rgba(0,0,0,0.9)]`}
           style={{ perspective: '2500px', transformStyle: 'preserve-3d' }}
         >
           
-          {/* BASE DEL LIBRO BLANCA CON DEGRADADO PARA LA SOMBRA DEL LOMO */}
+          {/* 1. BASE DEL LIBRO (DONDE SE DETIENE LA BRISA Y APARECE EL TEXTO) */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#e5e5e5] via-[#ffffff] to-[#fafafa] rounded-r-2xl border-y-[3px] border-r-[3px] border-[#d0d0d0] flex items-center justify-center overflow-hidden z-0 shadow-[inset_15px_0_25px_rgba(0,0,0,0.12)]">
             
-            {/* TEXTO DE LA INVITACIÓN CON COLORES OSCUROS */}
+            {/* TEXTO DE LA INVITACIÓN */}
             <motion.div
               initial={{ opacity: 0, filter: "blur(10px)", scale: 0.95 }}
               animate={
@@ -308,7 +307,8 @@ export function MagicalBook({
                   ? { opacity: 1, filter: "blur(0px)", scale: 1 } 
                   : { opacity: 0 }
               }
-              transition={{ duration: 1.5, delay: 0.6, ease: "easeOut" }}
+              // Aparece cuando terminan de volar las hojas
+              transition={{ duration: 1.5, delay: 1.4, ease: "easeOut" }}
               className="relative z-10 w-[90%] md:w-[85%] h-[90%] md:h-[85%] border border-[#b8860b]/30 rounded-lg p-4 md:p-6 flex flex-col items-center justify-center text-center bg-transparent"
             >
                <div className="absolute top-3 left-3 md:top-4 md:left-4 w-4 h-4 md:w-6 md:h-6 border-t border-l border-[#b8860b] opacity-80" />
@@ -332,24 +332,68 @@ export function MagicalBook({
             </motion.div>
           </div>
 
-          {/* PORTADA DEL LIBRO */}
+          {/* 2. PÁGINAS QUE VUELAN (EFECTO BRISA MÁGICA) */}
+          {Array.from({ length: 6 }).map((_, index) => (
+            <motion.div
+              key={`page-flip-${index}`}
+              // Al cerrarse, la página 0 es la de más arriba (zIndex 20)
+              initial={{ rotateY: 0, zIndex: 20 - index }}
+              animate={{ 
+                // Abanico de hojas hacia la izquierda
+                rotateY: step !== 'idle' ? -160 + (index * 2) : 0, 
+                // Al caer a la izquierda, el zIndex se invierte para que caigan una sobre otra
+                zIndex: step !== 'idle' ? 5 + index : 20 - index 
+              }}
+              transition={{ 
+                duration: 0.8, 
+                // Retraso para que la tapa abra primero, y las hojas la sigan
+                delay: step !== 'idle' ? 0.4 + (index * 0.12) : 0, 
+                ease: [0.25, 1, 0.5, 1] 
+              }}
+              className="absolute inset-0 origin-left pointer-events-none"
+              style={{ transformStyle: 'preserve-3d' }}
+            >
+              {/* Frente de la hoja */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-r from-[#e5e5e5] via-[#ffffff] to-[#fafafa] rounded-r-2xl border-y-[2px] border-r-[2px] border-[#e0e0e0] shadow-[inset_15px_0_20px_rgba(0,0,0,0.05)]"
+                style={{ 
+                  backfaceVisibility: 'hidden', 
+                  WebkitBackfaceVisibility: 'hidden', 
+                  transform: `translateZ(${1 + (6 - index) * 0.1}px)` 
+                }}
+              />
+              {/* Reverso de la hoja (Se ve cuando están tiradas a la izquierda) */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-l from-[#e5e5e5] via-[#f5f5f5] to-[#fafafa] rounded-l-2xl border-y-[2px] border-l-[2px] border-[#d0d0d0] shadow-[10px_0_20px_rgba(0,0,0,0.1)]"
+                style={{ 
+                  backfaceVisibility: 'hidden', 
+                  WebkitBackfaceVisibility: 'hidden', 
+                  // Elevación Z para que aterricen sobre la tapa interior sin atravesarla
+                  transform: `rotateY(180deg) translateZ(${1.5 + index * 0.2}px)` 
+                }}
+              />
+            </motion.div>
+          ))}
+
+          {/* 3. PORTADA DEL LIBRO (LA JEFA) */}
           <motion.div
             initial={{ rotateY: 0, zIndex: 30 }}
             animate={{ 
-              rotateY: step !== 'idle' ? -155 : 0, 
-              zIndex: step === 'reading' ? 5 : 30 
+              rotateY: step !== 'idle' ? -165 : 0, 
+              // zIndex 4 para que sea la base absoluta de todo lo que cae a la izquierda
+              zIndex: step === 'reading' || step === 'fading' ? 4 : 30 
             }}
-            transition={{ duration: 1.8, ease: springEasing }}
+            transition={{ duration: 1.4, ease: [0.25, 1, 0.5, 1] }}
             className="absolute inset-0 origin-left"
             style={{ transformStyle: 'preserve-3d' }}
           >
-            {/* CARA EXTERNA (Frente) */}
+            {/* CARA EXTERNA (Frente de la tapa) */}
             <div 
               className="absolute inset-0 rounded-r-2xl overflow-hidden border-l-[4px] md:border-l-[6px] border-[#0a0514]"
               style={{ 
                 backfaceVisibility: 'hidden', 
                 WebkitBackfaceVisibility: 'hidden',
-                transform: 'translateZ(1px)', 
+                transform: 'translateZ(2px)', 
                 boxShadow: '10px 0 25px rgba(0,0,0,0.7)' 
               }}
             >
@@ -363,7 +407,7 @@ export function MagicalBook({
               </div>
             </div>
 
-            {/* CARA INTERNA (Reverso) */}
+            {/* CARA INTERNA (Reverso de la portada, la textura morada) */}
             <div 
               className="absolute inset-0 rounded-l-2xl overflow-hidden bg-[#05020a]" 
               style={{ 
@@ -386,7 +430,7 @@ export function MagicalBook({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20, filter: "blur(10px)", scale: 0.9 }}
-              transition={{ duration: 0.8, ease: springEasing }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="text-center"
             >
               <motion.p
