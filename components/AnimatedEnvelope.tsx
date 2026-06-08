@@ -8,31 +8,45 @@ interface AmbientBackgroundProps {
   heroImage?: string;
 }
 
-const AmbientVideoBackground = ({ heroImage = '/hero-image.png' }: AmbientBackgroundProps) => (
-  <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-screen"
-    >
-      <source src="/FONDO.mp4" type="video/mp4" />
-    </video>
-
-    <div className="absolute inset-0 w-full h-full opacity-35 mix-blend-overlay select-none pointer-events-none transform scale-105 animate-[pulse_8s_ease-in-out_infinite]">
-      <Image 
-        src={heroImage} 
-        alt="Hero Background Blended" 
-        fill 
-        className="object-cover object-center filter blur-[1px]" 
-        priority
-      />
+// 1. FONDO SINCRONIZADO CON LA INVITACIÓN PRINCIPAL
+const AmbientVideoBackground = ({ heroImage = '/placeholder-hero.jpg' }: AmbientBackgroundProps) => (
+  <>
+    {/* Capa de Video Base */}
+    <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-60"
+      >
+        <source src="/FONDO.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-700 via-purple-500 to-blue-600 mix-blend-color opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
     </div>
 
-    <div className="absolute inset-0 bg-gradient-to-b from-[#0f0c29]/95 via-[#1a143a]/70 to-[#0b091a]/98" />
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(5,3,15,0.9)_100%)]" />
-  </div>
+    {/* Capa de Imagen Hero con fundido */}
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 0.8 }} 
+      transition={{ duration: 2, ease: "easeOut" }}
+      className="fixed inset-0 z-[1] pointer-events-none"
+      style={{ 
+        maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+      }}
+    >
+      <Image 
+        src={heroImage} 
+        alt="Hero Background" 
+        fill 
+        className="object-cover object-center" 
+        priority
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/60 via-[#0a0514]/20 to-transparent" />
+    </motion.div>
+  </>
 );
 
 const MagicalFireflies = ({ color }: { color: string }) => {
@@ -205,7 +219,7 @@ interface MagicalBookProps {
   sealImage?: string;
   heroImage?: string;
   openSoundSrc?: string; 
-  transitionSoundSrc?: string; // <-- NUEVA PROP PARA EL SFX DE TRANSICIÓN
+  transitionSoundSrc?: string;
   eventTime?: string;
   welcomeMessage?: string;
   guestName?: string;
@@ -217,18 +231,20 @@ export function MagicalBook({
   bookCoverTexture = '/cover-texture.png',
   bookInnerCoverTexture = '/inner-cover.png',
   sealImage = '/sello.png',
-  heroImage = '/hero-image.png',
+  heroImage = '/placeholder-hero.jpg',
   openSoundSrc = '/sounds/book-open.mp3', 
-  transitionSoundSrc = '/sounds/magic-woosh.mp3', // <-- RUTA POR DEFECTO PARA EL WOOSH
+  transitionSoundSrc = '/sounds/magic-woosh.mp3',
   eventTime = "08:00 PM - 11/07/2026",
-  welcomeMessage = "La magia comienzará pronto!",
+  welcomeMessage = "La magia comenzará pronto...",
   guestName = "Invitado Especial",
   accentColor = '#ffd700', 
   onOpen,
 }: MagicalBookProps) {
   
   const [isLoading, setIsLoading] = useState(true);
-  const [step, setStep] = useState<'idle' | 'opening' | 'reading' | 'fading'>('idle');
+  
+  // Nuevo estado "immersive" agregado
+  const [step, setStep] = useState<'idle' | 'opening' | 'immersive' | 'fading'>('idle');
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -270,7 +286,6 @@ export function MagicalBook({
     setIsAnimating(true);
     setStep('opening'); 
     
-    // SFX 1: Efecto sonoro de apertura nativo al momento del click
     try {
       const audio = new window.Audio(openSoundSrc);
       audio.volume = 0.6;
@@ -279,26 +294,27 @@ export function MagicalBook({
       console.warn("No se pudo iniciar el recurso de audio", err);
     }
     
+    // Zoom in (pantalla completa ajustada)
     setTimeout(() => {
-      setStep('reading'); 
-    }, 1200); 
+      setStep('immersive'); 
+    }, 1100); 
 
+    // Transición de salida hacia el componente SPA
     setTimeout(() => {
       setStep('fading'); 
       
-      // SFX 2: MAGIC WOOSH al momento exacto en que inicia la transición final
       try {
         const wooshAudio = new window.Audio(transitionSoundSrc);
-        wooshAudio.volume = 0.7; // Volumen ligeramente superior para dar impacto
+        wooshAudio.volume = 0.7; 
         wooshAudio.play().catch(e => console.log("Prevención nativa de auto-play", e));
       } catch(err) {
         console.warn("No se pudo reproducir el sonido woosh de transición", err);
       }
-    }, 5200); 
+    }, 5500); 
 
     setTimeout(() => {
       onOpen(); 
-    }, 6400); 
+    }, 6500); 
   };
 
   const bookVariants = {
@@ -334,22 +350,26 @@ export function MagicalBook({
       rotateX: 0,  
       rotateY: 0,
       rotateZ: 0,
-      scale: 1.02,
+      scale: 1.05,
       y: 0,
-      z: 120,
+      z: 100,
       boxShadow: "0px 20px 40px rgba(0,0,0,0.7), 0px 0px 60px rgba(255,215,0,0.4)", 
       transition: { duration: 1.2, ease: [0.25, 1, 0.5, 1] } 
     },
-    reading: {
-      rotateX: 0,
+    // Estado Inmersivo Optimizado para Móviles (sin cortes)
+    immersive: {
+      rotateX: 0, 
       rotateY: 0,
-      scale: 1.05,
-      z: 160,
-      transition: { duration: 0.6, ease: "easeOut" }
+      rotateZ: 0,
+      scale: 1.25, 
+      y: 0, 
+      z: 150,
+      boxShadow: "0px 30px 60px rgba(0,0,0,0.8), 0px 0px 80px rgba(255,215,0,0.5)", 
+      transition: { duration: 1.4, ease: "easeOut" } 
     },
     fading: { 
-      scale: 3.5, 
-      z: 400, 
+      scale: 7, // Efecto "Zoom in infinito" para atravesar la hoja
+      z: 500, 
       y: 0,
       rotateX: 0,
       rotateY: 0,
@@ -400,7 +420,7 @@ export function MagicalBook({
 
       <div className="flex flex-col items-center gap-10 md:gap-14 w-full max-w-[290px] sm:max-w-[330px] md:max-w-sm relative z-10">
         
-        {step !== 'idle' && <MagicalAura color={accentColor} />}
+        {step === 'opening' && <MagicalAura color={accentColor} />}
 
         <motion.div
           onClick={handleClick}
@@ -437,31 +457,32 @@ export function MagicalBook({
 
           <div className="absolute inset-0 bg-gradient-to-r from-[#eadeca] via-[#f7f4eb] to-[#fffdf9] rounded-r-2xl border-y-[2px] border-r-[3px] border-[#c5ba9d] flex items-center justify-center overflow-hidden z-0 shadow-[inset_20px_0_30px_rgba(0,0,0,0.15)]">
             <motion.div
-              initial={{ opacity: 0, filter: "blur(8px)", scale: 0.92 }}
+              initial={{ opacity: 0, filter: "blur(12px)", scale: 0.95 }}
               animate={
-                (step === 'opening' || step === 'reading') 
+                step === 'immersive' 
                   ? { opacity: 1, filter: "blur(0px)", scale: 1 } 
-                  : { opacity: 0 }
+                  : { opacity: 0, filter: "blur(12px)", scale: 0.95 }
               }
-              transition={{ duration: 1.4, delay: 1.0, ease: "easeOut" }} 
-              className="relative z-10 w-[90%] md:w-[86%] h-[92%] md:h-[88%] border-2 border-[#b8860b]/20 rounded-lg p-5 md:p-7 flex flex-col items-center justify-center text-center bg-transparent"
+              transition={{ duration: 1.2, delay: step === 'immersive' ? 0.4 : 0, ease: "easeOut" }} 
+              className="relative z-10 w-[90%] md:w-[86%] h-[92%] md:h-[88%] border-[1.5px] border-[#b8860b]/30 rounded-lg p-4 md:p-6 flex flex-col items-center justify-center text-center bg-transparent"
             >
-               <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-[#b8860b]/60 rounded-tl-sm" />
-               <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-[#b8860b]/60 rounded-tr-sm" />
-               <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-[#b8860b]/60 rounded-bl-sm" />
-               <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-[#b8860b]/60 rounded-br-sm" />
+               <div className="absolute top-2 left-2 w-4 h-4 border-t-[1.5px] border-l-[1.5px] border-[#b8860b]/60 rounded-tl-sm" />
+               <div className="absolute top-2 right-2 w-4 h-4 border-t-[1.5px] border-r-[1.5px] border-[#b8860b]/60 rounded-tr-sm" />
+               <div className="absolute bottom-2 left-2 w-4 h-4 border-b-[1.5px] border-l-[1.5px] border-[#b8860b]/60 rounded-bl-sm" />
+               <div className="absolute bottom-2 right-2 w-4 h-4 border-b-[1.5px] border-r-[1.5px] border-[#b8860b]/60 rounded-br-sm" />
 
-              <p className="text-[10px] md:text-xs tracking-[0.35em] uppercase mb-4 md:mb-6 font-bold text-[#966d0e]">
+              <p className="text-[9px] md:text-xs tracking-[0.35em] uppercase mb-4 md:mb-5 font-bold text-[#966d0e]">
                 Para: {guestName}
               </p>
-              <p className="font-serif italic text-xl md:text-3xl mb-5 md:mb-7 leading-relaxed text-[#2c1a11] drop-shadow-sm">
+              
+              <p className="font-serif italic text-lg sm:text-xl md:text-2xl mb-4 md:mb-6 leading-relaxed text-[#2c1a11] drop-shadow-sm px-2 break-words w-full">
                 {welcomeMessage}
               </p>
               
-              <div className="w-20 md:w-24 h-[2px] mb-6 md:mb-8 bg-gradient-to-r from-transparent via-[#b8860b]/60 to-transparent" />
+              <div className="w-16 md:w-20 h-[1.5px] mb-4 md:mb-6 bg-gradient-to-r from-transparent via-[#b8860b]/60 to-transparent" />
               
-              <p className="text-[8px] md:text-[10px] tracking-[0.25em] uppercase mb-2 text-[#966d0e] font-bold">La Cita</p>
-              <h3 className="text-xl md:text-3xl font-serif font-bold tracking-wider text-[#2c1a11]">
+              <p className="text-[7px] md:text-[9px] tracking-[0.25em] uppercase mb-2 text-[#966d0e] font-bold">La Cita</p>
+              <h3 className="text-base sm:text-lg md:text-xl font-serif font-bold tracking-wider text-[#2c1a11]">
                 {eventTime}
               </h3>
             </motion.div>
@@ -519,7 +540,7 @@ export function MagicalBook({
             initial={{ rotateY: 0, zIndex: 30 }}
             animate={{ 
               rotateY: step !== 'idle' ? -162 : 0, 
-              zIndex: step === 'reading' || step === 'fading' ? 4 : 30 
+              zIndex: step === 'immersive' || step === 'fading' ? 4 : 30 
             }}
             transition={{ duration: 1.6, ease: [0.25, 1, 0.5, 1] }}
             className="absolute inset-0 origin-left"
@@ -590,11 +611,12 @@ export function MagicalBook({
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-25 transition-opacity duration-300" />
               </button>
             </motion.div>
-          ) : step !== 'idle' ? (
+          ) : step === 'opening' ? (
             <motion.div
               key="ui-msg"
               initial={{ opacity: 0 }}
-              animate={{ opacity: step === 'fading' ? 0 : 1 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center"
             >
