@@ -158,7 +158,6 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
                 key={charIndex} 
                 variants={child} 
                 className="inline-block relative" 
-                // Usar margin-right fuerza la separación física en celulares, evitando que se peguen las letras
                 style={{ marginRight: "0.06em" }} 
               >
                 {char}
@@ -166,7 +165,6 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
               </motion.span>
             );
           })}
-          {/* Espacio explícito entre palabras con ancho mínimo forzado para evitar colapsos en móviles */}
           {wordIndex < words.length - 1 && (
             <motion.span variants={child} className="inline-block w-3 md:w-4">
               &nbsp;
@@ -661,19 +659,21 @@ export function InvitationSPA({
 
         <ElegantDivider />
 
-        <motion.section {...sectionAnim} className="py-12 md:py-20 px-6 relative text-white">
+        {/* --- SECCIÓN DRESS CODE OPTIMIZADA EN DOS COLUMNAS DESDE MÓVILES --- */}
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 relative text-white">
           <div className="max-w-5xl mx-auto text-center relative z-10">
-            <div className="mb-14 md:mb-20">
-              <h2 className="text-5xl md:text-7xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Dress Code</h2>
-              <p className="text-[14px] md:text-base tracking-[0.4em] uppercase font-sans font-bold text-white drop-shadow-md">
+            <div className="mb-10 md:mb-20">
+              <h2 className="text-5xl md:text-7xl font-serif font-bold mb-3 md:mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Dress Code</h2>
+              <p className="text-xs md:text-base tracking-[0.4em] uppercase font-sans font-bold text-white drop-shadow-md">
                 Estilo Semi Formal
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 font-sans">
+            <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-14 font-sans">
               
+              {/* DAMAS */}
               <motion.div 
-                className="p-10 md:p-14 rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                className="p-4 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
                 style={{ backgroundColor: theme.cardBg }}
                 whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
                 transition={{ duration: 0.3 }}
@@ -681,28 +681,28 @@ export function InvitationSPA({
                 <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
                 
                 <motion.div 
-                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border-2 border-[#ffd700]/80 bg-[#0a0514]/60 relative z-10 backdrop-blur-lg"
+                  className="mb-4 md:mb-10 p-3 md:p-7 rounded-full border-2 border-[#ffd700]/80 bg-[#0a0514]/60 relative z-10 backdrop-blur-lg"
                   animate={{
                     boxShadow: [
-                      "0 0 15px rgba(255,215,0,0.5)",
-                      "0 0 35px rgba(255,215,0,1)",
-                      "0 0 15px rgba(255,215,0,0.5)"
+                      "0 0 10px rgba(255,215,0,0.5)",
+                      "0 0 25px rgba(255,215,0,1)",
+                      "0 0 10px rgba(255,215,0,0.5)"
                     ]
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <svg width="50" height="50" className="md:w-[65px] md:h-[65px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="30" height="30" className="w-[30px] h-[30px] md:w-[65px] md:h-[65px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 3c0 1.5.5 3 2 3s2-1.5 2-3M14 3c0 1.5.5 3 2 3s2-1.5 2-3" />
                     <path d="M19 8.5L12 22l-7-13.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5z" />
                   </svg>
                 </motion.div>
                 
-                <h3 className="text-4xl md:text-5xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Damas</h3>
-                <p className="text-lg opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
+                <h3 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold mb-2 md:mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Damas</h3>
+                <p className="text-xs sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
-                <div className="mt-6 w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
-                <p className="mt-6 text-[13px] opacity-100 uppercase tracking-widest italic leading-relaxed text-center font-bold text-white break-words relative z-10 drop-shadow-md">
+                <div className="mt-4 w-12 md:w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
+                <p className="mt-4 text-[10px] md:text-[13px] opacity-100 uppercase tracking-widest italic leading-relaxed text-center font-bold text-white break-words relative z-10 drop-shadow-md">
                   Sugerencia: Vestido de cóctel, falda o conjunto elegante.
                 </p>
 
@@ -710,18 +710,19 @@ export function InvitationSPA({
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20woman&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-8 py-4 rounded-full border-2 bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold relative z-10 hover:bg-[#ffd700]/30 transition-all duration-300"
+                  className="mt-6 md:mt-8 flex items-center justify-center gap-1 md:gap-2 px-4 py-2.5 md:px-8 md:py-4 rounded-full border-2 bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold relative z-10 hover:bg-[#ffd700]/30 transition-all duration-300 w-full max-w-[140px] md:max-w-none"
                   style={{ borderColor: 'rgba(255,215,0,0.8)' }}
                 >
-                  <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
-                  <span className="text-[12px] uppercase tracking-[0.2em] font-extrabold drop-shadow-md">Ver Ideas</span>
+                  <span className="text-[10px] md:text-[12px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-extrabold drop-shadow-md">Ver Ideas</span>
                 </a>
               </motion.div>
 
+              {/* CABALLEROS */}
               <motion.div 
-                className="p-10 md:p-14 rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                className="p-4 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
                 style={{ backgroundColor: theme.cardBg }}
                 whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
                 transition={{ duration: 0.3 }}
@@ -729,17 +730,17 @@ export function InvitationSPA({
                 <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
                 
                 <motion.div 
-                  className="mb-8 md:mb-10 p-6 md:p-7 rounded-full border-2 border-[#ffd700]/80 bg-[#0a0514]/60 relative z-10 backdrop-blur-lg"
+                  className="mb-4 md:mb-10 p-3 md:p-7 rounded-full border-2 border-[#ffd700]/80 bg-[#0a0514]/60 relative z-10 backdrop-blur-lg"
                   animate={{
                     boxShadow: [
-                      "0 0 15px rgba(255,215,0,0.5)",
-                      "0 0 35px rgba(255,215,0,1)",
-                      "0 0 15px rgba(255,215,0,0.5)"
+                      "0 0 10px rgba(255,215,0,0.5)",
+                      "0 0 25px rgba(255,215,0,1)",
+                      "0 0 10px rgba(255,215,0,0.5)"
                     ]
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 >
-                  <svg width="50" height="50" className="md:w-[65px] md:h-[65px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="30" height="30" className="w-[30px] h-[30px] md:w-[65px] md:h-[65px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 2v20h16V2H4z" strokeOpacity="0.15"/>
                     <path d="M12 22l4-18M12 22l-4-18M12 2v6" />
                     <path d="M9 4l3 2 3-2" />
@@ -747,12 +748,12 @@ export function InvitationSPA({
                   </svg>
                 </motion.div>
                 
-                <h3 className="text-4xl md:text-5xl font-serif font-bold mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Caballeros</h3>
-                <p className="text-lg opacity-100 leading-relaxed uppercase tracking-[0.25em] font-bold text-white text-center relative z-10">
+                <h3 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold mb-2 md:mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Caballeros</h3>
+                <p className="text-xs sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
-                <div className="mt-6 w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
-                <p className="mt-6 text-[13px] opacity-100 uppercase tracking-widest italic leading-relaxed text-center font-bold text-white break-words relative z-10 drop-shadow-md">
+                <div className="mt-4 w-12 md:w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
+                <p className="mt-4 text-[10px] md:text-[13px] opacity-100 uppercase tracking-widest italic leading-relaxed text-center font-bold text-white break-words relative z-10 drop-shadow-md">
                   Sugerencia: Pantalón de vestir, camisa elegante.
                 </p>
 
@@ -760,13 +761,13 @@ export function InvitationSPA({
                   href="https://es.pinterest.com/search/pins/?q=dresscode%2015%20men&rs=typed" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="mt-8 flex items-center justify-center gap-2 px-8 py-4 rounded-full border-2 bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold relative z-10 hover:bg-[#ffd700]/30 transition-all duration-300"
+                  className="mt-6 md:mt-8 flex items-center justify-center gap-1 md:gap-2 px-4 py-2.5 md:px-8 md:py-4 rounded-full border-2 bg-gradient-to-r from-[#ffd700]/20 to-[#ffd700]/5 text-[#ffd700] font-bold relative z-10 hover:bg-[#ffd700]/30 transition-all duration-300 w-full max-w-[140px] md:max-w-none"
                   style={{ borderColor: 'rgba(255,215,0,0.8)' }}
                 >
-                  <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.41 2.967 7.41 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.624 0 12.017 0z"/>
                   </svg>
-                  <span className="text-[12px] uppercase tracking-[0.2em] font-extrabold drop-shadow-md">Ver Ideas</span>
+                  <span className="text-[10px] md:text-[12px] uppercase tracking-[0.15em] md:tracking-[0.2em] font-extrabold drop-shadow-md">Ver Ideas</span>
                 </a>
               </motion.div>
             </div>
