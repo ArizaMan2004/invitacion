@@ -45,6 +45,19 @@ import { PhotoUploader } from './invitation/PhotoUploader';
 import { EditableWrapper } from './admin/EditableWrapper';
 import { InvitationData } from '@/lib/types';
 
+// --- CONTROLADOR GLOBAL DE EFECTOS DE SONIDO ---
+const playSFX = (src: string, volume = 0.5) => {
+  if (typeof window !== 'undefined') {
+    try {
+      const audio = new window.Audio(src);
+      audio.volume = volume;
+      audio.play().catch(() => {}); // Capturamos silenciosamente si el navegador limita múltiples plays rápidos
+    } catch (e) {
+      console.warn("SFX Error", e);
+    }
+  }
+};
+
 interface InvitationSPAProps {
   initialData: InvitationData;
   invitationId: string;
@@ -53,14 +66,16 @@ interface InvitationSPAProps {
   ocultarMensajeNinos?: boolean; 
 }
 
+// Integración del sonido 'text-shimmer' a TODAS las secciones que entran al hacer scroll
 const sectionAnim = {
   initial: { opacity: 0, y: 30 }, 
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-50px" },
-  transition: { duration: 0.8, ease: "easeOut" } 
+  transition: { duration: 0.8, ease: "easeOut" },
+  onViewportEnter: () => playSFX('/sounds/text-shimmer.mp3', 0.25)
 };
 
-// --- SEPARADOR ELEGANTE MÁS BRILLANTE ---
+// --- SEPARADOR ELEGANTE ---
 const ElegantDivider = () => (
   <motion.div
     initial={{ opacity: 0, scale: 0.8 }}
@@ -121,7 +136,7 @@ const DiamondSparkle = ({ index }: { index: number }) => {
   );
 };
 
-// --- COMPONENTE DE TEXTO ANIMADO OPTIMIZADO PARA MÓVILES ---
+// --- COMPONENTE DE TEXTO ANIMADO (CON SFX INTEGRADO) ---
 const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
@@ -145,6 +160,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
+      onViewportEnter={() => playSFX('/sounds/magic-typewriter.mp3', 0.4)}
       style={{ display: "inline-block", wordBreak: "normal", ...style }}
     >
       {words.map((word, wordIndex) => (
@@ -167,7 +183,7 @@ const TypewriterText = ({ text, delay = 0, className = "", style }: { text: stri
           })}
           {wordIndex < words.length - 1 && (
             <motion.span variants={child} className="inline-block w-3 md:w-4">
-              &nbsp;
+               
             </motion.span>
           )}
         </span>
@@ -430,6 +446,49 @@ export function InvitationSPA({
   const { scrollY } = useScroll();
   const scrollIndicatorOpacity = useTransform(scrollY, [0, 80], [1, 0]);
 
+  useEffect(() => {
+    let fadeInterval: NodeJS.Timeout;
+    
+    // SFX Logo Reveal
+    const logoSfxTimer = setTimeout(() => {
+      try {
+        const logoSfx = new window.Audio('/sounds/logo-reveal.mp3');
+        logoSfx.volume = 0.8;
+        logoSfx.play().catch(e => console.log("SFX prevenido por políticas del navegador", e));
+      } catch(err) {
+        console.warn("No se pudo cargar SFX del logo");
+      }
+    }, 500);
+
+    // Música de Fondo Ambiental
+    const bgAudio = new window.Audio('/sounds/bg-ambient.mp3'); 
+    bgAudio.loop = true;
+    bgAudio.volume = 0; 
+
+    try {
+      bgAudio.play().then(() => {
+        let vol = 0;
+        fadeInterval = setInterval(() => {
+          if (vol < 0.45) {
+            vol += 0.05;
+            bgAudio.volume = Math.min(vol, 0.45);
+          } else {
+            clearInterval(fadeInterval);
+          }
+        }, 300);
+      }).catch(e => console.log("Audio de fondo prevenido por políticas del navegador", e));
+    } catch(err) {
+      console.warn("No se pudo iniciar la música de fondo");
+    }
+
+    return () => {
+      clearTimeout(logoSfxTimer);
+      if (fadeInterval) clearInterval(fadeInterval);
+      bgAudio.pause();
+      bgAudio.src = '';
+    };
+  }, []);
+
   const theme = {
     background: '#0a0514', 
     accent: '#ffd700', 
@@ -481,6 +540,7 @@ export function InvitationSPA({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
+            onViewportEnter={() => playSFX('/sounds/text-shimmer.mp3', 0.2)}
             className="block text-[11px] md:text-sm tracking-[0.6em] uppercase mb-4 md:mb-6 font-sans font-bold text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.8)] shrink-0"
           >
             Te damos la bienvenida a nuestros
@@ -525,6 +585,7 @@ export function InvitationSPA({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.5, duration: 0.8 }}
+              onViewportEnter={() => playSFX('/sounds/text-shimmer.mp3', 0.3)}
               className="mt-4 md:mt-6 flex flex-col items-center gap-2 opacity-100 w-full"
             >
               <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold font-sans text-white text-center drop-shadow-[0_2px_5px_rgba(0,0,0,1)]">
@@ -643,7 +704,7 @@ export function InvitationSPA({
               <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
               <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10 shadow-inner border border-white/10">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve" 
+                  src={initialData.mapIframeSrc || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve"} 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0, filter: 'contrast(1.1) sepia(0.2) hue-rotate(240deg) saturate(1.5)' }} 
@@ -659,7 +720,6 @@ export function InvitationSPA({
 
         <ElegantDivider />
 
-        {/* --- SECCIÓN DRESS CODE OPTIMIZADA EN DOS COLUMNAS DESDE MÓVILES --- */}
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 relative text-white">
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <div className="mb-10 md:mb-20">
@@ -670,8 +730,6 @@ export function InvitationSPA({
             </div>
             
             <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-14 font-sans">
-              
-              {/* DAMAS */}
               <motion.div 
                 className="p-4 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
                 style={{ backgroundColor: theme.cardBg }}

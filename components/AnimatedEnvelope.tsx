@@ -221,7 +221,7 @@ export function MagicalBook({
   openSoundSrc = '/sounds/book-open.mp3', 
   transitionSoundSrc = '/sounds/magic-woosh.mp3', // <-- RUTA POR DEFECTO PARA EL WOOSH
   eventTime = "08:00 PM - 11/07/2026",
-  welcomeMessage = "La magia comienza esta noche",
+  welcomeMessage = "La magia comienzará pronto!",
   guestName = "Invitado Especial",
   accentColor = '#ffd700', 
   onOpen,
