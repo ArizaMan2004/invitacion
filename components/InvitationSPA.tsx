@@ -704,7 +704,7 @@ export function InvitationSPA({
               <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
               <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10 shadow-inner border border-white/10">
                 <iframe 
-                  src={initialData.mapIframeSrc || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3911.1794197171566!2d-69.64156179999999!3d11.3945113!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1778713473158!5m2!1ses!2sve"} 
+                  src={initialData.mapIframeSrc || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2140.8007663078597!2d-69.64281473136079!3d11.396241650313055!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1780946574894!5m2!1ses!2sve"} 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0, filter: 'contrast(1.1) sepia(0.2) hue-rotate(240deg) saturate(1.5)' }} 
