@@ -35,7 +35,6 @@ type Twin = 'Jesus' | 'Jessenia';
 export function Trivia({ invitationId, guestName, accentColor }: TriviaProps) {
   const [phase, setPhase] = useState<GamePhase>('selection');
   const [selectedTwin, setSelectedTwin] = useState<Twin | null>(null);
-  const [wantsToSave, setWantsToSave] = useState(false);
   const [playerName, setPlayerName] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
@@ -67,18 +66,32 @@ export function Trivia({ invitationId, guestName, accentColor }: TriviaProps) {
 
   const finishGame = async (finalScore: number) => {
     setPhase('finished');
-    if (wantsToSave) {
-      setIsSaving(true);
-      try {
-        await supabase.from('trivia_results').insert({
-          invitation_id: invitationId,
-          guest_name: playerName.trim() || guestName || 'Invitado Anónimo',
-          twin_selected: selectedTwin,
-          score: finalScore,
-          total_questions: activeQuestions.length,
-          created_at: new Date().toISOString()
-        });
-      } finally { setIsSaving(false); }
+    setIsSaving(true);
+    
+    try {
+      const payload = {
+        invitation_id: invitationId,
+        guest_name: playerName.trim() || guestName || 'Invitado Anónimo',
+        twin_selected: selectedTwin,
+        score: finalScore,
+        total_questions: activeQuestions.length
+      };
+
+      const { data, error } = await supabase
+        .from('trivia_results')
+        .insert([payload]) // Enviar como arreglo es mucho más seguro
+        .select();
+      
+      if (error) {
+        // Stringify fuerza a la consola a mostrar el error real, no un objeto vacío
+        console.error("Detalle del error en Supabase:", JSON.stringify(error, null, 2));
+      } else {
+        console.log("¡Trivia guardada con éxito!", data);
+      }
+    } catch (err) {
+      console.error("Error de red al guardar la trivia:", err);
+    } finally { 
+      setIsSaving(false); 
     }
   };
 
@@ -140,7 +153,11 @@ export function Trivia({ invitationId, guestName, accentColor }: TriviaProps) {
                 <span className="text-5xl font-bold">{score}</span>
               </div>
               <h3 className="text-3xl font-serif mb-6 text-[#ffd700]">¡Trivia Finalizada!</h3>
-              <button onClick={() => { setPhase('selection'); setSelectedTwin(null); setScore(0); }} className="w-full py-4 rounded-full font-bold bg-[#ffd700] text-[#0a0514]">Reiniciar</button>
+              {isSaving ? (
+                 <p className="text-[#a0b0a0] mb-4">Guardando resultados...</p>
+              ) : (
+                 <button onClick={() => { setPhase('selection'); setSelectedTwin(null); setScore(0); }} className="w-full py-4 rounded-full font-bold bg-[#ffd700] text-[#0a0514]">Volver a jugar</button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

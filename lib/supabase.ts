@@ -147,7 +147,7 @@ export async function createRSVPResponse(response: RSVPResponse): Promise<string
         guest_email: response.guestEmail,
         guest_phone: response.guestPhone,
         attending: response.attending,
-        adult_count: response.numberOfGuests, // Mapeado según esquema de DB
+        adult_count: response.numberOfGuests, 
         dietary_restrictions: response.dietaryRestrictions,
         additional_notes: response.additionalNotes,
       })
@@ -178,8 +178,8 @@ export async function getRSVPResponses(invitationId: string): Promise<RSVPRespon
       guestEmail: r.guest_email,
       guestPhone: r.guest_phone,
       attending: r.attending,
-      numberOfGuests: r.adult_count, // Adaptado
-      childCount: r.child_count || 0, // Incluyendo campo para gemelos si aplica
+      numberOfGuests: r.adult_count, 
+      childCount: r.child_count || 0, 
       dietaryRestrictions: r.dietary_restrictions,
       additionalNotes: r.additional_notes,
       createdAt: new Date(r.created_at),
@@ -191,32 +191,23 @@ export async function getRSVPResponses(invitationId: string): Promise<RSVPRespon
 }
 
 // ==========================================
-// 3. Funciones para Fotos y Storage
+// 3. Funciones para Fotos (Cloudinary + Supabase DB)
 // ==========================================
 
-export async function uploadGuestPhotos(invitationId: string, files: FileList, guestName: string): Promise<boolean> {
+export async function saveGuestPhotoUrl(invitationId: string, guestName: string, photoUrl: string): Promise<boolean> {
   try {
-    const uploadPromises = Array.from(files).map(async (file) => {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${invitationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage.from('fotos-evento').upload(fileName, file);
-      if (uploadError) throw uploadError;
-
-      const { error: insertError } = await supabase.from('guest_photos').insert({
-        invitation_id: invitationId,
-        guest_name: guestName,
-        photo_url: `${supabaseUrl}/storage/v1/object/public/fotos-evento/${fileName}`,
-        photo_bucket_path: fileName,
-        approved: false, 
-      });
-      if (insertError) throw insertError;
+    const { error: insertError } = await supabase.from('guest_photos').insert({
+      invitation_id: invitationId,
+      guest_name: guestName,
+      photo_url: photoUrl,
+      photo_bucket_path: 'cloudinary', // Placeholder ya que no usamos el storage de supabase
+      approved: false, 
     });
-
-    await Promise.all(uploadPromises);
+    
+    if (insertError) throw insertError;
     return true;
   } catch (error) {
-    console.error('Error en uploadGuestPhotos:', error);
+    console.error('Error al guardar la URL de la foto en Supabase:', error);
     return false;
   }
 }

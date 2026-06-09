@@ -16,8 +16,8 @@ import {
   Clock,
   Gamepad2,
   Trash2,
-  Eye,
-  RefreshCw
+  RefreshCw,
+  PlayCircle
 } from 'lucide-react';
 
 // Importación de utilidades de Supabase y Tipos
@@ -39,6 +39,12 @@ import {
 import { RSVPResponse, GuestPhoto, GuestMessage, InvitationData } from '@/lib/types';
 
 type TabId = 'dashboard' | 'media' | 'rsvp' | 'messages' | 'trivia';
+
+// --- FUNCIÓN AUXILIAR PARA DETECTAR VIDEOS ---
+const isVideoUrl = (url: string) => {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg|mov|mkv)$/i.test(url);
+};
 
 export default function AdvancedAdminEditor() {
   // --- ESTADOS DE AUTENTICACIÓN ---
@@ -135,7 +141,7 @@ export default function AdvancedAdminEditor() {
   };
 
   const handleDeleteMedia = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar esta foto permanentemente?')) return;
+    if (!confirm('¿Seguro que deseas eliminar este archivo permanentemente?')) return;
     const { error } = await supabase.from('guest_photos').delete().eq('id', id);
     if (!error && invitationId) loadAllData(invitationId);
   };
@@ -144,6 +150,31 @@ export default function AdvancedAdminEditor() {
     if (!confirm('¿Seguro que deseas eliminar este mensaje?')) return;
     const { error } = await supabase.from('guest_messages').delete().eq('id', id);
     if (!error && invitationId) loadAllData(invitationId);
+  };
+
+  // --- RENDERIZADO INTELIGENTE DE MEDIA ---
+  const renderMedia = (url: string, className: string, isPreview = false) => {
+    if (isVideoUrl(url)) {
+      return (
+        <div className="relative w-full h-full">
+          <video 
+            src={url} 
+            className={`${className} ${isPreview ? 'pointer-events-none' : ''}`}
+            controls={!isPreview}
+            autoPlay={isPreview}
+            muted={isPreview}
+            loop={isPreview}
+            playsInline
+          />
+          {isPreview && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <PlayCircle className="w-8 h-8 text-white/70 shadow-xl rounded-full" />
+            </div>
+          )}
+        </div>
+      );
+    }
+    return <img src={url} className={className} alt="Media invitado" loading="lazy" />;
   };
 
   // --- VISTAS DE CARGA Y LOGIN ---
@@ -241,7 +272,7 @@ export default function AdvancedAdminEditor() {
                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                >
                  <StatsCard title="Confirmados" value={rsvps.filter(r => r.attending).length} subValue={`De ${rsvps.length} totales`} icon={<CheckCircle2 className="text-green-500" />} />
-                 <StatsCard title="Media Pendiente" value={pendingPhotos.length} icon={<ImageIcon className="text-amber-500" />} subValue="Fotos por moderar" />
+                 <StatsCard title="Media Pendiente" value={pendingPhotos.length} icon={<ImageIcon className="text-amber-500" />} subValue="Fotos/Videos por moderar" />
                  <StatsCard title="Trivia" value={triviaScores.length} icon={<Gamepad2 className="text-blue-500" />} subValue="Partidas completadas" />
                  <StatsCard title="Mensajes" value={messages.length} icon={<MessageSquare className="text-purple-500" />} subValue="Deseos aprobados" />
                </motion.div>
@@ -256,10 +287,10 @@ export default function AdvancedAdminEditor() {
                       <Clock className="w-4 h-4" /> Moderación Pendiente
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {pendingPhotos.map(photo => (
+                      {pendingPhotos.map((photo, index) => (
                         <div key={photo.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5">
-                          <img src={photo.photoUrl} className="w-full h-full object-cover opacity-60" alt="Pendiente" />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm">
+                          {renderMedia(photo.photoUrl, "w-full h-full object-cover opacity-60", true)}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm z-10">
                             <button onClick={() => handleApproveMedia(photo.id)} className="p-3 bg-green-500 text-black rounded-full hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></button>
                             <button onClick={() => handleDeleteMedia(photo.id)} className="p-3 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"><Trash2 className="w-5 h-5" /></button>
                           </div>
@@ -276,8 +307,8 @@ export default function AdvancedAdminEditor() {
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {photos.map((photo, index) => (
                       <div key={photo.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/5 bg-white/5 cursor-pointer" onClick={() => setSelectedMediaIndex(index)}>
-                        <img src={photo.photoUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="Galería" />
-                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        {renderMedia(photo.photoUrl, "w-full h-full object-cover transition-transform group-hover:scale-110", true)}
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
                           <p className="text-[10px] font-bold truncate text-white uppercase tracking-tighter">{photo.guestName}</p>
                         </div>
                       </div>
@@ -418,27 +449,33 @@ export default function AdvancedAdminEditor() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-4 backdrop-blur-2xl"
           >
-            <button onClick={() => setSelectedMediaIndex(null)} className="absolute top-8 right-8 text-white/30 hover:text-white transition-colors"><XCircle className="w-12 h-12" /></button>
+            <button onClick={() => setSelectedMediaIndex(null)} className="absolute top-8 right-8 text-white/30 hover:text-white transition-colors z-50"><XCircle className="w-12 h-12" /></button>
             
             <button 
               onClick={() => setSelectedMediaIndex(prev => prev! > 0 ? prev! - 1 : photos.length - 1)}
-              className="absolute left-4 md:left-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full"
+              className="absolute left-4 md:left-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
             ><ChevronLeft className="w-10 h-10" /></button>
 
             <motion.div key={selectedMediaIndex} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center max-w-6xl w-full">
-              <img src={photos[selectedMediaIndex].photoUrl} className="max-w-full max-h-[75vh] object-contain rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10" alt="Vista ampliada" />
-              <div className="mt-10 text-center">
+              
+              {/* RENDERIZADO DEL ARCHIVO EN GRANDE */}
+              {renderMedia(photos[selectedMediaIndex].photoUrl, "max-w-full max-h-[70vh] object-contain rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10")}
+
+              <div className="mt-8 text-center">
                 <p className="text-3xl font-serif text-[#b8860b] mb-2">{photos[selectedMediaIndex].guestName}</p>
-                <p className="text-[10px] text-white/40 uppercase tracking-[0.4em] mb-8">{new Date(photos[selectedMediaIndex].createdAt).toLocaleString()}</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.4em] mb-6">{new Date(photos[selectedMediaIndex].createdAt).toLocaleString()}</p>
                 <div className="flex justify-center gap-4">
-                   <Button variant="outline" onClick={() => handleDeleteMedia(photos[selectedMediaIndex].id)} className="border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white px-8 py-6 rounded-full transition-all">Eliminar Imagen</Button>
+                   <Button variant="outline" onClick={() => {
+                     handleDeleteMedia(photos[selectedMediaIndex].id);
+                     setSelectedMediaIndex(null);
+                   }} className="border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white px-8 py-6 rounded-full transition-all">Eliminar Archivo</Button>
                 </div>
               </div>
             </motion.div>
 
             <button 
               onClick={() => setSelectedMediaIndex(prev => prev! < photos.length - 1 ? prev! + 1 : 0)}
-              className="absolute right-4 md:right-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full"
+              className="absolute right-4 md:right-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
             ><ChevronRight className="w-10 h-10" /></button>
           </motion.div>
         )}

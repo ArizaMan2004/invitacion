@@ -51,7 +51,7 @@ const playSFX = (src: string, volume = 0.5) => {
     try {
       const audio = new window.Audio(src);
       audio.volume = volume;
-      audio.play().catch(() => {}); // Capturamos silenciosamente si el navegador limita múltiples plays rápidos
+      audio.play().catch(() => {}); 
     } catch (e) {
       console.warn("SFX Error", e);
     }
@@ -66,7 +66,6 @@ interface InvitationSPAProps {
   ocultarMensajeNinos?: boolean; 
 }
 
-// Integración del sonido 'text-shimmer' a TODAS las secciones que entran al hacer scroll
 const sectionAnim = {
   initial: { opacity: 0, y: 30 }, 
   whileInView: { opacity: 1, y: 0 },
@@ -136,7 +135,6 @@ const DiamondSparkle = ({ index }: { index: number }) => {
   );
 };
 
-// --- COMPONENTE DE TEXTO ANIMADO (CON SFX INTEGRADO) ---
 const TypewriterText = ({ text, delay = 0, className = "", style }: { text: string, delay?: number, className?: string, style?: React.CSSProperties }) => {
   const words = text.split(" ");
   
@@ -627,14 +625,14 @@ export function InvitationSPA({
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 text-center relative">
           <h2 
-            className="text-6xl md:text-7xl mb-8 md:mb-12 text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.7)]"
+            className="text-5xl md:text-7xl mb-8 md:mb-12 text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.7)]"
             style={{ fontFamily: 'var(--font-hero)' }}
           >
             Solo Faltan...
           </h2>
           
           <motion.div 
-            className="relative z-10 p-6 md:p-12 rounded-[2.5rem] border border-[#ffd700]/40 backdrop-blur-md shadow-[0_0_30px_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
+            className="relative z-10 p-5 md:p-12 rounded-3xl md:rounded-[2.5rem] border border-[#ffd700]/40 backdrop-blur-md shadow-[0_0_30px_rgba(255,215,0,0.15)] max-w-4xl mx-auto w-full text-white group overflow-hidden"
             style={{ backgroundColor: theme.cardBg }}
             whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
             transition={{ duration: 0.3 }}
@@ -656,7 +654,7 @@ export function InvitationSPA({
                 <TypewriterText 
                   text='"Si la fiesta quieres disfrutar, a tus niños en camita debes dejar."'
                   delay={0}
-                  className="text-4xl md:text-6xl leading-relaxed font-bold opacity-100 text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]"
+                  className="text-3xl md:text-6xl leading-relaxed font-bold opacity-100 text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]"
                   style={{ fontFamily: 'var(--font-apa)' }}
                 />
               </EditableWrapper>
@@ -689,21 +687,20 @@ export function InvitationSPA({
             </div>
 
             <div className="mt-16 md:mt-24 text-center mb-10 md:mb-14 px-4">
-              <h2 className="text-5xl md:text-7xl font-serif mb-3 tracking-wide font-bold text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Ubicación</h2>
-              <p className="text-[12px] md:text-sm tracking-[0.4em] uppercase font-sans font-bold text-white opacity-100 drop-shadow-md text-center">
+              <h2 className="text-4xl md:text-7xl font-serif mb-3 tracking-wide font-bold text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Ubicación</h2>
+              <p className="text-[10px] md:text-sm tracking-[0.4em] uppercase font-sans font-bold text-white opacity-100 drop-shadow-md text-center">
                 Sigue el sendero hacia la celebración
               </p>
             </div>
 
             <motion.div 
-              className="p-3 md:p-4 rounded-[3rem] border border-[#ffd700]/40 backdrop-blur-md max-w-4xl mx-auto shadow-[0_0_30px_rgba(255,215,0,0.15)] group relative overflow-hidden"
+              className="p-3 md:p-4 rounded-3xl md:rounded-[3rem] border border-[#ffd700]/40 backdrop-blur-md max-w-4xl mx-auto shadow-[0_0_30px_rgba(255,215,0,0.15)] group relative overflow-hidden"
               style={{ backgroundColor: theme.cardBg }}
               whileHover={{ scale: 1.03, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
               transition={{ duration: 0.3 }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
-              <div className="rounded-[2.5rem] overflow-hidden relative w-full h-[320px] md:h-[500px] z-10 shadow-inner border border-white/10">
-                {/* AQUÍ ESTÁ LA MAGIA: Forzamos la URL original que funcionaba bien para que nada la dañe */}
+              <div className="rounded-2xl md:rounded-[2.5rem] overflow-hidden relative w-full h-[280px] md:h-[500px] z-10 shadow-inner border border-white/10">
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2140.8007663078597!2d-69.64281473136079!3d11.396241650313055!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e842b171d51921b%3A0x9597f059837b1c6f!2sRefugio%20Ranch!5e0!3m2!1ses!2sve!4v1780946574894!5m2!1ses!2sve" 
                   width="100%" 
@@ -724,15 +721,15 @@ export function InvitationSPA({
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 relative text-white">
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <div className="mb-10 md:mb-20">
-              <h2 className="text-5xl md:text-7xl font-serif font-bold mb-3 md:mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Dress Code</h2>
-              <p className="text-xs md:text-base tracking-[0.4em] uppercase font-sans font-bold text-white drop-shadow-md">
+              <h2 className="text-4xl md:text-7xl font-serif font-bold mb-3 md:mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">Dress Code</h2>
+              <p className="text-[10px] md:text-base tracking-[0.4em] uppercase font-sans font-bold text-white drop-shadow-md">
                 Estilo Semi Formal
               </p>
             </div>
             
             <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-14 font-sans">
               <motion.div 
-                className="p-4 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                className="p-5 sm:p-10 md:p-14 rounded-3xl md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
                 style={{ backgroundColor: theme.cardBg }}
                 whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
                 transition={{ duration: 0.3 }}
@@ -757,7 +754,7 @@ export function InvitationSPA({
                 </motion.div>
                 
                 <h3 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold mb-2 md:mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Damas</h3>
-                <p className="text-xs sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
+                <p className="text-[10px] sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
                 <div className="mt-4 w-12 md:w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
@@ -781,7 +778,7 @@ export function InvitationSPA({
 
               {/* CABALLEROS */}
               <motion.div 
-                className="p-4 sm:p-10 md:p-14 rounded-[2rem] md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
+                className="p-5 sm:p-10 md:p-14 rounded-3xl md:rounded-[3.5rem] border border-[#ffd700]/40 backdrop-blur-md flex flex-col items-center justify-between shadow-[0_0_30px_rgba(255,215,0,0.15)] relative overflow-hidden group"
                 style={{ backgroundColor: theme.cardBg }}
                 whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
                 transition={{ duration: 0.3 }}
@@ -808,7 +805,7 @@ export function InvitationSPA({
                 </motion.div>
                 
                 <h3 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold mb-2 md:mb-5 italic text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] relative z-10">Caballeros</h3>
-                <p className="text-xs sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
+                <p className="text-[10px] sm:text-lg opacity-100 leading-relaxed uppercase tracking-[0.21em] md:tracking-[0.25em] font-bold text-white text-center relative z-10">
                   Semi Formal
                 </p>
                 <div className="mt-4 w-12 md:w-20 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent relative z-10 shadow-[0_0_10px_rgba(255,215,0,1)]" />
@@ -837,8 +834,8 @@ export function InvitationSPA({
 
         <motion.section {...sectionAnim} className="py-12 md:py-20 relative overflow-hidden text-white">
           <div className="relative z-10 text-center mb-10 md:mb-16 px-6">
-            <h2 className="text-5xl md:text-7xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">¿Conoces la Leyenda?</h2>
-            <p className="text-lg md:text-2xl opacity-100 italic font-serif font-bold text-white text-center drop-shadow-md">Demuestra cuánto sabes sobre los cumpleañeros</p>
+            <h2 className="text-4xl md:text-7xl font-serif font-bold mb-3 md:mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_25px_rgba(255,215,0,0.6)]">¿Conoces la Leyenda?</h2>
+            <p className="text-base md:text-2xl opacity-100 italic font-serif font-bold text-white text-center drop-shadow-md">Demuestra cuánto sabes sobre los cumpleañeros</p>
           </div>
           <div className="relative z-10 max-w-4xl mx-auto px-4">
             <Trivia 
@@ -849,19 +846,74 @@ export function InvitationSPA({
           </div>
         </motion.section>
 
+        {/* --- INICIO SECCIÓN LLUVIA DE SOBRES --- */}
+        <ElegantDivider />
+
+        <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 relative text-white">
+          <div className="max-w-4xl mx-auto relative z-10">
+            <motion.div 
+              className="backdrop-blur-md p-6 md:p-20 rounded-3xl md:rounded-[4.5rem] border border-[#ffd700]/40 shadow-[0_0_30px_rgba(255,215,0,0.15)] text-center relative overflow-hidden group" 
+              style={{ backgroundColor: theme.cardBg }}
+              whileHover={{ scale: 1.03, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Fondo brillante sutil en hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
+              
+              <div className="relative z-10">
+                {/* Ícono animado del sobre/regalo */}
+                <motion.div 
+                  className="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mx-auto mb-6 md:mb-10 border-2 border-[#ffd700]/80 bg-[#0a0514]/60 backdrop-blur-lg"
+                  animate={{
+                    boxShadow: [
+                      "0 0 15px rgba(255,215,0,0.5)",
+                      "0 0 35px rgba(255,215,0,1)",
+                      "0 0 15px rgba(255,215,0,0.5)"
+                    ]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <svg width="32" height="32" className="w-[32px] h-[32px] md:w-[48px] md:h-[48px]" viewBox="0 0 24 24" fill="none" stroke="#ffd700" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 7V4h16v3" />
+                    <path d="M4 7l8 6 8-6" />
+                    <path d="M4 7v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V7" />
+                    <rect x="10" y="11" width="4" height="4" rx="1" fill="#ffd700" fillOpacity={0.4} />
+                  </svg>
+                </motion.div>
+                
+                <h2 className="text-4xl md:text-6xl font-serif font-bold mb-4 md:mb-6 tracking-wide text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+                  Lluvia de Sobres
+                </h2>
+                
+                <p className="text-sm md:text-xl font-sans font-bold opacity-100 mb-5 max-w-xl mx-auto leading-relaxed text-white text-center drop-shadow-md">
+                  El regalo más valioso es que compartan esta noche mágica con nosotros.
+                </p>
+                
+                {/* Divisor pequeño interno */}
+                <div className="w-16 md:w-24 h-[2px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent mx-auto mb-5 shadow-[0_0_10px_rgba(255,215,0,1)]" />
+                
+                <p className="text-[11px] md:text-sm font-sans tracking-wide opacity-90 max-w-md mx-auto leading-relaxed text-white text-center drop-shadow-md">
+                  Sin embargo, si desean tener un detalle adicional, contaremos con un buzón en la recepción para su lluvia de sobres el día del evento.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+        {/* --- FIN SECCIÓN LLUVIA DE SOBRES --- */}
+
         <ElegantDivider />
 
         <motion.div {...sectionAnim} className="py-12 md:py-20 px-4 text-white">
           <motion.div 
-            className="max-w-2xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden border border-[#ffd700]/40 backdrop-blur-md shadow-[0_0_30px_rgba(255,215,0,0.15)] relative group" 
+            className="max-w-2xl mx-auto rounded-3xl md:rounded-[4rem] overflow-hidden border border-[#ffd700]/40 backdrop-blur-md shadow-[0_0_30px_rgba(255,215,0,0.15)] relative group" 
             style={{ backgroundColor: theme.cardBg }}
             whileHover={{ scale: 1.04, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
             transition={{ duration: 0.3 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
-            <div className="relative z-10 p-8 md:p-16 text-center">
-              <h2 className="text-5xl md:text-7xl font-serif font-bold mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">¿Aceptarás el Llamado?</h2>
-              <p className="text-[14px] md:text-base tracking-[0.25em] uppercase mb-10 md:mb-14 font-sans font-bold text-white text-center drop-shadow-md">Confirma tu presencia en el Claro Real</p>
+            <div className="relative z-10 p-5 md:p-16 text-center">
+              <h2 className="text-4xl md:text-7xl font-serif font-bold mb-3 md:mb-5 tracking-wide text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">¿Aceptarás el Llamado?</h2>
+              <p className="text-[10px] md:text-base tracking-[0.25em] uppercase mb-8 md:mb-14 font-sans font-bold text-white text-center drop-shadow-md">Confirma tu presencia en el Claro Real</p>
               <RSVPForm invitationId={invitationId} />
             </div>
           </motion.div>
@@ -872,7 +924,7 @@ export function InvitationSPA({
         <motion.section {...sectionAnim} className="py-12 md:py-20 px-4 md:px-6 relative text-white">
           <div className="max-w-4xl mx-auto relative z-10">
             <motion.div 
-              className="backdrop-blur-md p-8 md:p-24 rounded-[3.5rem] md:rounded-[4.5rem] border border-[#ffd700]/40 shadow-[0_0_30px_rgba(255,215,0,0.15)] text-center relative overflow-hidden group" 
+              className="backdrop-blur-md p-6 md:p-24 rounded-3xl md:rounded-[4.5rem] border border-[#ffd700]/40 shadow-[0_0_30px_rgba(255,215,0,0.15)] text-center relative overflow-hidden group" 
               style={{ backgroundColor: theme.cardBg }}
               whileHover={{ scale: 1.03, boxShadow: '0 0 50px rgba(255,215,0,0.4)', borderColor: 'rgba(255,215,0,0.8)' }}
               transition={{ duration: 0.3 }}
@@ -881,7 +933,7 @@ export function InvitationSPA({
               
               <div className="relative z-10">
                 <motion.div 
-                  className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center mx-auto mb-8 md:mb-10 border-2 border-[#ffd700]/80 bg-[#0a0514]/60 backdrop-blur-lg"
+                  className="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center mx-auto mb-6 md:mb-10 border-2 border-[#ffd700]/80 bg-[#0a0514]/60 backdrop-blur-lg"
                   animate={{
                     boxShadow: [
                       "0 0 15px rgba(255,215,0,0.5)",
@@ -891,11 +943,11 @@ export function InvitationSPA({
                   }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <span className="text-4xl md:text-5xl drop-shadow-[0_0_10px_rgba(255,255,255,1)]">📸</span>
+                  <span className="text-3xl md:text-5xl drop-shadow-[0_0_10px_rgba(255,255,255,1)]">📸</span>
                 </motion.div>
                 
-                <h2 className="text-5xl md:text-7xl font-serif font-bold mb-5 md:mb-7 tracking-wide text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">Inmortaliza el Momento</h2>
-                <p className="text-lg md:text-xl font-sans font-bold opacity-100 mb-10 md:mb-14 max-w-lg mx-auto leading-relaxed text-white text-center drop-shadow-md">
+                <h2 className="text-4xl md:text-7xl font-serif font-bold mb-4 md:mb-7 tracking-wide text-[#ffd700] drop-shadow-[0_0_20px_rgba(255,215,0,0.6)]">Inmortaliza el Momento</h2>
+                <p className="text-sm md:text-xl font-sans font-bold opacity-100 mb-8 md:mb-14 max-w-lg mx-auto leading-relaxed text-white text-center drop-shadow-md">
                   ¡Tu visión es parte de la leyenda! Comparte aquí las fotografías mágicas que captures durante la noche.
                 </p>
                 
@@ -911,14 +963,14 @@ export function InvitationSPA({
 
         <AudioPlayer youtubeUrl={initialData.youtubeMusicLink} accentColor={theme.accent} />
 
-        <footer className="py-16 md:py-28 text-center opacity-100 relative z-10 text-white px-4">
+        <footer className="py-10 md:py-28 text-center opacity-100 relative z-10 text-white px-4">
           <motion.div 
-            className="w-32 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent mx-auto mb-8 md:mb-10 shadow-[0_0_10px_rgba(255,215,0,0.8)]" 
+            className="w-32 h-[3px] bg-gradient-to-r from-transparent via-[#ffd700] to-transparent mx-auto mb-6 md:mb-10 shadow-[0_0_10px_rgba(255,215,0,0.8)]" 
           />
-          <p className="text-[14px] md:text-base tracking-[0.9em] uppercase font-sans font-extrabold text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.6)] break-words">
+          <p className="text-[12px] md:text-base tracking-[0.9em] uppercase font-sans font-extrabold text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.6)] break-words">
             {initialData.quinceaneraName} • XV
           </p>
-          <p className="mt-5 text-[12px] md:text-sm opacity-90 tracking-widest font-sans font-bold text-white drop-shadow-md">¡Te Esperamos!</p>
+          <p className="mt-4 text-[10px] md:text-sm opacity-90 tracking-widest font-sans font-bold text-white drop-shadow-md">¡Te Esperamos!</p>
         </footer>
       </div>
     </div>
