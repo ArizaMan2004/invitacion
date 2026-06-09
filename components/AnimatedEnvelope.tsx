@@ -1,49 +1,30 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 interface AmbientBackgroundProps {
   heroImage?: string;
 }
 
-// 1. FONDO SINCRONIZADO CON LA INVITACIÓN PRINCIPAL
+// FONDO SINCRONIZADO (Se revelará al final cuando el video mágico se desvanezca)
 const AmbientVideoBackground = ({ heroImage = '/placeholder-hero.jpg' }: AmbientBackgroundProps) => (
   <>
-    {/* Capa de Video Base */}
     <div className="fixed inset-0 pointer-events-none z-[0] overflow-hidden bg-black">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-60"
-      >
+      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
         <source src="/FONDO.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-gradient-to-br from-purple-700 via-purple-500 to-blue-600 mix-blend-color opacity-70" />
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/80 via-transparent to-[#0a0514]/90" />
     </div>
 
-    {/* Capa de Imagen Hero con fundido */}
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 0.8 }} 
-      transition={{ duration: 2, ease: "easeOut" }}
+      initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} transition={{ duration: 2, ease: "easeOut" }}
       className="fixed inset-0 z-[1] pointer-events-none"
-      style={{ 
-        maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
-      }}
+      style={{ maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' }}
     >
-      <Image 
-        src={heroImage} 
-        alt="Hero Background" 
-        fill 
-        className="object-cover object-center" 
-        priority
-      />
+      <Image src={heroImage} alt="Hero Background" fill className="object-cover object-center" priority />
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0514]/60 via-[#0a0514]/20 to-transparent" />
     </motion.div>
   </>
@@ -57,11 +38,8 @@ const MagicalFireflies = ({ color }: { color: string }) => {
   const firefliesData = useMemo(() => {
     const colors = [color, '#ffffff', '#e0b0ff', '#8a2be2', '#ffeed0'];
     return Array.from({ length: count }).map(() => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 1.5,
-      delay: Math.random() * 6,
-      duration: Math.random() * 6 + 6,
+      x: Math.random() * 100, y: Math.random() * 100,
+      size: Math.random() * 4 + 1.5, delay: Math.random() * 6, duration: Math.random() * 6 + 6,
       glowColor: colors[Math.floor(Math.random() * colors.length)]
     }));
   }, [color]);
@@ -69,24 +47,12 @@ const MagicalFireflies = ({ color }: { color: string }) => {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
       {firefliesData.map((data, i) => (
         <motion.div
-          key={i}
-          className="absolute rounded-full opacity-0"
-          style={{
-            backgroundColor: data.glowColor,
-            width: `${data.size}px`,
-            height: `${data.size}px`,
-            left: `${data.x}%`,
-            top: `${data.y}%`,
-            boxShadow: `0 0 16px 4px ${data.glowColor}B3, 0 0 30px 8px ${data.glowColor}50`,
-          }}
-          animate={{
-            opacity: [0, 0.85, 0], 
-            y: [0, -80, -160], 
-            x: [0, Math.random() * 60 - 30, Math.random() * 80 - 40],
-          }}
+          key={i} className="absolute rounded-full opacity-0"
+          style={{ backgroundColor: data.glowColor, width: `${data.size}px`, height: `${data.size}px`, left: `${data.x}%`, top: `${data.y}%`, boxShadow: `0 0 16px 4px ${data.glowColor}B3, 0 0 30px 8px ${data.glowColor}50` }}
+          animate={{ opacity: [0, 0.85, 0], y: [0, -80, -160], x: [0, Math.random() * 60 - 30, Math.random() * 80 - 40] }}
           transition={{ duration: data.duration, delay: data.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
@@ -100,15 +66,10 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
 
   const starCount = 14; 
   const starsData = useMemo(() => {
-    const starPaths = [
-      "M12 2 L14.8 8.6 L22 10.2 L17 15.4 L18.2 22 L12 18.8 L5.8 22 L7 15.4 L2 10.2 L9.2 8.6 Z",
-    ];
+    const starPaths = ["M12 2 L14.8 8.6 L22 10.2 L17 15.4 L18.2 22 L12 18.8 L5.8 22 L7 15.4 L2 10.2 L9.2 8.6 Z"];
     return Array.from({ length: starCount }).map(() => ({
-      path: starPaths[0],
-      x: Math.random() * 100,
-      size: Math.random() * 10 + 5,
-      delay: Math.random() * 8,
-      duration: Math.random() * 10 + 10,
+      path: starPaths[0], x: Math.random() * 100, size: Math.random() * 10 + 5,
+      delay: Math.random() * 8, duration: Math.random() * 10 + 10,
       colorVariant: Math.random() > 0.4 ? '#ffffff' : accentColor 
     }));
   }, [accentColor]);
@@ -116,20 +77,11 @@ const FallingStars = ({ accentColor }: { accentColor: string }) => {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
       {starsData.map((star, i) => (
         <motion.svg
-          key={i}
-          viewBox="0 0 24 24"
-          fill={star.colorVariant}
-          className="absolute opacity-0"
-          style={{
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            left: `${star.x}%`,
-            top: `-5%`,
-            filter: `drop-shadow(0 0 8px ${star.colorVariant})`, 
-          }}
+          key={i} viewBox="0 0 24 24" fill={star.colorVariant} className="absolute opacity-0"
+          style={{ width: `${star.size}px`, height: `${star.size}px`, left: `${star.x}%`, top: `-5%`, filter: `drop-shadow(0 0 8px ${star.colorVariant})` }}
           animate={{ opacity: [0, 0.7, 0], y: ['0vh', '100vh'], rotate: [0, 240] }}
           transition={{ duration: star.duration, delay: star.delay, repeat: Infinity, ease: "linear" }}
         >
@@ -150,11 +102,8 @@ const TransitionSparks = ({ color }: { color: string }) => {
       const angle = Math.random() * Math.PI * 2;
       const distance = Math.random() * 140 + 60; 
       return {
-        x: `${Math.cos(angle) * distance}vw`,
-        y: `${Math.sin(angle) * distance}vh`,
-        size: Math.random() * 6 + 2,
-        duration: Math.random() * 1.0 + 0.6, 
-        delay: Math.random() * 0.1,
+        x: `${Math.cos(angle) * distance}vw`, y: `${Math.sin(angle) * distance}vh`,
+        size: Math.random() * 6 + 2, duration: Math.random() * 1.0 + 0.6, delay: Math.random() * 0.1,
       };
     });
   }, []);
@@ -165,469 +114,147 @@ const TransitionSparks = ({ color }: { color: string }) => {
     <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center overflow-hidden">
       {sparks.map((spark, i) => (
         <motion.div
-          key={i}
-          className="absolute rounded-full bg-white"
-          style={{
-            width: spark.size,
-            height: spark.size,
-            boxShadow: `0 0 20px 4px ${color}, 0 0 40px 12px ${color}, 0 0 60px 20px #ffffff`,
-            willChange: 'transform, opacity, shadow'
-          }}
+          key={i} className="absolute rounded-full bg-white"
+          style={{ width: spark.size, height: spark.size, boxShadow: `0 0 20px 4px ${color}, 0 0 40px 12px ${color}, 0 0 60px 20px #ffffff`, willChange: 'transform, opacity, shadow' }}
           initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
-          animate={{
-            opacity: [1, 1, 0],
-            x: spark.x,
-            y: spark.y,
-            scale: [0, 3, 0.2],
-          }}
+          animate={{ opacity: [1, 1, 0], x: spark.x, y: spark.y, scale: [0, 3, 0.2] }}
           transition={{ duration: spark.duration, delay: spark.delay, ease: "easeOut" }}
         />
       ))}
-      
       <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.0, ease: "easeInOut" }} 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.0, ease: "easeInOut" }} 
         className="absolute inset-0 bg-[#0f0c29]"
       />
     </div>
   );
 };
 
-const MagicalAura = ({ color }: { color: string }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
-    animate={{ 
-      opacity: [0, 0.6, 0], 
-      scale: [0.8, 1.8, 2.5],
-      rotate: 45 
-    }}
-    transition={{ duration: 2.0, ease: "easeOut" }}
-    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none mix-blend-screen z-0"
-    style={{
-      width: '150%',
-      height: '150%',
-      background: `radial-gradient(circle, ${color} 0%, transparent 60%)`,
-      filter: 'blur(35px)'
-    }}
-  />
-);
-
 interface MagicalBookProps {
-  bookCoverTexture?: string;
-  bookInnerCoverTexture?: string;
-  sealImage?: string;
   heroImage?: string;
-  openSoundSrc?: string; 
-  transitionSoundSrc?: string;
-  eventTime?: string;
-  welcomeMessage?: string;
-  guestName?: string;
+  transitionSoundSrc?: string; 
   accentColor?: string; 
   onOpen: () => void;
 }
 
 export function MagicalBook({
-  bookCoverTexture = '/cover-texture.png',
-  bookInnerCoverTexture = '/inner-cover.png',
-  sealImage = '/sello.png',
   heroImage = '/placeholder-hero.jpg',
-  openSoundSrc = '/sounds/book-open.mp3', 
   transitionSoundSrc = '/sounds/magic-woosh.mp3',
-  eventTime = "08:00 PM - 11/07/2026",
-  welcomeMessage = "La magia comenzará pronto...",
-  guestName = "Invitado Especial",
   accentColor = '#ffd700', 
   onOpen,
 }: MagicalBookProps) {
   
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Nuevo estado "immersive" agregado
-  const [step, setStep] = useState<'idle' | 'opening' | 'immersive' | 'fading'>('idle');
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [step, setStep] = useState<'idle' | 'playing' | 'fading'>('idle');
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const assetsToLoad = [
-      bookCoverTexture,
-      bookInnerCoverTexture,
-      sealImage,
-      heroImage
-    ];
-
-    const loadImages = Promise.all(
-      assetsToLoad.map((src) => {
-        return new Promise((resolve) => {
-          const img = new window.Image();
-          img.src = src;
-          img.onload = resolve;
-          img.onerror = resolve; 
-        });
-      })
-    );
-
-    loadImages.then(() => {
-      if (isMounted) {
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [bookCoverTexture, bookInnerCoverTexture, sealImage, heroImage]);
-
+  // Inicia el video y desaparece la UI
   const handleClick = () => {
-    if (step !== 'idle' || isAnimating) return;
-    setIsAnimating(true);
-    setStep('opening'); 
+    if (step !== 'idle') return;
+    setStep('playing'); 
+    
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.warn("Auto-play prevenido por el navegador", e));
+    }
+  };
+
+  // Al finalizar, hace la transición a la siguiente pantalla
+  const handleVideoEnded = () => {
+    setStep('fading');
     
     try {
-      const audio = new window.Audio(openSoundSrc);
-      audio.volume = 0.6;
-      audio.play().catch(e => console.log("Prevención nativa de auto-play", e));
+      const wooshAudio = new window.Audio(transitionSoundSrc);
+      wooshAudio.volume = 0.7; 
+      wooshAudio.play().catch(e => console.log("Prevención nativa de audio", e));
     } catch(err) {
-      console.warn("No se pudo iniciar el recurso de audio", err);
+      console.warn("No se pudo reproducir el sonido de transición", err);
     }
-    
-    // Zoom in (pantalla completa ajustada)
-    setTimeout(() => {
-      setStep('immersive'); 
-    }, 1100); 
-
-    // Transición de salida hacia el componente SPA
-    setTimeout(() => {
-      setStep('fading'); 
-      
-      try {
-        const wooshAudio = new window.Audio(transitionSoundSrc);
-        wooshAudio.volume = 0.7; 
-        wooshAudio.play().catch(e => console.log("Prevención nativa de auto-play", e));
-      } catch(err) {
-        console.warn("No se pudo reproducir el sonido woosh de transición", err);
-      }
-    }, 5500); 
 
     setTimeout(() => {
       onOpen(); 
-    }, 6500); 
-  };
-
-  const bookVariants = {
-    idle: { 
-      rotateX: 24, 
-      rotateY: 0,  
-      rotateZ: 0,
-      scale: 1, 
-      z: 0,
-      y: [0, -12, 0], 
-      boxShadow: [
-        "0px 30px 50px rgba(0,0,0,0.85), 0px 10px 20px rgba(255,215,0,0.05)",
-        "0px 45px 65px rgba(0,0,0,0.95), 0px 15px 35px rgba(255,215,0,0.25)", 
-        "0px 30px 50px rgba(0,0,0,0.85), 0px 10px 20px rgba(255,215,0,0.05)"
-      ],
-      transition: { 
-        y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-        boxShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-      },
-      willChange: 'transform, box-shadow'
-    },
-    hover: {
-      rotateX: 18, 
-      rotateY: 0,
-      rotateZ: 0,
-      scale: 1.03,
-      y: -8, 
-      z: 20,
-      boxShadow: "0px 40px 60px rgba(0,0,0,0.9), 0px 15px 30px rgba(255,215,0,0.15)",
-      transition: { duration: 0.4, ease: 'easeOut' }
-    },
-    opening: {
-      rotateX: 0,  
-      rotateY: 0,
-      rotateZ: 0,
-      scale: 1.05,
-      y: 0,
-      z: 100,
-      boxShadow: "0px 20px 40px rgba(0,0,0,0.7), 0px 0px 60px rgba(255,215,0,0.4)", 
-      transition: { duration: 1.2, ease: [0.25, 1, 0.5, 1] } 
-    },
-    // Estado Inmersivo Optimizado para Móviles (sin cortes)
-    immersive: {
-      rotateX: 0, 
-      rotateY: 0,
-      rotateZ: 0,
-      scale: 1.25, 
-      y: 0, 
-      z: 150,
-      boxShadow: "0px 30px 60px rgba(0,0,0,0.8), 0px 0px 80px rgba(255,215,0,0.5)", 
-      transition: { duration: 1.4, ease: "easeOut" } 
-    },
-    fading: { 
-      scale: 7, // Efecto "Zoom in infinito" para atravesar la hoja
-      z: 500, 
-      y: 0,
-      rotateX: 0,
-      rotateY: 0,
-      opacity: 0, 
-      transition: { duration: 1.0, ease: [0.4, 0, 0.2, 1] } 
-    }
+    }, 1200);
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="h-[100dvh] flex items-center justify-center p-4 overflow-hidden relative"
-      style={{ perspective: '2300px' }} 
-    >
+    <div className="h-[100dvh] w-full overflow-hidden relative bg-black">
+      
+      {/* 1. Fondos ambientales detrás de todo */}
       <AmbientVideoBackground heroImage={heroImage} />
 
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            key="preloader"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-[#0d0a21]"
-          >
-            <motion.div
-              animate={{ rotate: 360, scale: [1, 1.15, 1] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-t-2 border-r-2 border-[#ffd700] rounded-full mb-8 shadow-[0_0_25px_rgba(255,215,0,0.4)]"
+      {/* 2. VIDEO A PANTALLA COMPLETA */}
+      <motion.div
+        animate={step}
+        variants={{
+          idle: { opacity: 1, scale: 1 },
+          playing: { opacity: 1, scale: 1 },
+          fading: { opacity: 0, scale: 1.1, transition: { duration: 1.0, ease: "easeInOut" } }
+        }}
+        className="absolute inset-0 w-full h-full z-10"
+      >
+        <video
+          ref={videoRef}
+          src="/video-libro.mp4"
+          playsInline
+          preload="auto"
+          onEnded={handleVideoEnded}
+          // object-cover asegura que llene la pantalla sin márgenes negros
+          className="w-full h-full object-cover"
+        />
+
+        {/* Gradiente sutil para que el botón siempre sea legible sobre el primer frame del video */}
+        <AnimatePresence>
+          {step === 'idle' && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" 
             />
-            <p className="text-[#ffd700] text-xs tracking-[0.5em] uppercase font-bold animate-pulse font-sans">
-              Invocando la Magia...
-            </p>
-          </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* 3. Partículas mágicas (Por encima del video, solo en estado idle) */}
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        {step === 'idle' && (
+          <>
+            <MagicalFireflies color={accentColor} />
+            <FallingStars accentColor={accentColor} />
+          </>
         )}
-      </AnimatePresence>
+      </div>
 
-      {step === 'idle' && (
-        <>
-          <MagicalFireflies color={accentColor} />
-          <FallingStars accentColor={accentColor} />
-        </>
-      )}
-
+      {/* 4. Transición de destellos al finalizar */}
       {step === 'fading' && <TransitionSparks color={accentColor} />}
 
-      <div className="flex flex-col items-center gap-10 md:gap-14 w-full max-w-[290px] sm:max-w-[330px] md:max-w-sm relative z-10">
-        
-        {step === 'opening' && <MagicalAura color={accentColor} />}
-
-        <motion.div
-          onClick={handleClick}
-          variants={bookVariants}
-          initial="idle"
-          animate={step}
-          whileHover={step === 'idle' ? "hover" : undefined}
-          style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}
-          className={`relative w-full aspect-[3/4] ${step === 'idle' ? 'cursor-pointer' : ''} rounded-r-2xl z-10`}
-        >
-          
-          <div 
-            className="absolute left-0 top-0 bottom-[12px] w-[14px] bg-gradient-to-r from-[#0d0714] via-[#211633] to-[#0d0714] origin-left z-50 shadow-[inset_-3px_0_5px_rgba(0,0,0,0.5)] border-y border-white/5"
-            style={{ transform: 'rotateY(-90deg) translateX(-7px)', backfaceVisibility: 'hidden' }}
-          />
-
-          <div 
-            className="absolute right-0 top-0 bottom-[12px] w-[12px] bg-[#f0ebd8] origin-right z-10 border-y border-l border-[#dcd1b4] flex flex-col justify-between p-[1px] overflow-hidden opacity-90 shadow-[inset_4px_0_8px_rgba(0,0,0,0.15)]"
-            style={{ transform: 'rotateY(90deg) translateX(6px)' }}
-          >
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="w-full h-[1px] bg-[#cbc0a2]/40" />
-            ))}
-          </div>
-
-          <div 
-            className="absolute bottom-0 left-[14px] right-[12px] h-[12px] bg-[#f0ebd8] origin-bottom z-10 border-x border-t border-[#dcd1b4] flex flex-row justify-between px-[2px] overflow-hidden opacity-90 shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]"
-            style={{ transform: 'rotateX(-90deg) translateY(6px)' }}
-          >
-            {Array.from({ length: 14 }).map((_, i) => (
-              <div key={i} className="h-full w-[1px] bg-[#cbc0a2]/40" />
-            ))}
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-r from-[#eadeca] via-[#f7f4eb] to-[#fffdf9] rounded-r-2xl border-y-[2px] border-r-[3px] border-[#c5ba9d] flex items-center justify-center overflow-hidden z-0 shadow-[inset_20px_0_30px_rgba(0,0,0,0.15)]">
-            <motion.div
-              initial={{ opacity: 0, filter: "blur(12px)", scale: 0.95 }}
-              animate={
-                step === 'immersive' 
-                  ? { opacity: 1, filter: "blur(0px)", scale: 1 } 
-                  : { opacity: 0, filter: "blur(12px)", scale: 0.95 }
-              }
-              transition={{ duration: 1.2, delay: step === 'immersive' ? 0.4 : 0, ease: "easeOut" }} 
-              className="relative z-10 w-[90%] md:w-[86%] h-[92%] md:h-[88%] border-[1.5px] border-[#b8860b]/30 rounded-lg p-4 md:p-6 flex flex-col items-center justify-center text-center bg-transparent"
-            >
-               <div className="absolute top-2 left-2 w-4 h-4 border-t-[1.5px] border-l-[1.5px] border-[#b8860b]/60 rounded-tl-sm" />
-               <div className="absolute top-2 right-2 w-4 h-4 border-t-[1.5px] border-r-[1.5px] border-[#b8860b]/60 rounded-tr-sm" />
-               <div className="absolute bottom-2 left-2 w-4 h-4 border-b-[1.5px] border-l-[1.5px] border-[#b8860b]/60 rounded-bl-sm" />
-               <div className="absolute bottom-2 right-2 w-4 h-4 border-b-[1.5px] border-r-[1.5px] border-[#b8860b]/60 rounded-br-sm" />
-
-              <p className="text-[9px] md:text-xs tracking-[0.35em] uppercase mb-4 md:mb-5 font-bold text-[#966d0e]">
-                Para: {guestName}
-              </p>
-              
-              <p className="font-serif italic text-lg sm:text-xl md:text-2xl mb-4 md:mb-6 leading-relaxed text-[#2c1a11] drop-shadow-sm px-2 break-words w-full">
-                {welcomeMessage}
-              </p>
-              
-              <div className="w-16 md:w-20 h-[1.5px] mb-4 md:mb-6 bg-gradient-to-r from-transparent via-[#b8860b]/60 to-transparent" />
-              
-              <p className="text-[7px] md:text-[9px] tracking-[0.25em] uppercase mb-2 text-[#966d0e] font-bold">La Cita</p>
-              <h3 className="text-base sm:text-lg md:text-xl font-serif font-bold tracking-wider text-[#2c1a11]">
-                {eventTime}
-              </h3>
-            </motion.div>
-          </div>
-
-          {Array.from({ length: 5 }).map((_, index) => (
-            <motion.div
-              key={`page-flip-${index}`}
-              initial={{ rotateY: 0, zIndex: 20 - index }}
-              animate={{ 
-                rotateY: step !== 'idle' ? -155 + (index * 3) : 0, 
-                zIndex: step !== 'idle' ? 5 + index : 20 - index 
-              }}
-              transition={{ 
-                duration: 1.3, 
-                delay: step !== 'idle' ? 0.35 + (index * 0.12) : 0, 
-                ease: [0.25, 1, 0.5, 1] 
-              }}
-              className="absolute inset-0 origin-left pointer-events-none"
-              style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}
-            >
-              <div 
-                className="absolute inset-0 bg-gradient-to-r from-[#e3dac9] via-[#fcfaf2] to-[#fffefb] rounded-r-2xl border-y-[1px] border-r-[2px] border-[#d4cbb3] shadow-[inset_18px_0_25px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between items-center"
-                style={{ 
-                  backfaceVisibility: 'hidden', 
-                  WebkitBackfaceVisibility: 'hidden', 
-                  transform: `translateZ(${0.8 + (5 - index) * 0.2}px)` 
-                }}
-              >
-                <div className="w-full h-full border border-[#b8860b]/10 rounded-xl relative p-2 flex flex-col justify-between opacity-60">
-                  <div className="flex justify-between w-full text-[7px] text-[#b8860b]/40 font-serif">
-                    <span>✦ IIV</span><span>✦ VIX</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-full border border-[#b8860b]/10 self-center flex items-center justify-center text-[10px] text-[#b8860b]/30 font-serif">
-                    📜
-                  </div>
-                  <div className="w-12 h-[1px] bg-[#b8860b]/20 self-center" />
-                </div>
-              </div>
-              
-              <div 
-                className="absolute inset-0 bg-gradient-to-l from-[#dcd3be] via-[#f5f0e1] to-[#faf8f2] rounded-l-2xl border-y-[1px] border-l-[2px] border-[#c0b59b] shadow-[12px_0_25px_rgba(0,0,0,0.15)] p-6 flex flex-col justify-between opacity-95"
-                style={{ 
-                  backfaceVisibility: 'hidden', 
-                  WebkitBackfaceVisibility: 'hidden', 
-                  transform: `rotateY(180deg) translateZ(${1 + index * 0.2}px)` 
-                }}
-              >
-                <div className="w-full h-full border border-[#b8860b]/10 rounded-xl relative opacity-40 rotate-180" />
-              </div>
-            </motion.div>
-          ))}
-
-          <motion.div
-            initial={{ rotateY: 0, zIndex: 30 }}
-            animate={{ 
-              rotateY: step !== 'idle' ? -162 : 0, 
-              zIndex: step === 'immersive' || step === 'fading' ? 4 : 30 
-            }}
-            transition={{ duration: 1.6, ease: [0.25, 1, 0.5, 1] }}
-            className="absolute inset-0 origin-left"
-            style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}
-          >
-            <div 
-              className="absolute inset-0 rounded-r-2xl overflow-hidden border-l-[5px] border-[#0c0617]"
-              style={{ 
-                backfaceVisibility: 'hidden', 
-                WebkitBackfaceVisibility: 'hidden',
-                transform: 'translateZ(2.5px)', 
-              }}
-            >
-              <Image src={bookCoverTexture} alt="Portada" fill className="object-cover" priority />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20" />
-              <div className="absolute inset-0 border border-white/10 rounded-r-2xl" />
-              
-              <div className="absolute inset-0 flex items-center justify-center">
-                 <motion.div 
-                   animate={{ scale: [1, 1.05, 1], filter: ["brightness(1)", "brightness(1.18)", "brightness(1)"] }}
-                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                   className="relative w-28 h-28 md:w-36 md:h-36 drop-shadow-[0_20px_20px_rgba(0,0,0,0.95)]"
-                 >
-                   <Image src={sealImage} alt="Emblema Mágico" fill className="object-contain" priority />
-                 </motion.div>
-              </div>
-            </div>
-
-            <div 
-              className="absolute inset-0 rounded-l-2xl overflow-hidden bg-[#07040f]" 
-              style={{ 
-                backfaceVisibility: 'hidden', 
-                WebkitBackfaceVisibility: 'hidden', 
-                transform: 'rotateY(180deg) translateZ(1.2px)' 
-              }}
-            >
-              <Image src={bookInnerCoverTexture} alt="Interior Portada" fill className="object-cover opacity-50" />
-              <div className="absolute inset-0 shadow-[inset_-25px_0_50px_rgba(0,0,0,0.95)]" />
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/60" />
-            </div>
-          </motion.div>
-          
-        </motion.div>
-
+      {/* 5. INTERFAZ: BOTÓN SOBREPUESTO */}
+      <div className="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-end pb-20 sm:pb-28">
         <AnimatePresence mode="wait">
-          {step === 'idle' && !isLoading ? (
+          {step === 'idle' && (
             <motion.div
               key="ui-btn"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30, filter: "blur(12px)", scale: 0.85 }}
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 30, filter: "blur(12px)", scale: 0.9 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-center"
+              className="text-center pointer-events-auto"
             >
               <motion.p
-                animate={{ opacity: [0.4, 1, 0.4] }}
+                animate={{ opacity: [0.6, 1, 0.6] }} 
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="font-sans text-[10px] md:text-xs uppercase tracking-[0.45em] mb-6 md:mb-8 text-[#ffd700] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] font-bold"
+                className="font-sans text-[11px] md:text-xs uppercase tracking-[0.45em] mb-6 md:mb-8 text-[#ffd700] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold"
               >
-                Abre el libro para descubrir su secreto
+                Toca para descubrir el secreto
               </motion.p>
               
               <button
                 onClick={handleClick}
-                className="px-8 py-3.5 md:px-12 md:py-4 font-sans font-bold text-[#07040f] rounded-sm shadow-[0_0_25px_rgba(255,215,0,0.25)] active:scale-95 transition-all duration-300 cursor-pointer text-[10px] md:text-xs uppercase tracking-[0.2em] relative overflow-hidden group bg-gradient-to-r from-[#ffd700] via-[#ffdf33] to-[#b8860b] hover:shadow-[0_0_40px_rgba(255,215,0,0.7)]"
+                className="px-10 py-4 md:px-12 md:py-4 font-sans font-bold text-[#07040f] rounded-sm shadow-[0_0_30px_rgba(255,215,0,0.3)] active:scale-95 transition-all duration-300 cursor-pointer text-[11px] md:text-xs uppercase tracking-[0.2em] relative overflow-hidden group bg-gradient-to-r from-[#ffd700] via-[#ffdf33] to-[#b8860b] hover:shadow-[0_0_40px_rgba(255,215,0,0.7)]"
               >
                 <span className="relative z-10">Abrir Libro Mágico</span>
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-25 transition-opacity duration-300" />
               </button>
             </motion.div>
-          ) : step === 'opening' ? (
-            <motion.div
-              key="ui-msg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center"
-            >
-              <p className="text-[#ffd700] text-[10px] md:text-xs tracking-[0.5em] uppercase font-bold animate-pulse mt-4 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] font-sans">
-                REVELANDO EL CONTENIDO...
-              </p>
-            </motion.div>
-          ) : null}
+          )}
         </AnimatePresence>
-
       </div>
-    </motion.div>
+
+    </div>
   );
 }
