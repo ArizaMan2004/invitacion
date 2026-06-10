@@ -443,16 +443,20 @@ export function InvitationSPA({
   
   const { scrollY } = useScroll();
   const scrollIndicatorOpacity = useTransform(scrollY, [0, 80], [1, 0]);
+  
+  // ESTADO PARA iOS: Controla si el usuario ya interactuó
+  const [hasEntered, setHasEntered] = useState(false);
 
-  useEffect(() => {
-    let fadeInterval: NodeJS.Timeout;
-    
+  // FUNCIÓN DE ENTRADA: Soluciona el problema de Autoplay en iOS/Safari
+  const handleEnter = () => {
+    setHasEntered(true);
+
     // SFX Logo Reveal
-    const logoSfxTimer = setTimeout(() => {
+    setTimeout(() => {
       try {
         const logoSfx = new window.Audio('/sounds/logo-reveal.mp3');
         logoSfx.volume = 0.8;
-        logoSfx.play().catch(e => console.log("SFX prevenido por políticas del navegador", e));
+        logoSfx.play().catch(e => console.log("SFX prevenido", e));
       } catch(err) {
         console.warn("No se pudo cargar SFX del logo");
       }
@@ -466,7 +470,7 @@ export function InvitationSPA({
     try {
       bgAudio.play().then(() => {
         let vol = 0;
-        fadeInterval = setInterval(() => {
+        const fadeInterval = setInterval(() => {
           if (vol < 0.45) {
             vol += 0.05;
             bgAudio.volume = Math.min(vol, 0.45);
@@ -474,18 +478,11 @@ export function InvitationSPA({
             clearInterval(fadeInterval);
           }
         }, 300);
-      }).catch(e => console.log("Audio de fondo prevenido por políticas del navegador", e));
+      }).catch(e => console.log("Audio prevenido", e));
     } catch(err) {
       console.warn("No se pudo iniciar la música de fondo");
     }
-
-    return () => {
-      clearTimeout(logoSfxTimer);
-      if (fadeInterval) clearInterval(fadeInterval);
-      bgAudio.pause();
-      bgAudio.src = '';
-    };
-  }, []);
+  };
 
   const theme = {
     background: '#0a0514', 
@@ -497,6 +494,41 @@ export function InvitationSPA({
   let heroImageSrc = initialData.heroImage;
   if (!heroImageSrc || heroImageSrc.includes('C:\\\\') || !heroImageSrc.startsWith('/')) {
     heroImageSrc = '/images/placeholder-hero.jpg';
+  }
+
+  // PANTALLA DE BIENVENIDA (BLOQUEO)
+  if (!hasEntered) {
+    return (
+      <div 
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen bg-[#0a0514] selection:bg-[#ffd700] selection:text-[#0a0514] ${fontSerif.variable} ${fontSans.variable} font-sans`}
+      >
+        <AmbientVideoBackground />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="relative z-10 flex flex-col items-center text-center px-6"
+        >
+          <span className="text-[11px] md:text-sm tracking-[0.6em] uppercase mb-6 font-sans font-bold text-[#ffd700] drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">
+            Estás invitado
+          </span>
+          
+          <h1 className="text-4xl md:text-6xl font-serif text-white mb-10 drop-shadow-lg">
+            La magia te espera...
+          </h1>
+
+          <motion.button
+            onClick={handleEnter}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-4 rounded-full border-2 border-[#ffd700] bg-[#ffd700]/10 text-[#ffd700] font-sans font-bold tracking-[0.2em] uppercase backdrop-blur-md hover:bg-[#ffd700]/20 transition-colors shadow-[0_0_20px_rgba(255,215,0,0.3)]"
+          >
+            Abrir Invitación
+          </motion.button>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
