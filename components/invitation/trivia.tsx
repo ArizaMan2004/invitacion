@@ -30,7 +30,7 @@ interface RankingItem {
 
 const QUESTIONS_JESUS: Question[] = [
   { id: 1, question: "¿Cuál es el deporte favorito de Jesús?", options: ["Fútbol", "Béisbol", "Básquet", "Tenis"], correctAnswer: 0 },
-  { id: 2, question: "¿Qué prefiere comer Jesús los domingos?", options: ["Pizza", "Tacos", "Hamburguesas", "Sushi"], correctAnswer: 2 },
+  { id: 2, question: "¿Cual es la comida favorita de Jesús?", options: ["Pizza", "Tacos", "Hamburguesas", "Sushi"], correctAnswer: 2 },
   { id: 3, question: "¿Cuál es su superhéroe favorito?", options: ["Batman", "Spider-Man", "Iron Man", "Superman"], correctAnswer: 1 },
 ];
 
@@ -55,7 +55,6 @@ export default function Trivia({ invitationId, guestName = 'Explorador' }: Trivi
   const [loadingRankings, setLoadingRankings] = useState(false);
 
   useEffect(() => {
-    // Solo prellenamos el nombre, pero no saltamos al paso 'twin' automáticamente
     if (guestName !== 'Explorador' && guestName.trim() !== '') {
       setPlayerName(guestName);
     }
@@ -143,8 +142,9 @@ export default function Trivia({ invitationId, guestName = 'Explorador' }: Trivi
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       };
 
-      const jesusSorted = allResults.filter(r => r.twin_selected === 'jesus').sort(sortLogic);
-      const jesseniaSorted = allResults.filter(r => r.twin_selected === 'jessenia').sort(sortLogic);
+      // Aquí aplicamos el .slice(0, 5) para quedarnos solo con el Top 5
+      const jesusSorted = allResults.filter(r => r.twin_selected === 'jesus').sort(sortLogic).slice(0, 5);
+      const jesseniaSorted = allResults.filter(r => r.twin_selected === 'jessenia').sort(sortLogic).slice(0, 5);
 
       setRankingJesus(jesusSorted);
       setRankingJessenia(jesseniaSorted);
@@ -160,7 +160,6 @@ export default function Trivia({ invitationId, guestName = 'Explorador' }: Trivi
     setSelectedOption(null);
     setIsCorrect(null);
     setScore(0);
-    // Ahora siempre forzamos volver al paso de nombre
     setStep('name');
   };
 
@@ -293,7 +292,7 @@ export default function Trivia({ invitationId, guestName = 'Explorador' }: Trivi
                 
                 <div className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 rounded-[2rem] p-6 space-y-4 backdrop-blur-sm">
                   <h4 className="text-center font-serif text-md uppercase tracking-widest text-[#b8860b] border-b border-white/5 pb-3 font-bold">
-                    Ranking Jesús
+                    Top 5 Jesús
                   </h4>
                   {loadingRankings ? (
                     <div className="text-center py-10 text-xs text-[#a0b0a0]/40">Cargando posiciones...</div>
@@ -320,7 +319,7 @@ export default function Trivia({ invitationId, guestName = 'Explorador' }: Trivi
 
                 <div className="bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 rounded-[2rem] p-6 space-y-4 backdrop-blur-sm">
                   <h4 className="text-center font-serif text-md uppercase tracking-widest text-[#b8860b] border-b border-white/5 pb-3 font-bold">
-                    Ranking Jessenia
+                    Top 5 Jessenia
                   </h4>
                   {loadingRankings ? (
                     <div className="text-center py-10 text-xs text-[#a0b0a0]/40">Cargando posiciones...</div>
