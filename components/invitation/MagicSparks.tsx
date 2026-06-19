@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 export function MagicSparks() {
   const [isMounted, setIsMounted] = useState(false);
 
-  // Evitamos errores de hidratación renderizando solo en el cliente
+  // Evitamos errores de hidratación renderizando solo en el c
   useEffect(() => {
     setIsMounted(true);
   }, []);
