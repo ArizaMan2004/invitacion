@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Componentes
-// ✅ Importación con la ruta exacta en minúsculas
 import { MagicalBook } from '@/components/AnimatedEnvelope';
 import { InvitationSPA } from '@/components/InvitationSPA';
 // Datos y tipos
 import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
 import { InvitationData } from '@/lib/types';
-import { getInvitation, supabase } from '@/lib/supabase'; 
+
+// Importaciones corregidas para Firebase
+import { getInvitation, db } from '@/lib/firebase'; 
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 export default function Home() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
@@ -25,17 +27,17 @@ export default function Home() {
         let targetId = urlParams.get('id');
         
         // 2. Búsqueda automática si no hay ID en la URL
-        // Buscamos la invitación más reciente creada en la base de datos
+        // Buscamos la invitación más reciente creada en la base de datos usando Firestore
         if (!targetId) {
-          const { data, error } = await supabase
-            .from('invitations')
-            .select('id')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+          const q = query(
+            collection(db, 'invitations'), 
+            orderBy('created_at', 'desc'), 
+            limit(1)
+          );
+          const snapshot = await getDocs(q);
             
-          if (data && !error) {
-            targetId = data.id;
+          if (!snapshot.empty) {
+            targetId = snapshot.docs[0].id;
           }
         }
         

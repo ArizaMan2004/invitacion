@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LogIn, ShieldCheck, AlertCircle } from 'lucide-react';
-import { loginAdmin, getAdminSession } from '@/lib/supabase';
+import { loginAdmin, getAdminSession } from '@/lib/firebase';
 import { MagicSparks } from '@/components/invitation/MagicSparks';
 
 export default function LoginPage() {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { 
@@ -20,480 +21,444 @@ import {
   PlayCircle
 } from 'lucide-react';
 
-// Importación de utilidades de Supabase y Tipos
 import { 
-  supabase, 
+  db, 
   getAdminSession, 
   clearAdminSession, 
-  getRSVPResponses,
-  getApprovedGuestPhotos,
-  getPendingGuestPhotos,
+  getAllRSVPResponses,
+  getAllApprovedGuestPhotos,
+  getAllPendingGuestPhotos,
   approveGuestPhoto,
-  getApprovedGuestMessages,
-  getPendingGuestMessages,
+  getAllGuestMessages,
   approveGuestMessage,
-  getInvitation,
-  getTriviaResults,
+  getAllTriviaResults,
   TriviaResult
-} from '@/lib/supabase';
-import { RSVPResponse, GuestPhoto, GuestMessage, InvitationData } from '@/lib/types';
+} from '@/lib/firebase';
+import { doc, deleteDoc } from 'firebase/firestore'; 
+import { RSVPResponse, GuestPhoto, GuestMessage } from '@/lib/types';
 
 type TabId = 'dashboard' | 'media' | 'rsvp' | 'messages' | 'trivia';
 
-// --- FUNCIÓN AUXILIAR PARA DETECTAR VIDEOS ---
 const isVideoUrl = (url: string) => {
   if (!url) return false;
-  return /\.(mp4|webm|ogg|mov|mkv)$/i.test(url);
+  return url.includes('.mp4') || url.includes('.mov') || url.includes('video');
 };
 
-export default function AdvancedAdminEditor() {
-  // --- ESTADOS DE AUTENTICACIÓN ---
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // --- ESTADOS DE DATOS ---
-  const [invitationId, setInvitationId] = useState('');
-  const [invitation, setInvitation] = useState<InvitationData | null>(null);
-  const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
-  const [photos, setPhotos] = useState<GuestPhoto[]>([]);
-  const [pendingPhotos, setPendingPhotos] = useState<GuestPhoto[]>([]);
-  const [messages, setMessages] = useState<GuestMessage[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<GuestMessage[]>([]);
-  const [triviaScores, setTriviaScores] = useState<TriviaResult[]>([]);
-  
-  // --- UI STATE ---
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [session, setSession] = useState<{ userId: string; email: string | null } | null>(null);
+  const [loadingSession, setLoadingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
-  const [dataLoading, setDataLoading] = useState(false);
+  
+  const [rsvps, setRsvps] = useState<RSVPResponse[]>([]);
+  const [approvedPhotos, setApprovedPhotos] = useState<GuestPhoto[]>([]);
+  const [pendingPhotos, setPendingPhotos] = useState<GuestPhoto[]>([]);
+  const [approvedMessages, setApprovedMessages] = useState<GuestMessage[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<GuestMessage[]>([]);
+  const [triviaResults, setTriviaResults] = useState<TriviaResult[]>([]);
+  
+  const [loadingData, setLoadingData] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
 
-  // --- EFECTO INICIAL: SESIÓN Y CARGA ---
   useEffect(() => {
-    const init = async () => {
-      const session = await getAdminSession();
-      if (session) {
-        setIsAuthenticated(true);
-        // Intentamos recuperar el ID de la invitación del localStorage o de la DB
-        let id = localStorage.getItem('invitationId');
-        
-        if (!id) {
-          const { data } = await supabase.from('invitations').select('id').limit(1).maybeSingle();
-          if (data?.id) {
-            id = data.id;
-            localStorage.setItem('invitationId', id);
-          }
-        }
-
-        if (id) {
-          setInvitationId(id);
-          await loadAllData(id);
-        }
+    async function checkAuth() {
+      const currentSession = await getAdminSession();
+      if (!currentSession) {
+        router.push('/login');
+      } else {
+        setSession(currentSession);
+        loadDashboardData();
       }
-      setIsLoading(false);
-    };
-    init();
-  }, []);
+      setLoadingSession(false);
+    }
+    checkAuth();
+  }, [router]);
 
-  // --- FUNCIÓN MAESTRA DE CARGA DE DATOS ---
-  const loadAllData = async (id: string) => {
-    setDataLoading(true);
+  const loadDashboardData = async () => {
+    setLoadingData(true);
+    
+    const results = await Promise.allSettled([
+      getAllRSVPResponses(),
+      getAllApprovedGuestPhotos(),
+      getAllPendingGuestPhotos(),
+      getAllGuestMessages(true),
+      getAllGuestMessages(false),
+      getAllTriviaResults()
+    ]);
+
+    if (results[0].status === 'fulfilled') setRsvps(results[0].value);
+    if (results[1].status === 'fulfilled') setApprovedPhotos(results[1].value);
+    if (results[2].status === 'fulfilled') setPendingPhotos(results[2].value);
+    if (results[3].status === 'fulfilled') setApprovedMessages(results[3].value);
+    if (results[4].status === 'fulfilled') setPendingMessages(results[4].value);
+    if (results[5].status === 'fulfilled') setTriviaResults(results[5].value);
+
+    setLoadingData(false);
+  };
+
+  const handleLogout = async () => {
+    await clearAdminSession();
+    router.push('/login');
+  };
+
+  const handlePhotoModeration = async (photoId: string, approve: boolean) => {
     try {
-      const [
-        inv, 
-        rsvpRes, 
-        appPhotos, 
-        penPhotos, 
-        appMsg, 
-        penMsg,
-        triviaRes
-      ] = await Promise.all([
-        getInvitation(id),
-        getRSVPResponses(id),
-        getApprovedGuestPhotos(id),
-        getPendingGuestPhotos(id),
-        getApprovedGuestMessages(id),
-        getPendingGuestMessages(id),
-        getTriviaResults(id)
-      ]);
-      
-      setInvitation(inv);
-      setRsvps(rsvpRes || []);
-      setPhotos(appPhotos || []);
-      setPendingPhotos(penPhotos || []);
-      setMessages(appMsg || []);
-      setPendingMessages(penMsg || []);
-      setTriviaScores(triviaRes || []);
+      await approveGuestPhoto(photoId, approve);
+      if (approve) {
+        const photo = pendingPhotos.find(p => p.id === photoId);
+        if (photo) {
+          setApprovedPhotos(prev => [photo, ...prev]);
+          setPendingPhotos(prev => prev.filter(p => p.id !== photoId));
+        }
+      } else {
+        setPendingPhotos(prev => prev.filter(p => p.id !== photoId));
+      }
     } catch (error) {
-      console.error('Error sincronizando panel:', error);
-    } finally {
-      setDataLoading(false);
+      console.error(error);
     }
   };
 
-  // --- HANDLERS DE ACCIONES ---
-  const handleApproveMedia = async (id: string) => {
-    const success = await approveGuestPhoto(id);
-    if (success && invitationId) loadAllData(invitationId);
-  };
-
-  const handleApproveMessage = async (id: string) => {
-    const success = await approveGuestMessage(id);
-    if (success && invitationId) loadAllData(invitationId);
-  };
-
-  const handleDeleteMedia = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar este archivo permanentemente?')) return;
-    const { error } = await supabase.from('guest_photos').delete().eq('id', id);
-    if (!error && invitationId) loadAllData(invitationId);
-  };
-
-  const handleDeleteMessage = async (id: string) => {
-    if (!confirm('¿Seguro que deseas eliminar este mensaje?')) return;
-    const { error } = await supabase.from('guest_messages').delete().eq('id', id);
-    if (!error && invitationId) loadAllData(invitationId);
-  };
-
-  // --- RENDERIZADO INTELIGENTE DE MEDIA ---
-  const renderMedia = (url: string, className: string, isPreview = false) => {
-    if (isVideoUrl(url)) {
-      return (
-        <div className="relative w-full h-full">
-          <video 
-            src={url} 
-            className={`${className} ${isPreview ? 'pointer-events-none' : ''}`}
-            controls={!isPreview}
-            autoPlay={isPreview}
-            muted={isPreview}
-            loop={isPreview}
-            playsInline
-          />
-          {isPreview && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <PlayCircle className="w-8 h-8 text-white/70 shadow-xl rounded-full" />
-            </div>
-          )}
-        </div>
-      );
+  const handleMessageModeration = async (messageId: string, approve: boolean) => {
+    try {
+      await approveGuestMessage(messageId, approve);
+      if (approve) {
+        const msg = pendingMessages.find(m => m.id === messageId);
+        if (msg) {
+          setApprovedMessages(prev => [msg, ...prev]);
+          setPendingMessages(prev => prev.filter(m => m.id !== messageId));
+        }
+      } else {
+        setPendingMessages(prev => prev.filter(m => m.id !== messageId));
+      }
+    } catch (error) {
+      console.error(error);
     }
-    return <img src={url} className={className} alt="Media invitado" loading="lazy" />;
   };
 
-  // --- VISTAS DE CARGA Y LOGIN ---
-  if (isLoading) return (
-    <div className="h-screen flex items-center justify-center bg-[#0a0f0a] text-[#b8860b] font-serif tracking-[0.3em] animate-pulse">
-      AUTENTICANDO SISTEMA...
-    </div>
-  );
+  const handleDeleteRecord = async (collectionName: string, id: string, stateUpdater: () => void) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar permanentemente este elemento de la base de datos?')) return;
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+      stateUpdater();
+      if (selectedMediaIndex !== null) setSelectedMediaIndex(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  if (!isAuthenticated) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0f0a] p-4 text-center">
-      <div className="space-y-6">
-        <h2 className="text-[#fcfcf0] text-2xl font-serif">Acceso Restringido</h2>
-        <p className="text-[#a0b0a0] text-sm italic">Inicia sesión desde la página de acceso principal.</p>
-        <Button onClick={() => window.location.href = '/login'} className="bg-[#b8860b] text-[#121912] font-bold px-8 py-6 rounded-full hover:scale-105 transition-transform">
-          VOLVER AL LOGIN
-        </Button>
+  if (loadingSession || !session) {
+    return (
+      <div className="min-h-screen bg-[#090d09] flex items-center justify-center text-[#fcfcf0]">
+        <RefreshCw className="w-10 h-10 animate-spin text-[#b8860b]" />
       </div>
-    </div>
-  );
+    );
+  }
+
+  const allPhotosCombined = [...pendingPhotos, ...approvedPhotos];
 
   return (
-    <div className="flex h-screen w-full bg-[#070b07] overflow-hidden font-sans text-[#fcfcf0]">
+    <div className="min-h-screen bg-[#090d09] text-[#fcfcf0] font-sans antialiased flex flex-col md:flex-row">
       
-      {/* SIDEBAR NAVEGACIÓN */}
-      <aside className="w-20 md:w-64 bg-[#121912] border-r border-white/5 flex flex-col z-20 shrink-0">
-        <div className="p-6 border-b border-white/5">
-          <span className="font-serif text-[#b8860b] text-xl hidden md:block">Gestión Elite</span>
-          <span className="text-[9px] tracking-[0.2em] text-[#a0b0a0] uppercase block">Control Panel v3.0</span>
+      <aside className="w-full md:w-80 bg-[#121912] border-b md:border-b-0 md:border-r border-white/5 p-6 flex flex-col justify-between gap-6">
+        <div className="space-y-8">
+          <div>
+            <h1 className="text-2xl font-serif font-bold text-[#b8860b] tracking-wide">Mis 15 Años</h1>
+            <p className="text-xs text-[#a0b0a0]/60 mt-1">Panel de Control General</p>
+          </div>
+
+          <nav className="space-y-2">
+            {[
+              { id: 'dashboard', label: 'Resumen', icon: BarChart3 },
+              { id: 'media', label: 'Fotos y Videos', icon: ImageIcon, badge: pendingPhotos.length },
+              { id: 'rsvp', label: 'Asistencias', icon: Users, badge: rsvps.length },
+              { id: 'messages', label: 'Mensajes', icon: MessageSquare, badge: pendingMessages.length },
+              { id: 'trivia', label: 'Trivia', icon: Gamepad2 }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabId)}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-sm font-medium transition-all ${
+                    activeTab === tab.id 
+                      ? 'bg-[#b8860b] text-[#121912] font-semibold' 
+                      : 'hover:bg-white/5 text-[#a0b0a0]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-5 h-5" />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${activeTab === tab.id ? 'bg-[#121912] text-[#b8860b]' : 'bg-[#b8860b]/20 text-[#b8860b]'}`}>
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {[
-            { id: 'dashboard', label: 'Dashboard', icon: <BarChart3 className="w-5 h-5" /> },
-            { id: 'media', label: 'Álbum y Videos', icon: <ImageIcon className="w-5 h-5" /> },
-            { id: 'rsvp', label: 'Asistencias', icon: <Users className="w-5 h-5" /> },
-            { id: 'messages', label: 'Mensajes', icon: <MessageSquare className="w-5 h-5" /> },
-            { id: 'trivia', label: 'Ranking Trivia', icon: <Gamepad2 className="w-5 h-5" /> },
-          ].map(tab => (
-            <button 
-              key={tab.id} 
-              onClick={() => setActiveTab(tab.id as TabId)}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${activeTab === tab.id ? 'bg-[#b8860b] text-[#121912] shadow-lg font-bold' : 'text-[#a0b0a0] hover:bg-white/5'}`}
-            >
-              {tab.icon}
-              <span className="hidden md:block text-sm">{tab.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-white/5">
-          <Button variant="ghost" className="w-full justify-start gap-4 text-red-400 hover:bg-red-400/10 rounded-xl" onClick={() => { clearAdminSession(); window.location.reload(); }}>
-            <LogOut className="w-5 h-5" />
-            <span className="hidden md:block text-sm">Cerrar Sesión</span>
+        <div className="pt-4 border-t border-white/5 flex flex-col gap-3">
+          <div className="px-2">
+            <p className="text-xs font-semibold text-[#a0b0a0] truncate">{session.email}</p>
+            <p className="text-[10px] text-[#a0b0a0]/40">Administrador Autenticado</p>
+          </div>
+          <Button onClick={handleLogout} variant="destructive" className="w-full justify-start gap-3 rounded-xl bg-red-950/40 border border-red-500/20 hover:bg-red-900 text-red-200">
+            <LogOut className="w-4 h-4" /> Cerrar Sesión
           </Button>
         </div>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto relative">
-        {dataLoading && <div className="sticky top-0 z-50 h-1 bg-[#b8860b] animate-pulse" />}
-
-        <header className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto max-h-screen">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif text-[#b8860b]">
-              {activeTab === 'dashboard' && 'Resumen General'}
-              {activeTab === 'media' && 'Galería Colaborativa'}
-              {activeTab === 'rsvp' && 'Control de Invitados'}
-              {activeTab === 'messages' && 'Muro de Dedicatorias'}
-              {activeTab === 'trivia' && 'Resultados de Trivia'}
-            </h1>
-            <p className="text-sm text-[#a0b0a0] mt-1 italic">
-              {invitation?.quinceaneraName ? `Evento: ${invitation.quinceaneraName}` : 'Gestión de la experiencia'}
-            </p>
+            <h2 className="text-3xl font-serif text-[#ffd700] uppercase tracking-wider">
+              {activeTab === 'dashboard' && 'Panel de Resumen'}
+              {activeTab === 'media' && 'Moderación de Galería'}
+              {activeTab === 'rsvp' && 'Confirmaciones de Asistencia'}
+              {activeTab === 'messages' && 'Libro de Buenos Deseos'}
+              {activeTab === 'trivia' && 'Resultados de la Trivia'}
+            </h2>
           </div>
-          <Button 
-            onClick={() => loadAllData(invitationId)} 
-            className="bg-white/5 hover:bg-white/10 border border-white/10 text-xs tracking-widest px-6 py-4 rounded-full flex gap-2 items-center"
-          >
-            <RefreshCw className={`w-3 h-3 ${dataLoading ? 'animate-spin' : ''}`} />
-            SINCRONIZAR DATOS
+          <Button onClick={loadDashboardData} disabled={loadingData} className="bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-full gap-2 self-start sm:self-auto">
+            <RefreshCw className={`w-4 h-4 ${loadingData ? 'animate-spin' : ''}`} /> Sincronizar Datos
           </Button>
         </header>
 
-        <div className="px-8 pb-12">
-          <AnimatePresence mode="wait">
-            
-            {/* --- SECCIÓN: DASHBOARD --- */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
             {activeTab === 'dashboard' && (
-               <motion.div 
-                 key="dash" 
-                 initial={{ opacity: 0, y: 20 }} 
-                 animate={{ opacity: 1, y: 0 }} 
-                 exit={{ opacity: 0 }} 
-                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-               >
-                 <StatsCard title="Confirmados" value={rsvps.filter(r => r.attending).length} subValue={`De ${rsvps.length} totales`} icon={<CheckCircle2 className="text-green-500" />} />
-                 <StatsCard title="Media Pendiente" value={pendingPhotos.length} icon={<ImageIcon className="text-amber-500" />} subValue="Fotos/Videos por moderar" />
-                 <StatsCard title="Trivia" value={triviaScores.length} icon={<Gamepad2 className="text-blue-500" />} subValue="Partidas completadas" />
-                 <StatsCard title="Mensajes" value={messages.length} icon={<MessageSquare className="text-purple-500" />} subValue="Deseos aprobados" />
-               </motion.div>
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <StatsCard title="Total Invitados RSVP" value={rsvps.length} subValue={`${rsvps.filter((r: any) => r.attending).length} confirmados`} icon={<Users className="w-7 h-7 text-[#b8860b]" />} />
+                  <StatsCard title="Fotos en Galería" value={approvedPhotos.length + pendingPhotos.length} subValue={`${pendingPhotos.length} pendientes`} icon={<ImageIcon className="w-7 h-7 text-[#b8860b]" />} />
+                  <StatsCard title="Dedicatorias" value={approvedMessages.length + pendingMessages.length} subValue={`${pendingMessages.length} sin moderar`} icon={<MessageSquare className="w-7 h-7 text-[#b8860b]" />} />
+                  <StatsCard title="Participantes Trivia" value={triviaResults.length} subValue="Ranking activo" icon={<Gamepad2 className="w-7 h-7 text-[#b8860b]" />} />
+                </div>
+              </div>
             )}
 
-            {/* --- SECCIÓN: MEDIA (FOTOS/VIDEOS) --- */}
             {activeTab === 'media' && (
-              <motion.div key="media" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
+              <div className="space-y-10">
                 {pendingPhotos.length > 0 && (
-                  <section>
-                    <h3 className="text-sm font-bold tracking-[0.2em] text-amber-500 uppercase mb-6 flex items-center gap-2">
-                      <Clock className="w-4 h-4" /> Moderación Pendiente
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {pendingPhotos.map((photo, index) => (
-                        <div key={photo.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5">
-                          {renderMedia(photo.photoUrl, "w-full h-full object-cover opacity-60", true)}
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm z-10">
-                            <button onClick={() => handleApproveMedia(photo.id)} className="p-3 bg-green-500 text-black rounded-full hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></button>
-                            <button onClick={() => handleDeleteMedia(photo.id)} className="p-3 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"><Trash2 className="w-5 h-5" /></button>
+                  <div>
+                    <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2"><Clock className="w-5 h-5" /> Por Aprobar ({pendingPhotos.length})</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {pendingPhotos.map((photo) => (
+                        <div key={photo.id} className="group relative aspect-square bg-black/40 rounded-2xl overflow-hidden border border-amber-500/30">
+                          {isVideoUrl(photo.url) ? (
+                            <div className="w-full h-full flex items-center justify-center bg-black/80">
+                              <PlayCircle className="w-12 h-12 text-amber-500" />
+                            </div>
+                          ) : (
+                            <img src={photo.url} alt="Pendiente" className="w-full h-full object-cover" />
+                          )}
+                          <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3 z-10">
+                            <p className="text-xs font-semibold truncate">{photo.guest_name}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handlePhotoModeration(photo.id, true)} className="flex-1 bg-emerald-600 hover:bg-emerald-500 p-2 rounded-xl text-xs font-bold flex items-center justify-center"><CheckCircle2 className="w-4 h-4" /></button>
+                              <button onClick={() => handlePhotoModeration(photo.id, false)} className="flex-1 bg-red-600 hover:bg-red-500 p-2 rounded-xl text-xs font-bold flex items-center justify-center"><XCircle className="w-4 h-4" /></button>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </section>
-                )}
-                
-                <section>
-                  <h3 className="text-sm font-bold tracking-[0.2em] text-[#b8860b] uppercase mb-6 flex justify-between items-center">
-                    <span>Galería Pública ({photos.length})</span>
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {photos.map((photo, index) => (
-                      <div key={photo.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/5 bg-white/5 cursor-pointer" onClick={() => setSelectedMediaIndex(index)}>
-                        {renderMedia(photo.photoUrl, "w-full h-full object-cover transition-transform group-hover:scale-110", true)}
-                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                          <p className="text-[10px] font-bold truncate text-white uppercase tracking-tighter">{photo.guestName}</p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
-                </section>
-              </motion.div>
-            )}
-
-            {/* --- SECCIÓN: RSVP (INVITADOS) --- */}
-            {activeTab === 'rsvp' && (
-              <motion.div key="rsvp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#121912] rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-white/5 text-[10px] uppercase tracking-[0.2em] text-[#a0b0a0]">
-                        <th className="p-6 font-bold">Invitado</th>
-                        <th className="p-6 font-bold">Estado</th>
-                        <th className="p-6 font-bold">Adultos</th>
-                        <th className="p-6 font-bold">Niños</th>
-                        <th className="p-6 font-bold">Observaciones / Dieta</th>
-                        <th className="p-6 font-bold">Fecha</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {rsvps.map(rsvp => (
-                        <tr key={rsvp.id} className="hover:bg-white/5 transition-colors">
-                          <td className="p-6">
-                            <p className="font-bold text-[#b8860b]">{rsvp.guestName}</p>
-                            <p className="text-[10px] opacity-40">{rsvp.guestPhone || 'Sin teléfono'}</p>
-                          </td>
-                          <td className="p-6">
-                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-bold tracking-widest ${rsvp.attending ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                              {rsvp.attending ? 'CONFIRMADO' : 'DECLINADO'}
-                            </span>
-                          </td>
-                          <td className="p-6 text-sm">{rsvp.numberOfGuests}</td>
-                          <td className="p-6 text-sm">{rsvp.childCount}</td>
-                          <td className="p-6 text-xs italic opacity-60 max-w-xs truncate">
-                            {rsvp.dietaryRestrictions || rsvp.additionalNotes || '---'}
-                          </td>
-                          <td className="p-6 text-[10px] opacity-30">{new Date(rsvp.createdAt).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </motion.div>
-            )}
-
-            {/* --- SECCIÓN: MESSAGES (MURO) --- */}
-            {activeTab === 'messages' && (
-              <motion.div key="msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-                {pendingMessages.length > 0 && (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {pendingMessages.map(msg => (
-                       <div key={msg.id} className="bg-amber-500/5 border border-amber-500/20 p-8 rounded-[2.5rem] flex justify-between items-center backdrop-blur-md">
-                         <div>
-                           <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2">Mensaje Pendiente</p>
-                           <p className="text-lg italic text-white/90">"{msg.message}"</p>
-                           <p className="text-xs mt-3 font-bold text-[#b8860b]">— {msg.guestName}</p>
-                         </div>
-                         <div className="flex flex-col gap-2">
-                           <Button onClick={() => handleApproveMessage(msg.id)} size="icon" className="bg-green-500 text-black rounded-full hover:scale-110"><CheckCircle2 className="w-5 h-5" /></Button>
-                           <Button onClick={() => handleDeleteMessage(msg.id)} size="icon" className="bg-white/5 text-red-500 rounded-full hover:bg-red-500/20"><Trash2 className="w-5 h-5" /></Button>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
                 )}
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {messages.map(msg => (
-                    <div key={msg.id} className="bg-[#121912] p-8 rounded-[2.5rem] border border-white/5 relative group hover:border-[#b8860b]/30 transition-all shadow-lg">
-                      <p className="text-sm text-white/70 italic leading-relaxed mb-6">"{msg.message}"</p>
-                      <div className="flex justify-between items-end">
-                        <p className="text-[10px] text-[#b8860b] font-bold uppercase tracking-[0.2em]">{msg.guestName}</p>
-                        <button onClick={() => handleDeleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 text-red-500/40 hover:text-red-500 transition-all">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+
+                <div>
+                  <h3 className="text-lg font-bold text-[#b8860b] mb-4">Aprobados e Imprimibles ({approvedPhotos.length})</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {allPhotosCombined.map((photo, index) => {
+                      if (!pendingPhotos.includes(photo)) {
+                        return (
+                          <div key={photo.id} onClick={() => setSelectedMediaIndex(index)} className="group relative aspect-square bg-black/20 rounded-2xl overflow-hidden border border-white/5 cursor-pointer hover:border-[#b8860b]/40 transition-all">
+                            {isVideoUrl(photo.url) ? (
+                              <div className="w-full h-full flex items-center justify-center bg-black/40"><PlayCircle className="w-10 h-10 text-white/40" /></div>
+                            ) : (
+                              <img src={photo.url} alt="Galería" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            )}
+                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <p className="text-xs font-medium truncate">{photo.guest_name}</p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            {/* --- SECCIÓN: TRIVIA (RANKING) --- */}
-            {activeTab === 'trivia' && (
-              <motion.div key="trivia" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#121912] rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl">
-                <table className="w-full text-left">
-                  <thead className="bg-white/5 text-[10px] uppercase tracking-[0.3em] text-[#a0b0a0]">
-                    <tr>
-                      <th className="p-6">Jugador</th>
-                      <th className="p-6">Gemelo Elegido</th>
-                      <th className="p-6">Aciertos</th>
-                      <th className="p-6 text-right">Fecha de Juego</th>
+            {activeTab === 'rsvp' && (
+              <div className="bg-[#121912] border border-white/5 rounded-3xl overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/5 bg-black/20 text-xs font-semibold uppercase tracking-wider text-[#a0b0a0]/70">
+                      <th className="p-5">Nombre del Invitado</th>
+                      <th className="p-5">Asistencia</th>
+                      <th className="p-5">Mensaje Adjunto</th>
+                      <th className="p-5 text-right">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {triviaScores.map(scoreRecord => (
-                      <tr key={scoreRecord.id} className="hover:bg-white/5 transition-colors">
-                        <td className="p-6 font-bold text-[#b8860b] uppercase tracking-tighter">{scoreRecord.guest_name}</td>
-                        <td className="p-6">
-                          <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${scoreRecord.twin_selected === 'Jesus' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-pink-500/10 text-pink-400 border border-pink-500/20'}`}>
-                            {scoreRecord.twin_selected}
+                  <tbody className="divide-y divide-white/5 text-sm">
+                    {rsvps.map((rsvp: any) => (
+                      <tr key={rsvp.id} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="p-5 font-medium text-white">{rsvp.guest_name || 'Sin nombre'}</td>
+                        <td className="p-5">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                            rsvp.attending ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                          }`}>
+                            {rsvp.attending ? 'Confirmado' : 'Cancelado'}
                           </span>
                         </td>
-                        <td className="p-6">
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl font-serif text-white">{scoreRecord.score}</span>
-                            <span className="text-[10px] opacity-30 font-bold uppercase">/ {scoreRecord.total_questions}</span>
-                          </div>
-                        </td>
-                        <td className="p-6 text-right text-[10px] opacity-30 font-mono">
-                          {new Date(scoreRecord.created_at).toLocaleString()}
+                        <td className="p-5 text-[#a0b0a0] max-w-xs truncate">{rsvp.additional_notes || '—'}</td>
+                        <td className="p-5 text-right">
+                          <button onClick={() => handleDeleteRecord('rsvp_responses', rsvp.id, () => setRsvps(prev => prev.filter(r => r.id !== rsvp.id)))} className="text-red-400 hover:text-red-300 p-2"><Trash2 className="w-4 h-4" /></button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {triviaScores.length === 0 && (
-                  <div className="p-20 text-center text-[#a0b0a0] italic text-sm">
-                    Aún nadie ha participado en la trivia...
-                  </div>
-                )}
-              </motion.div>
+              </div>
             )}
 
-          </AnimatePresence>
-        </div>
-      </main>
+            {activeTab === 'messages' && (
+              <div className="space-y-8">
+                {pendingMessages.length > 0 && (
+                  <div>
+                    <h3 className="text-md font-bold text-amber-400 mb-4">Mensajes Pendientes de Publicación</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {pendingMessages.map((msg) => (
+                        <div key={msg.id} className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-2xl flex flex-col justify-between gap-4">
+                          <div className="space-y-2">
+                            <p className="text-sm italic text-amber-100">"{msg.message}"</p>
+                            <p className="text-xs font-bold text-[#b8860b]">De: {msg.guest_name}</p>
+                          </div>
+                          <div className="flex gap-2 self-end">
+                            <Button onClick={() => handleMessageModeration(msg.id, true)} className="bg-emerald-600 hover:bg-emerald-500 size-8 p-0 rounded-lg"><CheckCircle2 className="w-4 h-4" /></Button>
+                            <Button onClick={() => handleMessageModeration(msg.id, false)} className="bg-red-600 hover:bg-red-500 size-8 p-0 rounded-lg"><XCircle className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-      {/* MODAL: CARRUSEL DE MEDIA (PANTALLA COMPLETA) */}
-      <AnimatePresence>
-        {selectedMediaIndex !== null && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-4 backdrop-blur-2xl"
-          >
-            <button onClick={() => setSelectedMediaIndex(null)} className="absolute top-8 right-8 text-white/30 hover:text-white transition-colors z-50"><XCircle className="w-12 h-12" /></button>
-            
-            <button 
-              onClick={() => setSelectedMediaIndex(prev => prev! > 0 ? prev! - 1 : photos.length - 1)}
-              className="absolute left-4 md:left-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
-            ><ChevronLeft className="w-10 h-10" /></button>
-
-            <motion.div key={selectedMediaIndex} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center max-w-6xl w-full">
-              
-              {/* RENDERIZADO DEL ARCHIVO EN GRANDE */}
-              {renderMedia(photos[selectedMediaIndex].photoUrl, "max-w-full max-h-[70vh] object-contain rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10")}
-
-              <div className="mt-8 text-center">
-                <p className="text-3xl font-serif text-[#b8860b] mb-2">{photos[selectedMediaIndex].guestName}</p>
-                <p className="text-[10px] text-white/40 uppercase tracking-[0.4em] mb-6">{new Date(photos[selectedMediaIndex].createdAt).toLocaleString()}</p>
-                <div className="flex justify-center gap-4">
-                   <Button variant="outline" onClick={() => {
-                     handleDeleteMedia(photos[selectedMediaIndex].id);
-                     setSelectedMediaIndex(null);
-                   }} className="border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white px-8 py-6 rounded-full transition-all">Eliminar Archivo</Button>
+                <div>
+                  <h3 className="text-md font-bold text-[#b8860b] mb-4">Mensajes Visibles en Muro Público</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {approvedMessages.map((msg) => (
+                      <div key={msg.id} className="bg-[#121912] border border-white/5 p-5 rounded-2xl flex flex-col justify-between gap-4 group relative">
+                        <div className="space-y-2">
+                          <p className="text-sm text-[#a0b0a0]">"{msg.message}"</p>
+                          <p className="text-xs font-bold text-[#ffd700]">— {msg.guest_name}</p>
+                        </div>
+                        <button onClick={() => handleDeleteRecord('guest_messages', msg.id, () => setApprovedMessages(prev => prev.filter(m => m.id !== msg.id)))} className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-300"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </motion.div>
+            )}
 
-            <button 
-              onClick={() => setSelectedMediaIndex(prev => prev! < photos.length - 1 ? prev! + 1 : 0)}
-              className="absolute right-4 md:right-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
-            ><ChevronRight className="w-10 h-10" /></button>
+            {activeTab === 'trivia' && (
+              <div className="bg-[#121912] border border-white/5 rounded-3xl overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/5 bg-black/20 text-xs font-semibold uppercase tracking-wider text-[#a0b0a0]/70">
+                      <th className="p-5">Posición</th>
+                      <th className="p-5">Invitado</th>
+                      <th className="p-5">Gemelo Elegido</th>
+                      <th className="p-5 text-center">Puntaje</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-sm">
+                    {triviaResults.map((result, idx) => (
+                      <tr key={result.id} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="p-5 font-bold text-[#b8860b]"># {idx + 1}</td>
+                        <td className="p-5 font-medium text-white">{result.guest_name}</td>
+                        <td className="p-5 uppercase tracking-wider text-xs">{result.twin_selected}</td>
+                        <td className="p-5 text-center font-mono font-bold text-[#ffd700]">{result.score} / {result.total_questions || 3}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
 
+        <AnimatePresence>
+          {selectedMediaIndex !== null && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
+              <button onClick={() => setSelectedMediaIndex(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-all p-4 z-50 text-2xl font-bold">&times;</button>
+              
+              <button 
+                onClick={() => setSelectedMediaIndex(prev => prev! > 0 ? prev! - 1 : allPhotosCombined.length - 1)}
+                className="absolute left-4 md:left-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
+              ><ChevronLeft className="w-10 h-10" /></button>
+
+              <div className="max-w-4xl max-h-[80vh] flex flex-col items-center gap-6 w-full px-12">
+                {isVideoUrl(allPhotosCombined[selectedMediaIndex].url) ? (
+                  <video src={allPhotosCombined[selectedMediaIndex].url} controls className="max-h-[70vh] rounded-2xl shadow-2xl" />
+                ) : (
+                  <img src={allPhotosCombined[selectedMediaIndex].url} alt="Fullscreen View" className="max-h-[70vh] object-contain rounded-2xl shadow-2xl" />
+                )}
+                <div className="flex w-full justify-between items-center bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                  <div>
+                    <p className="text-sm font-bold text-white">{allPhotosCombined[selectedMediaIndex].guest_name}</p>
+                    <p className="text-xs text-[#a0b0a0]">Subido el: {new Date(allPhotosCombined[selectedMediaIndex].created_at).toLocaleDateString()}</p>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      const photo = allPhotosCombined[selectedMediaIndex];
+                      const isPending = pendingPhotos.some(p => p.id === photo.id);
+                      handleDeleteRecord(
+                        'guest_photos', 
+                        photo.id, 
+                        () => isPending 
+                          ? setPendingPhotos(prev => prev.filter(p => p.id !== photo.id))
+                          : setApprovedPhotos(prev => prev.filter(p => p.id !== photo.id))
+                      );
+                    }} 
+                    className="border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white px-8 py-6 rounded-full transition-all"
+                  >
+                    Eliminar Archivo
+                  </Button>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setSelectedMediaIndex(prev => prev! < allPhotosCombined.length - 1 ? prev! + 1 : 0)}
+                className="absolute right-4 md:right-10 p-6 text-white/20 hover:text-white transition-all bg-white/5 rounded-full z-50"
+              ><ChevronRight className="w-10 h-10" /></button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </main>
     </div>
   );
 }
 
-// COMPONENTE AUXILIAR: TARJETA DE ESTADÍSTICAS
 function StatsCard({ title, value, subValue, icon }: any) {
   return (
     <div className="bg-[#121912] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-4 hover:border-[#b8860b]/20 transition-all group">
       <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">{icon}</div>
       <div>
-        <h4 className="text-4xl font-serif text-[#fcfcf0]">{value}</h4>
-        <p className="text-[10px] font-black text-[#b8860b] uppercase tracking-[0.2em] mt-1">{title}</p>
-        <p className="text-[10px] text-[#a0b0a0] mt-3 italic opacity-60">{subValue}</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#a0b0a0]/50">{title}</p>
+        <h4 className="text-4xl font-mono font-bold text-[#ffd700] mt-1">{value}</h4>
+        <p className="text-xs text-[#a0b0a0]/60 mt-1.5 flex items-center gap-1">{subValue}</p>
       </div>
     </div>
   );

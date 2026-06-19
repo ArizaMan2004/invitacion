@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabase'; // Asegúrate de que esta ruta es correcta en tu proyecto
+import { createRSVPResponse, createGuestMessage } from '@/lib/firebase';
+import { User, MessageSquare, Check, AlertCircle, Loader2 } from 'lucide-react';
 
 interface RSVPFormProps {
   invitationId: string;
 }
-
-// Estilos comunes para los inputs oscuros (Ajustados con responsividad)
-const inputStyles = "w-full p-3 md:p-4 text-sm md:text-base bg-black/30 border border-white/10 rounded-xl md:rounded-2xl text-[#fcfcf0] placeholder:text-[#a0b0a0]/50 focus:outline-none focus:border-[#b8860b] focus:ring-1 focus:ring-[#b8860b] transition-all";
 
 export function RSVPForm({ invitationId }: RSVPFormProps) {
   const [formData, setFormData] = useState({
@@ -21,14 +19,8 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,147 +29,140 @@ export function RSVPForm({ invitationId }: RSVPFormProps) {
     setError('');
 
     if (!formData.name.trim()) {
-      setError('Por favor, ingresa tu nombre.');
+      setError('Por favor, dinos tu nombre para registrarte.');
       setLoading(false);
       return;
     }
 
     try {
-      // 1. Guardar la confirmación de asistencia en Supabase
-      const { data: rsvpData, error: rsvpError } = await supabase
-        .from('rsvp_responses')
-        .insert({
-          invitation_id: invitationId,
-          guest_name: formData.name,
-          attending: true, // Asumimos que asiste si llena el formulario
-          numberOfGuests: 1, // Valor por defecto
-        })
-        .select('id')
-        .single();
+      const rsvpId = await createRSVPResponse({
+        invitationId: invitationId,
+        guestName: formData.name.trim(),
+        guestEmail: '',
+        guestPhone: '',
+        attending: true,
+        numberOfGuests: 1,
+        dietaryRestrictions: '',
+        additionalNotes: formData.message.trim()
+      });
 
-      if (rsvpError) throw rsvpError;
+      if (!rsvpId) throw new Error('Error al crear el RSVP');
 
-      // 2. Guardar el mensaje (solo si escribieron algo)
       if (formData.message.trim()) {
-        const { error: msgError } = await supabase
-          .from('guest_messages')
-          .insert({
-            invitation_id: invitationId,
-            guest_name: formData.name,
-            message: formData.message,
-            approved: false, // Requiere moderación
-          });
-          
-        if (msgError) console.error("Error guardando mensaje:", msgError);
+        await createGuestMessage({
+          invitationId: invitationId,
+          guestName: formData.name.trim(),
+          guestEmail: '',
+          message: formData.message.trim(),
+          approved: false
+        });
       }
 
       setSubmitted(true);
-
     } catch (err) {
-      setError('Hubo un problema al guardar tu respuesta. Por favor, inténtalo de nuevo.');
-      console.error('RSVP Error:', err);
+      console.error(err);
+      setError('No logramos conectar con el servidor. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto w-full px-4 sm:px-0 relative z-10">
+    <div className="max-w-md mx-auto w-full px-4 relative z-10 font-sans">
       <AnimatePresence mode="wait">
         {submitted ? (
-          // ESTADO: CONFIRMACIÓN EXITOSA
-          <motion.div 
+          <motion.div
             key="success"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-8 px-5 md:py-10 md:px-6 bg-green-950/20 border border-green-500/20 rounded-2xl md:rounded-3xl backdrop-blur-sm"
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="text-center py-12 px-8 bg-gradient-to-b from-emerald-950/30 to-black/40 border border-emerald-500/30 rounded-[2.5rem] backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center gap-4"
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="w-14 h-14 md:w-16 md:h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" className="w-6 h-6 md:w-8 md:h-8">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </motion.div>
-            <p className="text-xl md:text-2xl font-serif text-[#fcfcf0] mb-2 md:mb-3">
-              ¡Confirmación enviada!
-            </p>
-            <p className="text-sm md:text-base text-[#a0b0a0] font-light leading-relaxed">
-              Gracias por acompañarnos en este día tan especial. Tu mensaje ha sido recibido.
+            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/40 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+              <Check className="w-8 h-8 text-emerald-400" />
+            </div>
+            <h3 className="text-2xl font-serif text-white tracking-wide mt-2">¡Asistencia Confirmada!</h3>
+            <p className="text-sm text-[#a0b0a0]/80 leading-relaxed max-w-xs">
+              Tu lugar ha sido reservado de forma segura. Gracias por acompañarnos en esta noche mágica.
             </p>
           </motion.div>
         ) : (
-          // ESTADO: FORMULARIO ACTIVO
-          <motion.form 
+          <motion.form
             key="form"
-            onSubmit={handleSubmit} 
-            className="space-y-4 md:space-y-6 bg-white/[0.02] p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-md"
+            onSubmit={handleSubmit}
+            className="relative space-y-6 bg-gradient-to-b from-white/[0.04] to-white/[0.01] p-8 md:p-10 rounded-[2.5rem] border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6),_inset_0_1px_2px_rgba(255,255,255,0.05)] backdrop-blur-xl overflow-hidden group"
           >
-            <div className="text-center mb-6 md:mb-10">
-                <h3 className="text-xs md:text-sm font-sans uppercase text-[#b8860b] tracking-[0.3em] md:tracking-[0.4em] mb-2 md:mb-3 opacity-80">
-                    RSVP
-                </h3>
-                <p className="text-2xl md:text-3xl font-serif text-[#fcfcf0]">
-                    Confirma tu asistencia
-                </p>
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#ffd700]/30 to-transparent" />
+
+            <div className="text-center space-y-2">
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-[#b8860b] font-semibold block">
+                Confirmación de Asistencia
+              </span>
+              <h3 className="text-3xl font-serif text-[#ffd700] tracking-wide drop-shadow-md">
+                ¿Nos Acompañas?
+              </h3>
+              <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#b8860b] to-transparent mx-auto mt-2" />
             </div>
 
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-950/50 border border-red-500/50 rounded-lg p-3 md:p-4 text-red-200 text-xs md:text-sm font-light text-center"
-              >
-                {error}
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl flex items-center gap-2 text-xs text-red-300"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* CAMPO: NOMBRE */}
-            <div className="space-y-1.5 md:space-y-2">
-              <label htmlFor="name" className="text-[10px] md:text-xs font-medium text-[#a0b0a0] uppercase tracking-widest pl-1 opacity-70">
-                Nombre y Apellido *
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-[#a0b0a0] uppercase tracking-widest pl-3 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-[#b8860b]" /> Nombre Completo <span className="text-[#ffd700]">*</span>
               </label>
               <input
-                id="name"
                 name="name"
                 type="text"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Ej. Juan Pérez"
+                placeholder="Ej. Familia Martínez o Tu Nombre"
                 required
-                className={inputStyles}
+                className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-full text-white placeholder:text-[#a0b0a0]/30 focus:outline-none focus:border-[#ffd700] focus:ring-1 focus:ring-[#ffd700]/50 transition-all duration-300 shadow-inner text-sm font-medium"
               />
             </div>
 
-            {/* CAMPO: MENSAJE */}
-            <div className="space-y-1.5 md:space-y-2">
-              <label htmlFor="message" className="text-[10px] md:text-xs font-medium text-[#a0b0a0] uppercase tracking-widest pl-1 opacity-70">
-                Un mensaje (Opcional)
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-[#a0b0a0] uppercase tracking-widest pl-3 flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5 text-[#b8860b]" /> Mensaje o Felicitación
               </label>
               <textarea
-                id="message"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                placeholder="Escribe tus buenos deseos..."
+                placeholder="Déjale tus buenos deseos a la quinceañera aquí..."
                 rows={3}
-                className={`${inputStyles} resize-none`}
+                className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-[1.5rem] text-white placeholder:text-[#a0b0a0]/30 focus:outline-none focus:border-[#ffd700] focus:ring-1 focus:ring-[#ffd700]/50 transition-all duration-300 shadow-inner text-sm resize-none font-medium leading-relaxed"
               />
             </div>
 
-            {/* BOTÓN DORADO */}
-            <motion.button
-              type="submit"
-              disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full mt-2 bg-[#b8860b] hover:bg-[#a67c0a] text-[#121912] font-sans font-bold text-sm md:text-base uppercase tracking-[0.15em] md:tracking-[0.2em] py-3.5 md:py-5 rounded-full transition-all shadow-lg shadow-[#b8860b]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Enviando...' : 'Confirmar Asistencia'}
-            </motion.button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full overflow-hidden bg-gradient-to-r from-[#b8860b] via-[#ffd700] to-[#b8860b] text-[#090d09] font-extrabold py-4.5 px-6 rounded-full uppercase tracking-[0.2em] text-xs shadow-[0_4px_30px_rgba(255,215,0,0.2)] hover:shadow-[0_4px_40px_rgba(255,215,0,0.4)] transition-all duration-300 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 group-hover:brightness-105"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#090d09]" />
+                    <span>Procesando...</span>
+                  </>
+                ) : (
+                  <span>Confirmar Asistencia</span>
+                )}
+              </button>
+            </div>
           </motion.form>
         )}
       </AnimatePresence>

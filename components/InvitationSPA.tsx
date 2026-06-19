@@ -38,7 +38,7 @@ import { EventDateTime } from './invitation/EventDateTime';
 import { RSVPForm } from './invitation/RSVPForm';
 import { AudioPlayer } from './invitation/AudioPlayer';
 import { MagicSparks } from './invitation/MagicSparks'; 
-import { Trivia } from './invitation/trivia';
+import  Trivia  from './invitation/trivia';
 import { PhotoUploader } from './invitation/PhotoUploader';
 
 // Componentes del Editor (Admin)

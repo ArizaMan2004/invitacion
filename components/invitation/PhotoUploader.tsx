@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 // Asegúrate de que importas la nueva función saveGuestPhotoUrl de tu archivo supabase.ts
-import { saveGuestPhotoUrl } from '@/lib/supabase';
+import { saveGuestPhotoUrl } from '@/lib/firebase';
 
 export function PhotoUploader({ invitationId, guestName, accentColor, hideQR = false }: any) {
   const [uploading, setUploading] = useState(false);

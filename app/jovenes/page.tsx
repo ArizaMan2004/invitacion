@@ -8,7 +8,10 @@ import { InvitationSPA } from '@/components/InvitationSPA';
 // Datos y tipos
 import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
 import { InvitationData } from '@/lib/types';
-import { getInvitation, supabase } from '@/lib/supabase'; 
+
+// Importaciones corregidas para Firebase
+import { getInvitation, db } from '@/lib/firebase'; 
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 export default function JovenesPage() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
@@ -24,16 +27,17 @@ export default function JovenesPage() {
         let targetId = urlParams.get('id');
         
         // 2. Búsqueda automática si no hay ID en la URL
+        // Usamos la lógica de Firestore para buscar la última invitación
         if (!targetId) {
-          const { data, error } = await supabase
-            .from('invitations')
-            .select('id')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+          const q = query(
+            collection(db, 'invitations'), 
+            orderBy('created_at', 'desc'), 
+            limit(1)
+          );
+          const snapshot = await getDocs(q);
             
-          if (data && !error) {
-            targetId = data.id;
+          if (!snapshot.empty) {
+            targetId = snapshot.docs[0].id;
           }
         }
         
@@ -126,7 +130,6 @@ export default function JovenesPage() {
               initialData={invitationData}
               invitationId={invitationId}
               isEditing={false}
-              // ¡LA LÍNEA MÁGICA QUE OCULTA LA FRASE!
               ocultarMensajeNinos={true} 
             />
           </motion.div>
