@@ -36,8 +36,8 @@ const QUESTIONS_JESUS: Question[] = [
 
 const QUESTIONS_JESSENIA: Question[] = [
   { id: 1, question: "¿Cuál es el equipo favorito de Jessenia?", options: ["Real Madrid", "Barca", "Roma", "City"], correctAnswer: 0 },
-  { id: 2, question: "¿Cuál fue el primer deporte que practicó Jessenia?", options: ["Voleibol", "Natación", "Gimnasia", "Patinaje"], correctAnswer: 1 },
-  { id: 3, question: "¿Su destino ideal para vacacionar?", options: ["Playa", "Montaña", "Ciudad histórica", "Nieve"], correctAnswer: 0 }
+  { id: 2, question: "¿Cuál fue el primer deporte que practicó Jessenia?", options: ["Ballet", "Natación", "Gimnasia", "Patinaje"], correctAnswer: 0 },
+  { id: 3, question: "¿A qué le dedica más tiempo Jessenia?", options: ["A dormir", "A estudiar", "A entrenar", "A trabajar"], correctAnswer: 2 }
 ];
 
 export default function Trivia({ invitationId, guestName = 'Explorador' }: TriviaProps) {
