@@ -24,11 +24,11 @@ export function EventDateTime({
 
   const formatDate = (dateString: string | undefined) => {
     // Si no hay fecha en la DB, ponemos la tuya por defecto para que no salga "Confirmar"
-    if (!dateString) return 'Sábado, 11 de Julio de 2026';
-    
+    if (!dateString) return 'Sábado, 22 de Agosto de 2026';
+
     try {
-      const dateObj = new Date(dateString + 'T00:00:00'); 
-      if (isNaN(dateObj.getTime())) return 'Sábado, 11 de Julio de 2026';
+      const dateObj = new Date(dateString + 'T00:00:00');
+      if (isNaN(dateObj.getTime())) return 'Sábado, 22 de Agosto de 2026';
 
       return new Intl.DateTimeFormat('es-ES', { 
         weekday: 'long', 
@@ -38,7 +38,7 @@ export function EventDateTime({
         timeZone: 'UTC'
       }).format(dateObj);
     } catch (e) {
-      return 'Sábado, 11 de Julio de 2026';
+      return 'Sábado, 22 de Agosto de 2026';
     }
   };
 

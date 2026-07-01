@@ -6,7 +6,7 @@ export const DEFAULT_INVITATION_DATA: InvitationData = {
   parentNames: "Con la bendición de nuestros padres",
   
   // Configuración del Bosque Encantado
-  eventDate: "2026-07-11",
+  eventDate: "2026-08-22",
   eventTime: "20:00",
   venue: "Refugio Ranch Coro",
   venueAddress: "Coro, Estado Falcón",
