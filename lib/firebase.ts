@@ -3,7 +3,6 @@ import {
   getFirestore,
   collection,
   doc,
-  getDoc,
   getDocs,
   addDoc,
   updateDoc,
@@ -16,7 +15,7 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { RSVPResponse, GuestPhoto, GuestMessage, InvitationData } from './types';
+import { RSVPResponse, GuestPhoto, GuestMessage } from './types';
 
 export interface TriviaResult {
   id: string;
@@ -69,115 +68,6 @@ const normalizePhoto = (d: any): any => {
     photoUrl: data.photo_url ?? data.url ?? '',
   };
 };
-
-// ==========================================
-// 1. Invitaciones
-// ==========================================
-
-export async function getInvitation(invitationId: string): Promise<InvitationData | null> {
-  try {
-    const docRef = doc(db, 'invitations', invitationId);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) return null;
-    const data = docSnap.data();
-
-    return {
-      id: docSnap.id,
-      quinceaneraName: data.quinceañera_name,
-      parentNames: data.parent_names,
-      heroImage: data.hero_image_url,
-      eventDate: data.event_date,
-      eventTime: data.event_time,
-      venue: data.location_name,
-      venueAddress: data.location_address,
-      mapIframeSrc: data.map_iframe_src || '',
-      locationLat: data.location_lat,
-      locationLng: data.location_lng,
-      galleryImages: data.gallery_images || [],
-      dressCode: data.dress_code,
-      dedicationMessage: data.dedication_message,
-      youtubeMusicLink: data.youtube_music_link,
-      themeMode: data.theme_mode,
-      cardColor: data.card_color,
-      textColor: data.text_color,
-      accentColor: data.accent_color,
-      backgroundColor: data.background_color,
-      maxGalleryPhotos: data.max_gallery_photos || 12,
-      discoMode: data.disco_mode || false,
-      primaryColor: data.theme_color || '',
-      secondaryColor: '',
-      twinName1: '',
-      twinName2: '',
-    } as any;
-  } catch (error) {
-    console.error('[firebase] getInvitation falló:', error);
-    return null;
-  }
-}
-
-export async function createInvitation(data: InvitationData): Promise<string | null> {
-  try {
-    const docRef = await addDoc(collection(db, 'invitations'), {
-      quinceañera_name: (data as any).quinceaneraName,
-      parent_names: data.parentNames,
-      hero_image_url: data.heroImage,
-      event_date: data.eventDate,
-      event_time: data.eventTime,
-      location_name: data.venue,
-      location_address: data.venueAddress,
-      map_iframe_src: data.mapIframeSrc,
-      location_lat: data.locationLat,
-      location_lng: data.locationLng,
-      dress_code: data.dressCode,
-      dedication_message: data.dedicationMessage,
-      youtube_music_link: data.youtubeMusicLink,
-      theme_mode: data.themeMode,
-      card_color: data.cardColor,
-      text_color: data.textColor,
-      accent_color: data.accentColor,
-      background_color: data.backgroundColor,
-      max_gallery_photos: data.maxGalleryPhotos,
-      disco_mode: data.discoMode,
-      created_at: new Date().toISOString(),
-    });
-    return docRef.id;
-  } catch (err) {
-    console.error('[firebase] createInvitation falló:', err);
-    return null;
-  }
-}
-
-export async function updateInvitation(
-  invitationId: string,
-  data: Partial<InvitationData>
-): Promise<boolean> {
-  try {
-    const u: any = {};
-    if ((data as any).quinceaneraName !== undefined) u.quinceañera_name = (data as any).quinceaneraName;
-    if (data.parentNames !== undefined) u.parent_names = data.parentNames;
-    if (data.heroImage !== undefined) u.hero_image_url = data.heroImage;
-    if (data.eventDate !== undefined) u.event_date = data.eventDate;
-    if (data.eventTime !== undefined) u.event_time = data.eventTime;
-    if (data.venue !== undefined) u.location_name = data.venue;
-    if (data.venueAddress !== undefined) u.location_address = data.venueAddress;
-    if (data.mapIframeSrc !== undefined) u.map_iframe_src = data.mapIframeSrc;
-    if (data.dressCode !== undefined) u.dress_code = data.dressCode;
-    if (data.youtubeMusicLink !== undefined) u.youtube_music_link = data.youtubeMusicLink;
-    if (data.accentColor !== undefined) u.accent_color = data.accentColor;
-    if (data.backgroundColor !== undefined) u.background_color = data.backgroundColor;
-    if (data.cardColor !== undefined) u.card_color = data.cardColor;
-    if (data.textColor !== undefined) u.text_color = data.textColor;
-    if (data.discoMode !== undefined) u.disco_mode = data.discoMode;
-    if (data.maxGalleryPhotos !== undefined) u.max_gallery_photos = data.maxGalleryPhotos;
-    u.updated_at = new Date().toISOString();
-
-    await updateDoc(doc(db, 'invitations', invitationId), u);
-    return true;
-  } catch (error) {
-    console.error('[firebase] updateInvitation falló:', error);
-    return false;
-  }
-}
 
 // ==========================================
 // 2. RSVP
@@ -386,39 +276,7 @@ export async function getAllTriviaResults(): Promise<TriviaResult[]> {
 }
 
 // ==========================================
-// 6. Sobres y visuales
-// ==========================================
-
-export async function updateEnvelopeImages(
-  invitationId: string,
-  backImageUrl?: string,
-  flapImageUrl?: string
-): Promise<boolean> {
-  try {
-    const updates: any = {};
-    if (backImageUrl) updates.envelope_back_image = backImageUrl;
-    if (flapImageUrl) updates.envelope_flap_image = flapImageUrl;
-    await updateDoc(doc(db, 'invitations', invitationId), updates);
-    return true;
-  } catch (error) {
-    console.error('[firebase] updateEnvelopeImages falló:', error);
-    return false;
-  }
-}
-
-export async function getEnvelopeImages(invitationId: string) {
-  try {
-    const docSnap = await getDoc(doc(db, 'invitations', invitationId));
-    if (!docSnap.exists()) return { back: null, flap: null };
-    const data = docSnap.data();
-    return { back: data.envelope_back_image, flap: data.envelope_flap_image };
-  } catch {
-    return { back: null, flap: null };
-  }
-}
-
-// ==========================================
-// 7. Autenticación de administrador
+// 6. Autenticación de administrador
 // ==========================================
 
 export async function loginAdmin(email: string, password: string): Promise<string | null> {

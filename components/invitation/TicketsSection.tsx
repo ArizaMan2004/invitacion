@@ -43,7 +43,7 @@ export function TicketsSection({ numberOfTickets = 2 }: TicketsSectionProps) {
 
                   <div className="space-y-2">
                     <p className="font-semibold text-lg">Jessenia Morochos</p>
-                    <p className="text-sm opacity-90">11 de Julio de 2026</p>
+                    <p className="text-sm opacity-90">22 de Agosto de 2026</p>
                     <p className="text-sm opacity-90">Refugio, Ecuador</p>
                   </div>
 

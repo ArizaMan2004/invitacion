@@ -5,65 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Componentes
 import { MagicalBook } from '@/components/AnimatedEnvelope';
 import { InvitationSPA } from '@/components/InvitationSPA';
-// Datos y tipos
+// Datos
 import { DEFAULT_INVITATION_DATA } from '@/lib/constants';
-import { InvitationData } from '@/lib/types';
-
-// Importaciones corregidas para Firebase
-import { getInvitation, db } from '@/lib/firebase'; 
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 export default function JovenesPage() {
   const [envelopeOpened, setEnvelopeOpened] = useState(false);
-  const [invitationData, setInvitationData] = useState<InvitationData>(DEFAULT_INVITATION_DATA);
-  const [invitationId, setInvitationId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeInvitation = async () => {
-      try {
-        // 1. Intentar obtener el ID desde la URL (?id=...)
-        const urlParams = new URLSearchParams(window.location.search);
-        let targetId = urlParams.get('id');
-        
-        // 2. Búsqueda automática si no hay ID en la URL
-        // Usamos la lógica de Firestore para buscar la última invitación
-        if (!targetId) {
-          const q = query(
-            collection(db, 'invitations'), 
-            orderBy('created_at', 'desc'), 
-            limit(1)
-          );
-          const snapshot = await getDocs(q);
-            
-          if (!snapshot.empty) {
-            targetId = snapshot.docs[0].id;
-          }
-        }
-        
-        if (targetId) {
-          setInvitationId(targetId);
-          
-          // 3. Cargar los datos completos de la invitación
-          const dbData = await getInvitation(targetId);
-          if (dbData) {
-            setInvitationData({ 
-              ...DEFAULT_INVITATION_DATA, 
-              ...dbData,
-              galleryImages: (dbData.galleryImages && dbData.galleryImages.length > 0) 
-                ? dbData.galleryImages 
-                : DEFAULT_INVITATION_DATA.galleryImages
-            });
-          }
-        }
-      } catch (error) {
-        console.error('[Sistema] Error crítico al inicializar:', error);
-      } finally {
-        setTimeout(() => setIsLoading(false), 800);
-      }
-    };
-
-    initializeInvitation();
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
   }, []);
 
   // Pantalla de carga elegante (Sincronizada con el tema morado/azul)
@@ -72,8 +23,8 @@ export default function JovenesPage() {
       <div className="min-h-screen bg-[#0a0514] flex items-center justify-center relative overflow-hidden">
         {/* Fondo sutil similar a la invitación */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20 pointer-events-none" />
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -82,13 +33,13 @@ export default function JovenesPage() {
           {/* Spinner dorado con sombra brillante */}
           <div className="relative w-16 h-16 mx-auto mb-8">
             <div className="absolute inset-0 rounded-full border-2 border-[#ffd700]/20" />
-            <motion.div 
+            <motion.div
               className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ffd700] shadow-[0_0_15px_rgba(255,215,0,0.5)]"
               animate={{ rotate: 360 }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
             />
             {/* Destello central */}
-            <motion.div 
+            <motion.div
               className="absolute inset-0 flex items-center justify-center"
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -97,7 +48,7 @@ export default function JovenesPage() {
             </motion.div>
           </div>
 
-          <motion.p 
+          <motion.p
             className="text-[11px] text-[#ffd700] font-sans font-bold tracking-[0.5em] uppercase drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -127,10 +78,10 @@ export default function JovenesPage() {
             transition={{ duration: 2, ease: "easeOut" }}
           >
             <InvitationSPA
-              initialData={invitationData}
-              invitationId={invitationId}
+              initialData={DEFAULT_INVITATION_DATA}
+              invitationId=""
               isEditing={false}
-              ocultarMensajeNinos={true} 
+              ocultarMensajeNinos={true}
             />
           </motion.div>
         )}
